@@ -1,3 +1,4 @@
+// Deprecated: use src/content/index.ts instead. Retained for compatibility with /onboarding route.
 export const ONBOARDING_STEPS = [
   {
     id: 1,

@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect } from "react";
 import { Header } from "@/components/Header";
-import { Breadcrumb } from "@/components/Breadcrumb";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ImageIcon } from "lucide-react";
 import { ONBOARDING_STEPS } from "@/data/steps";
@@ -47,7 +47,7 @@ const OnboardingStep = () => {
       <Header />
       
       <div className="flex">
-        <Breadcrumb steps={ONBOARDING_STEPS} currentStep={currentStepNumber} />
+        <Breadcrumbs />
         
         <main className="ml-64 flex-1 p-8">
           <div className="mx-auto max-w-3xl animate-fade-in">

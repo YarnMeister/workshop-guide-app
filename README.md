@@ -1,73 +1,203 @@
-# Welcome to your Lovable project
 
-## Project info
 
-**URL**: https://lovable.dev/projects/33b3ddfb-8200-403d-831c-aa1dff1199ed
+#Static content naming conventions and constent design:
 
-## How can I edit this code?
+## 1) IDs and file names
 
-There are several ways of editing your application.
+**Pages**
 
-**Use Lovable**
+* **ID:** `P01`, `P02`, `P03` …
+* **Slug:** `welcome`, `setup`, `write-spec`
+* **File:** `p01-welcome.tsx`, `p02-setup.tsx`
+* **Route:** `/welcome`, `/setup`, `/write-spec`
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/33b3ddfb-8200-403d-831c-aa1dff1199ed) and start prompting.
+**Steps (per page)**
 
-Changes made via Lovable will be committed automatically to this repo.
+* **ID:** `S01`, `S02`, `S03` …
+* **Composite Step ID:** `P01S01`, `P01S02`
+* Steps live inside the page component or a small `steps` array.
 
-**Use your preferred IDE**
+**Images**
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+* **Path:** `public/assets/p{NN}/{step?}/`
+* **File:**
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+  * Image for a page (no step): `img-p01-01.png`, `img-p01-02.png`
+  * Image for a step: `img-p01-s01-01.png`, `img-p01-s01-02.png`
+* Always 2-digit numbering.
 
-Follow these steps:
+**Text labels**
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+* Titles, button text kept in code as constants so we can reference by ID:
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+  * `TITLE.P01 = "Welcome"`
+  * `TITLE.P01S01 = "Enter your participant number"`
 
-# Step 3: Install the necessary dependencies.
-npm i
+> Rule: **Never reuse or recycle IDs.** If you delete `P02S02`, keep the ID unused forever.
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+---
+
+## 2) Minimal folder structure
+
+```
+src/
+  pages/
+    p01-welcome.tsx
+    p02-setup.tsx
+    p03-write-spec.tsx
+  components/
+    Step.tsx
+    Breadcrumbs.tsx
+  content/
+    index.ts            // master index of pages and steps
+public/
+  assets/
+    p01/
+      img-p01-01.png
+      s01/
+        img-p01-s01-01.png
+        img-p01-s01-02.png
+    p02/
+      s01/img-p02-s01-01.png
 ```
 
-**Edit a file directly in GitHub**
+---
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 3) Content index (single source of truth)
 
-**Use GitHub Codespaces**
+```ts
+// src/content/index.ts
+export const PAGES = [
+  { id: "P01", slug: "welcome", title: "Welcome", steps: ["P01S01", "P01S02"] },
+  { id: "P02", slug: "setup", title: "Environment Setup", steps: ["P02S01"] },
+  { id: "P03", slug: "write-spec", title: "Write Spec", steps: ["P03S01", "P03S02", "P03S03"] },
+] as const;
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+export const STEPS: Record<string, {
+  pageId: "P01"|"P02"|"P03";            // tighten as you add pages
+  title: string;
+  body: string;
+  images?: string[];                    // relative to /public
+  ctaLabel?: string;
+  ctaHref?: string;
+}> = {
+  P01S01: {
+    pageId: "P01",
+    title: "Enter participant number",
+    body: "Your number is on your name tag. Example: 104.",
+    images: ["/assets/p01/s01/img-p01-s01-01.png"]
+  },
+  P01S02: {
+    pageId: "P01",
+    title: "Confirm workshop repo",
+    body: "Open the GitHub link and star the repo."
+  },
+  // …and so on
+};
+```
 
-## What technologies are used for this project?
+---
 
-This project is built with:
+## 4) Component usage (super light)
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+```tsx
+// src/pages/p01-welcome.tsx
+import { PAGES, STEPS } from "@/content";
+import Step from "@/components/Step";
 
-## How can I deploy this project?
+export default function P01Welcome() {
+  const page = PAGES.find(p => p.id === "P01")!;
+  return (
+    <main>
+      <h1>{page.title}</h1>
+      {page.steps.map(stepId => (
+        <Step key={stepId} {...STEPS[stepId]} />
+      ))}
+    </main>
+  );
+}
+```
 
-Simply open [Lovable](https://lovable.dev/projects/33b3ddfb-8200-403d-831c-aa1dff1199ed) and click on Share -> Publish.
+```tsx
+// src/components/Step.tsx
+type Props = {
+  title: string; body: string; images?: string[]; ctaLabel?: string; ctaHref?: string;
+};
 
-## Can I connect a custom domain to my Lovable project?
+export default function Step({ title, body, images, ctaLabel, ctaHref }: Props) {
+  return (
+    <section aria-labelledby={title.replace(/\s+/g, "-").toLowerCase()}>
+      <h2>{title}</h2>
+      <p>{body}</p>
+      {images?.map((src) => <img key={src} src={src} alt={title} />)}
+      {ctaLabel && <a href={ctaHref} className="btn">{ctaLabel}</a>}
+    </section>
+  );
+}
+```
 
-Yes, you can!
+---
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## 5) Breadcrumbs use the same IDs
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+```tsx
+// src/components/Breadcrumbs.tsx
+import { PAGES } from "@/content";
+import Link from "next/link";
+
+export default function Breadcrumbs({ currentSlug }: { currentSlug: string }) {
+  return (
+    <nav aria-label="progress">
+      <ol>
+        {PAGES.map(p => (
+          <li key={p.id} data-active={p.slug === currentSlug}>
+            <Link href={`/${p.slug}`}>{p.title}</Link>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
+}
+```
+
+---
+
+## 6) Rules an AI assistant must follow
+
+1. **Do not invent IDs.** Use the next number in sequence. Pages: `P04`, Steps for that page: `P04S01`, `P04S02`.
+2. **Do not rename or repurpose existing IDs, slugs, or files.** Create new ones if needed.
+3. **When adding a page:**
+
+   * Create `src/pages/pNN-slug.tsx`
+   * Append to `PAGES` with `id`, `slug`, `title`, `steps: []`
+   * Add new `PxxSyy` entries in `STEPS`
+   * Create any images under `public/assets/pNN[/sYY]/` using the file pattern
+4. **When adding a step:**
+
+   * Add `PxxSyy` to `STEPS`
+   * Append the step ID to that page’s `steps` array in `PAGES`
+   * Place images at `public/assets/pNN/sYY/img-pNN-sYY-01.png` etc
+5. **When editing text or images:**
+
+   * Update only `STEPS[...]` fields or image files, do not change IDs
+6. **Accessibility:**
+
+   * Every image must have an `alt` based on the step title
+   * Use ordered `h1` per page, `h2` per step
+7. **Navigation order** is the order of `PAGES` and each page’s `steps` array.
+8. **No dynamic content, no CMS, no runtime fetches.** All content lives in `content/index.ts` and `public/assets`.
+
+---
+
+## 7) Example: adding a new page with two steps
+
+* New page: “Deploy”
+
+  * IDs: `P04`, steps `P04S01`, `P04S02`
+  * Files: `src/pages/p04-deploy.tsx`, images at:
+
+    * `/public/assets/p04/s01/img-p04-s01-01.png`
+    * `/public/assets/p04/s02/img-p04-s02-01.png`
+
+---
+
