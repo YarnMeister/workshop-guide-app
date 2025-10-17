@@ -1,0 +1,38 @@
+export const ONBOARDING_STEPS = [
+  {
+    id: 1,
+    title: "Welcome",
+    description: "Get started",
+    heading: "Step 1: Welcome to Your Workshop Journey",
+    content: "We're excited to have you here! This onboarding process will guide you through everything you need to get started. You'll set up your development environment, connect necessary accounts, and complete your first task. Let's make this workshop amazing!",
+    ctaText: "Continue to Setup",
+    ctaAction: "/onboarding/step/2",
+  },
+  {
+    id: 2,
+    title: "Setup Tools",
+    description: "Install requirements",
+    heading: "Step 2: Setup Your Development Environment",
+    content: "Before we dive in, let's make sure you have all the necessary tools installed. You'll need your code editor, terminal access, and any workshop-specific dependencies. Don't worry - we'll guide you through each installation step.",
+    ctaText: "Download Tools",
+    ctaAction: "/onboarding/step/3",
+  },
+  {
+    id: 3,
+    title: "Connect Accounts",
+    description: "Link your services",
+    heading: "Step 3: Connect Your Accounts",
+    content: "Now let's connect the platforms and services you'll be using during the workshop. This includes your collaboration tools, code repositories, and communication channels. Having everything connected upfront will make your experience seamless.",
+    ctaText: "Open Slack",
+    ctaAction: "/onboarding/step/4",
+  },
+  {
+    id: 4,
+    title: "Start First Task",
+    description: "Begin workshop",
+    heading: "Step 4: Complete Your First Task",
+    content: "You're all set! Time to put your setup to the test with your first workshop task. This introductory exercise will help you familiarize yourself with the tools and workflow. Once you complete this, you'll be ready for the main workshop activities.",
+    ctaText: "Start Task",
+    ctaAction: "/dashboard",
+  },
+];
