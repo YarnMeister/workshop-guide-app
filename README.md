@@ -1,4 +1,53 @@
+## Overview
 
+The Workshop Guide App is a small React + TypeScript application that guides participants through a short onboarding flow before they start a workshop.
+
+- **Purpose**: Provide a clear, step-by-step onboarding experience with consistent page/step naming and image conventions.
+- **Tech**: React, Vite, TypeScript, Tailwind CSS, shadcn/ui, React Router, TanStack Query, and toast/sonner notifications.
+- **Content system**: All static text and image references are centralized in `src/content/index.ts` as:
+  - `PAGES`: stable page entries with immutable IDs (`Pxx`), slugs, titles, and ordered step IDs
+  - `STEPS`: step entries with immutable IDs (`PxxSyy`), body text, and optional `images`/CTA
+- **Conventions**: Images live under `public/assets/pNN[/sYY]/` using `img-pNN-XX.png` or `img-pNN-sYY-XX.png` naming. In the UI, images are captioned automatically as “Image N”.
+- **Routing**:
+  - Slug pages: `/welcome`, `/setup`, `/connect-accounts`, `/first-task`
+  - Compatibility route: `/onboarding/step/:stepId` (numeric), still supported
+  - Dashboard: `/dashboard`
+- **State**: The participant number is captured on the welcome screen and stored in `sessionStorage`. The numeric onboarding route checks for this and redirects if missing.
+- **Components**:
+  - `Header`: app chrome
+  - `Breadcrumbs`: progress driven by `PAGES`, shown as “Step X: Title”
+  - `Step`: renders a step’s title, body, images (with captions), and optional CTA
+- **Authoring**: To add or change content, edit `src/content/index.ts` and place images in `public/assets` following the naming rules. IDs are never reused.
+
+Overview - Current content inventory
+
+This section is auto-maintained manually during development to reflect what currently exists in the app. Update it when adding/editing content in `src/content/index.ts` or image assets under `public/assets`.
+
+- **Pages**
+  - **P01**: `Welcome`
+    - **Slug/Route**: `/welcome`
+    - **Steps**:
+      - **P01S01**: Enter participant number
+        - **Images**:
+          - `/assets/p01/s01/img-p01-s01-01.png`
+  - **P02**: `Environment Setup`
+    - **Slug/Route**: `/setup`
+    - **Steps**:
+      - **P02S01**: Install required tools
+        - **Images**:
+          - `/assets/p02/s01/img-p02-s01-01.png`
+  - **P03**: `Connect Accounts`
+    - **Slug/Route**: `/connect-accounts`
+    - **Steps**:
+      - **P03S01**: Connect your accounts
+        - **Images**:
+          - `/assets/p03/s01/img-p03-s01-01.png`
+  - **P04**: `First Task`
+    - **Slug/Route**: `/first-task`
+    - **Steps**:
+      - **P04S01**: Start your first task
+        - **Images**:
+          - `/assets/p04/s01/img-p04-s01-01.png`
 
 #Static content naming conventions and constent design:
 
@@ -37,35 +86,6 @@
 
 ---
 
-## 8) Current content inventory
-
-This section is auto-maintained manually during development to reflect what currently exists in the app. Update it when adding/editing content in `src/content/index.ts` or image assets under `public/assets`.
-
-- **Pages**
-  - **P01**: `Welcome`
-    - **Slug/Route**: `/welcome`
-    - **Steps**:
-      - **P01S01**: Enter participant number
-        - **Images**:
-          - `/assets/p01/s01/img-p01-s01-01.png`
-  - **P02**: `Environment Setup`
-    - **Slug/Route**: `/setup`
-    - **Steps**:
-      - **P02S01**: Install required tools
-        - **Images**:
-          - `/assets/p02/s01/img-p02-s01-01.png`
-  - **P03**: `Connect Accounts`
-    - **Slug/Route**: `/connect-accounts`
-    - **Steps**:
-      - **P03S01**: Connect your accounts
-        - **Images**:
-          - `/assets/p03/s01/img-p03-s01-01.png`
-  - **P04**: `First Task`
-    - **Slug/Route**: `/first-task`
-    - **Steps**:
-      - **P04S01**: Start your first task
-        - **Images**:
-          - `/assets/p04/s01/img-p04-s01-01.png`
 
 Notes:
 - Follow naming rules in sections 1–7 when adding new items.
