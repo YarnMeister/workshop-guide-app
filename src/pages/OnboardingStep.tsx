@@ -54,7 +54,7 @@ const OnboardingStep = () => {
             {/* Step header */}
             <div className="mb-8">
               <div className="mb-2 inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                Step {currentStep.id} of {ONBOARDING_STEPS.length}
+                Step 1
               </div>
               <h1 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
                 {currentStep.heading}
@@ -98,14 +98,14 @@ const OnboardingStep = () => {
               </ul>
             </div>
 
-            {/* CTA Button */}
+            {/* Navigation Buttons */}
             <div className="flex items-center justify-between">
               <Button
                 variant="outline"
                 onClick={() => currentStepNumber > 1 && navigate(`/onboarding/step/${currentStepNumber - 1}`)}
                 disabled={currentStepNumber === 1}
               >
-                Previous Step
+                Previous
               </Button>
               
               <Button
