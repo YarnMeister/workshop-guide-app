@@ -130,13 +130,16 @@ const OnboardingStep = () => {
     return null;
   }
 
-  // Check if all steps are completed
-  const allStepsCompleted = currentStep.detailedContent?.sections.length 
-    ? completedSteps.size === currentStep.detailedContent.sections.length
-    : true; // If no detailed content, allow proceeding
+  // Check if all steps are completed - only for Setup Tools page (step 1)
+  const allStepsCompleted = currentStepNumber === 1 
+    ? (currentStep.detailedContent?.sections.length 
+        ? completedSteps.size === currentStep.detailedContent.sections.length
+        : true)
+    : true; // For all other steps, always allow proceeding
 
   const handleCTA = () => {
-    if (!allStepsCompleted) {
+    // Only check completion for Setup Tools page (step 1)
+    if (currentStepNumber === 1 && !allStepsCompleted) {
       toast({
         title: "Complete All Steps",
         description: "Please mark all steps as complete before proceeding.",
@@ -428,7 +431,7 @@ const OnboardingStep = () => {
               </Button>
               
               <div className="flex flex-col items-end">
-                {!allStepsCompleted && (
+                {currentStepNumber === 1 && !allStepsCompleted && (
                   <p className="mb-2 text-xs text-muted-foreground">
                     Mark all steps complete to proceed
                   </p>
@@ -437,7 +440,7 @@ const OnboardingStep = () => {
                   onClick={handleCTA}
                   size="lg"
                   className="gap-2 font-semibold"
-                  disabled={!allStepsCompleted}
+                  disabled={currentStepNumber === 1 && !allStepsCompleted}
                 >
                   {currentStep.ctaText}
                   <ArrowRight className="h-5 w-5" />
