@@ -3,16 +3,66 @@ import { useEffect } from "react";
 import { Header } from "@/components/Header";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ImageIcon } from "lucide-react";
+import { ArrowRight, ImageIcon, Copy, Check } from "lucide-react";
 import { ONBOARDING_STEPS } from "@/data/steps";
 import { toast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 const OnboardingStep = () => {
   const { stepId } = useParams();
   const navigate = useNavigate();
   const currentStepNumber = parseInt(stepId || "1");
+  const [copiedCommands, setCopiedCommands] = useState<Set<string>>(new Set());
   
   const currentStep = ONBOARDING_STEPS.find(step => step.id === currentStepNumber);
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedCommands(prev => new Set(prev).add(text));
+      toast({
+        title: "Copied!",
+        description: "Command copied to clipboard",
+      });
+      // Reset the copied state after 2 seconds
+      setTimeout(() => {
+        setCopiedCommands(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(text);
+          return newSet;
+        });
+      }, 2000);
+    } catch (err) {
+      toast({
+        title: "Copy failed",
+        description: "Could not copy to clipboard",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Component for copyable commands
+  const CopyableCommand = ({ command }: { command: string }) => {
+    const isCopied = copiedCommands.has(command);
+    
+    return (
+      <div className="flex items-center justify-between rounded-md bg-muted p-3 text-sm">
+        <code className="flex-1 font-mono">{command}</code>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => copyToClipboard(command)}
+          className="ml-2 h-8 w-8 p-0"
+        >
+          {isCopied ? (
+            <Check className="h-4 w-4 text-green-600" />
+          ) : (
+            <Copy className="h-4 w-4" />
+          )}
+        </Button>
+      </div>
+    );
+  };
 
   useEffect(() => {
     // Check if participant ID exists
@@ -91,10 +141,23 @@ const OnboardingStep = () => {
                       <p className="mb-4 text-sm text-muted-foreground">{section.description}</p>
                     )}
                     {section.codeBlock && (
-                      <div className="mb-4">
-                        <pre className="overflow-x-auto rounded-md bg-muted p-4 text-sm">
-                          <code>{section.codeBlock}</code>
-                        </pre>
+                      <div className="mb-4 space-y-2">
+                        {section.codeBlock.split('\n').filter(line => line.trim()).map((command, cmdIndex) => {
+                          const trimmedCommand = command.trim();
+                          // Check if this is one of the specific commands that should be copyable
+                          if (trimmedCommand === 'git --version' || 
+                              trimmedCommand === 'npm --version' ||
+                              trimmedCommand.startsWith('git config --global user.name') ||
+                              trimmedCommand.startsWith('git config --global user.email')) {
+                            return <CopyableCommand key={cmdIndex} command={trimmedCommand} />;
+                          }
+                          // For other commands, show as regular code block
+                          return (
+                            <pre key={cmdIndex} className="overflow-x-auto rounded-md bg-muted p-4 text-sm">
+                              <code>{trimmedCommand}</code>
+                            </pre>
+                          );
+                        })}
                       </div>
                     )}
                     {section.subsections && (
@@ -106,9 +169,24 @@ const OnboardingStep = () => {
                               <p className="mb-3 text-sm text-muted-foreground whitespace-pre-line">{subsection.description}</p>
                             )}
                             {subsection.codeBlock && (
-                              <pre className="overflow-x-auto rounded-md bg-muted p-3 text-sm">
-                                <code>{subsection.codeBlock}</code>
-                              </pre>
+                              <div className="space-y-2">
+                                {subsection.codeBlock.split('\n').filter(line => line.trim()).map((command, cmdIndex) => {
+                                  const trimmedCommand = command.trim();
+                                  // Check if this is one of the specific commands that should be copyable
+                                  if (trimmedCommand === 'git --version' || 
+                                      trimmedCommand === 'npm --version' ||
+                                      trimmedCommand.startsWith('git config --global user.name') ||
+                                      trimmedCommand.startsWith('git config --global user.email')) {
+                                    return <CopyableCommand key={cmdIndex} command={trimmedCommand} />;
+                                  }
+                                  // For other commands, show as regular code block
+                                  return (
+                                    <pre key={cmdIndex} className="overflow-x-auto rounded-md bg-muted p-3 text-sm">
+                                      <code>{trimmedCommand}</code>
+                                    </pre>
+                                  );
+                                })}
+                              </div>
                             )}
                           </div>
                         ))}
