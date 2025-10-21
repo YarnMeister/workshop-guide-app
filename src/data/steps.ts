@@ -63,17 +63,23 @@ Copy and paste this command, then press Enter:
 Follow the on-screen instructions (you may need to enter your computer password)
 
 When done, close and reopen Terminal`,
-              codeBlock: `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
+              commands: [
+                `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
+              ]
             },
             {
               title: "Install Git",
               description: `In Terminal, type the command below, then press Enter and wait for it to finish:`,
-              codeBlock: `brew install git`
+              commands: [
+                `brew install git`
+              ]
             },
             {
               title: "Install npm (Node.js)",
               description: `In Terminal, type the command below, then press Enter and wait for it to finish:`,
-              codeBlock: `brew install node`
+              commands: [
+                `brew install node`
+              ]
             },
             {
               title: "Verify it worked:",
