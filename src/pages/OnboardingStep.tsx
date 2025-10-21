@@ -103,10 +103,10 @@ const OnboardingStep = () => {
                           <div key={subIndex} className="border-l-2 border-muted pl-4">
                             <h3 className="mb-2 font-medium text-sm">{subsection.title}</h3>
                             {subsection.description && (
-                              <p className="mb-3 text-xs text-muted-foreground whitespace-pre-line">{subsection.description}</p>
+                              <p className="mb-3 text-sm text-muted-foreground whitespace-pre-line">{subsection.description}</p>
                             )}
                             {subsection.codeBlock && (
-                              <pre className="overflow-x-auto rounded-md bg-muted p-3 text-xs">
+                              <pre className="overflow-x-auto rounded-md bg-muted p-3 text-sm">
                                 <code>{subsection.codeBlock}</code>
                               </pre>
                             )}
@@ -124,7 +124,7 @@ const OnboardingStep = () => {
                       {currentStep.detailedContent.troubleshooting.items.map((item, index) => (
                         <div key={index} className="border-l-2 border-orange-200 pl-4">
                           <h3 className="mb-2 font-medium text-sm text-orange-700">{item.title}</h3>
-                          <pre className="overflow-x-auto rounded-md bg-orange-100 p-3 text-xs">
+                          <pre className="overflow-x-auto rounded-md bg-orange-100 p-3 text-sm">
                             <code>{item.codeBlock}</code>
                           </pre>
                         </div>
@@ -135,7 +135,7 @@ const OnboardingStep = () => {
               </div>
             ) : (
               <div className="mb-8 rounded-lg border bg-card p-6">
-                <h2 className="mb-3 font-semibold">What you'll accomplish:</h2>
+                <h2 className="mb-3 font-medium text-sm">What you'll accomplish:</h2>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-start gap-2">
                     <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
