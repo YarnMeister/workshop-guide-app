@@ -56,45 +56,31 @@ Windows users: How to open Command Prompt - https://www.youtube.com/watch?v=mTEO
           subsections: [
             {
               title: "Install Homebrew",
-              codeBlock: `Open "Terminal" (find it using Spotlight search: press ⌘ + Space, then type "Terminal")
+              description: `Open "Terminal" (find it using Spotlight search: press ⌘ + Space, then type "Terminal")
 
 Copy and paste this command, then press Enter:
 
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
 Follow the on-screen instructions (you may need to enter your computer password)
 
-When done, close and reopen Terminal`
+When done, close and reopen Terminal`,
+              codeBlock: `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
             },
             {
               title: "Install Git",
-              codeBlock: `In Terminal, type:
-
-brew install git
-
-Press Enter and wait for it to finish`
+              description: `In Terminal, type the command below, then press Enter and wait for it to finish:`,
+              codeBlock: `brew install git`
             },
             {
               title: "Install npm (Node.js)",
-              codeBlock: `In Terminal, type:
-
-brew install node
-
-Press Enter and wait for it to finish`
+              description: `In Terminal, type the command below, then press Enter and wait for it to finish:`,
+              codeBlock: `brew install node`
             },
             {
               title: "Verify it worked:",
-              codeBlock: `Type:
+              description: `Type the commands below one at a time. You should see version numbers for both:`,
+              codeBlock: `git --version
 
-git --version
-
-(you should see a version number)
-
-Type:
-
-npm --version
-
-(you should see a version number)`
+npm --version`
             }
           ]
         },
@@ -118,28 +104,21 @@ Check the box that says "Automatically install the necessary tools"`
             },
             {
               title: "Verify it worked:",
-              codeBlock: `Open "Command Prompt" (search for "cmd" in Start menu)
+              description: `Open "Command Prompt" (search for "cmd" in Start menu)
 
-Type:
+Type the commands below one at a time. You should see version numbers for both:`,
+              codeBlock: `git --version
 
-git --version
-
-(you should see a version number)
-
-Type:
-
-npm --version
-
-(you should see a version number)`
+npm --version`
             }
           ]
         },
         {
           title: "Connect Git to Your GitHub Account",
-          description: "Configure Git with your personal information.",
-          codeBlock: `In Terminal (Mac) or Command Prompt (Windows), type these commands (replace with your info):
+          description: `Configure Git with your personal information.
 
-git config --global user.name "Your Name"
+In Terminal (Mac) or Command Prompt (Windows), type these commands one at a time (replace with your info):`,
+          codeBlock: `git config --global user.name "Your Name"
 
 git config --global user.email "your.email@example.com"`
         }

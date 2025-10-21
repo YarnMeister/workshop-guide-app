@@ -92,13 +92,9 @@ const OnboardingStep = () => {
                     )}
                     {section.codeBlock && (
                       <div className="mb-4">
-                        {section.codeBlock.split('\n\n').map((command, cmdIndex) => (
-                          <div key={cmdIndex} className="mb-2">
-                            <pre className="overflow-x-auto rounded-md bg-muted p-3 text-sm">
-                              <code>{command.trim()}</code>
-                            </pre>
-                          </div>
-                        ))}
+                        <pre className="overflow-x-auto rounded-md bg-muted p-4 text-sm">
+                          <code>{section.codeBlock}</code>
+                        </pre>
                       </div>
                     )}
                     {section.subsections && (
@@ -106,16 +102,13 @@ const OnboardingStep = () => {
                         {section.subsections.map((subsection, subIndex) => (
                           <div key={subIndex} className="border-l-2 border-muted pl-4">
                             <h3 className="mb-2 font-medium text-sm">{subsection.title}</h3>
+                            {subsection.description && (
+                              <p className="mb-3 text-xs text-muted-foreground whitespace-pre-line">{subsection.description}</p>
+                            )}
                             {subsection.codeBlock && (
-                              <div className="space-y-2">
-                                {subsection.codeBlock.split('\n\n').map((command, cmdIndex) => (
-                                  <div key={cmdIndex}>
-                                    <pre className="overflow-x-auto rounded-md bg-muted p-2 text-xs">
-                                      <code>{command.trim()}</code>
-                                    </pre>
-                                  </div>
-                                ))}
-                              </div>
+                              <pre className="overflow-x-auto rounded-md bg-muted p-3 text-xs">
+                                <code>{subsection.codeBlock}</code>
+                              </pre>
                             )}
                           </div>
                         ))}
@@ -131,15 +124,9 @@ const OnboardingStep = () => {
                       {currentStep.detailedContent.troubleshooting.items.map((item, index) => (
                         <div key={index} className="border-l-2 border-orange-200 pl-4">
                           <h3 className="mb-2 font-medium text-sm text-orange-700">{item.title}</h3>
-                          <div className="space-y-2">
-                            {item.codeBlock.split('\n\n').map((command, cmdIndex) => (
-                              <div key={cmdIndex}>
-                                <pre className="overflow-x-auto rounded-md bg-orange-100 p-2 text-xs">
-                                  <code>{command.trim()}</code>
-                                </pre>
-                              </div>
-                            ))}
-                          </div>
+                          <pre className="overflow-x-auto rounded-md bg-orange-100 p-3 text-xs">
+                            <code>{item.codeBlock}</code>
+                          </pre>
                         </div>
                       ))}
                     </div>
