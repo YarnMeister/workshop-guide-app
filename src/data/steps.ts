@@ -135,20 +135,28 @@ Type the commands below one at a time. You should see version numbers for both:`
         },
         {
           title: "Connect Git to Your GitHub Account",
-          description: `Configure Git with your personal information.
-
-In Terminal (Mac) or Command Prompt (Windows), type these commands one at a time (replace with your info):`,
-          commands: [
-            'git config --global user.name "Your Name"',
-            'git config --global user.email "your.email@example.com"'
-          ],
-          additionalInstructions: `**What to use:**
-- **user.name** - Your actual name or GitHub username (e.g., "Sarah Chen"). This will appear on all your code commits to show who made the changes.
-- **user.email** - Use the **same email address you used to sign up for GitHub**. This links your commits to your GitHub account.
-
-**Example:**`,
-          exampleCode: `git config --global user.name "Sarah Chen"
-git config --global user.email "sarah.chen@email.com"`
+          description: `Configure Git with your personal information. In Terminal (Mac) or Command Prompt (Windows), type these commands one at a time (replace with your info):`,
+          subsections: [
+            {
+              title: "Set your name",
+              description: "The name used above will appear on all your code commits to show who made the changes.",
+              commands: [
+                'git config --global user.name "Your Name"'
+              ]
+            },
+            {
+              title: "Set your email",
+              description: "Use the same email address you used to sign up for GitHub. This links your commits to your GitHub account.",
+              commands: [
+                'git config --global user.email "your.email@example.com"'
+              ]
+            },
+            {
+              title: "Example:",
+              codeBlock: `git config --global user.name "Jane Doe"
+git config --global user.email "jane.doe@email.com"`
+            }
+          ]
         }
       ],
       troubleshooting: {
