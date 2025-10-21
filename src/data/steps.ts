@@ -55,73 +55,81 @@ Windows users: How to open Command Prompt - https://www.youtube.com/watch?v=mTEO
           ]
         },
         {
-          title: "For Mac Users",
-          description: "Install Homebrew, Git, and Node.js on macOS.",
-          subsections: [
+          title: "Install Command Line Tools",
+          description: "Install Git and Node.js on your operating system.",
+          tabs: [
             {
-              title: "Install Homebrew",
-              description: `Open "Terminal" (find it using Spotlight search: press ⌘ + Space, then type "Terminal")
+              title: "🍎 Mac",
+              content: {
+                subsections: [
+                  {
+                    title: "Install Homebrew",
+                    description: `Open "Terminal" (find it using Spotlight search: press ⌘ + Space, then type "Terminal")
 
 Copy and paste this command, then press Enter:
 
 Follow the on-screen instructions (you may need to enter your computer password)
 
 When done, close and reopen Terminal`,
-              commands: [
-                `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
-              ]
+                    commands: [
+                      `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
+                    ]
+                  },
+                  {
+                    title: "Install Git",
+                    description: `In Terminal, type the command below, then press Enter and wait for it to finish:`,
+                    commands: [
+                      `brew install git`
+                    ]
+                  },
+                  {
+                    title: "Install npm (Node.js)",
+                    description: `In Terminal, type the command below, then press Enter and wait for it to finish:`,
+                    commands: [
+                      `brew install node`
+                    ]
+                  },
+                  {
+                    title: "Verify it worked:",
+                    description: `Type the commands below one at a time. You should see version numbers for both:`,
+                    commands: [
+                      "git --version",
+                      "npm --version"
+                    ]
+                  }
+                ]
+              }
             },
             {
-              title: "Install Git",
-              description: `In Terminal, type the command below, then press Enter and wait for it to finish:`,
-              commands: [
-                `brew install git`
-              ]
-            },
-            {
-              title: "Install npm (Node.js)",
-              description: `In Terminal, type the command below, then press Enter and wait for it to finish:`,
-              commands: [
-                `brew install node`
-              ]
-            },
-            {
-              title: "Verify it worked:",
-              description: `Type the commands below one at a time. You should see version numbers for both:`,
-              commands: [
-                "git --version",
-                "npm --version"
-              ]
-            }
-          ]
-        },
-        {
-          title: "For Windows Users",
-          description: "Install Git and Node.js on Windows.",
-          subsections: [
-            {
-              title: "Install Git",
-              codeBlock: `Download from: https://git-scm.com/download/win
+              title: "🪟 Windows",
+              content: {
+                subsections: [
+                  {
+                    title: "Install Git",
+                    codeBlock: `Download from: https://git-scm.com/download/win
 Run the installer
 Use all default options (just keep clicking "Next")
 Important: When asked about "Adjusting your PATH environment," select "Git from the command line and also from 3rd-party software"`
-            },
-            {
-              title: "Install Node.js (includes npm)",
-              codeBlock: `Download from: https://nodejs.org/ (choose the LTS version)
+                  },
+                  {
+                    title: "Install Node.js (includes npm)",
+                    codeBlock: `Download from: https://nodejs.org/ (choose the LTS version)
 Run the installer
 Use all default options (click "Next" through everything)
 Check the box that says "Automatically install the necessary tools"`
-            },
-            {
-              title: "Verify it worked:",
-              description: `Open "Command Prompt" (search for "cmd" in Start menu)
+                  },
+                  {
+                    title: "Verify it worked:",
+                    description: `Open "Command Prompt" (search for "cmd" in Start menu)
 
 Type the commands below one at a time. You should see version numbers for both:`,
-              commands: [
-                "git --version",
-                "npm --version"
-              ]
+                    commands: [
+                      "git --version",
+                      "npm --version"
+                    ]
+                  }
+                ]
+              }
             }
           ]
         },
