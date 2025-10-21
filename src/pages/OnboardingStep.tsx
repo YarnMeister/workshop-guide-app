@@ -290,21 +290,21 @@ const OnboardingStep = () => {
                         ))}
                         
                         {currentStep.detailedContent.troubleshooting && (
-                  <div className="rounded-lg border bg-orange-50 p-6">
-                    <h2 className="mb-3 font-semibold text-lg text-orange-800">{currentStep.detailedContent.troubleshooting.title}</h2>
-                    <div className="space-y-4">
-                      {currentStep.detailedContent.troubleshooting.items.map((item, index) => (
-                        <div key={index} className="border-l-2 border-orange-200 pl-4">
-                          <h3 className="mb-2 font-medium text-sm text-orange-700">{item.title}</h3>
-                          <pre className="overflow-x-auto rounded-md bg-orange-100 p-3 text-sm">
-                            <code>{item.codeBlock}</code>
-                          </pre>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+                          <div className="rounded-lg border bg-orange-50 p-6">
+                            <h2 className="mb-3 font-semibold text-lg text-orange-800">{currentStep.detailedContent.troubleshooting.title}</h2>
+                            <div className="space-y-4">
+                              {currentStep.detailedContent.troubleshooting.items.map((item, index) => (
+                                <div key={index} className="border-l-2 border-orange-200 pl-4">
+                                  <h3 className="mb-2 font-medium text-sm text-orange-700">{item.title}</h3>
+                                  <pre className="overflow-x-auto rounded-md bg-orange-100 p-3 text-sm">
+                                    <code>{item.codeBlock}</code>
+                                  </pre>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
             ) : (
               <div className="mb-8 rounded-lg border bg-card p-6">
                 <h2 className="mb-3 font-medium text-sm">What you'll accomplish:</h2>
