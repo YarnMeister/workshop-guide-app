@@ -3,7 +3,8 @@ import { useEffect } from "react";
 import { Header } from "@/components/Header";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Copy, Check } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { ArrowRight, Copy, Check, Info } from "lucide-react";
 import { ONBOARDING_STEPS } from "@/data/steps";
 import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
@@ -15,6 +16,7 @@ const OnboardingStep = () => {
   const [copiedCommands, setCopiedCommands] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState<number>(0);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
+  const [templateText, setTemplateText] = useState<string>("");
   
   const currentStep = ONBOARDING_STEPS.find(step => step.id === currentStepNumber);
 
@@ -116,7 +118,12 @@ const OnboardingStep = () => {
       });
       navigate("/");
     }
-  }, [navigate]);
+
+    // Initialize template text for step 2
+    if (currentStepNumber === 2 && currentStep?.detailedContent?.sections?.[0]?.templateContent) {
+      setTemplateText(currentStep.detailedContent.sections[0].templateContent);
+    }
+  }, [navigate, currentStepNumber, currentStep]);
 
   if (!currentStep) {
     navigate("/");
@@ -180,6 +187,16 @@ const OnboardingStep = () => {
                             </div>
                     {section.description && (
                       <p className="mb-4 text-sm text-muted-foreground">{renderTextWithLinks(section.description)}</p>
+                    )}
+                    {section.templateTextbox && (
+                      <div className="mb-4">
+                        <Textarea
+                          value={templateText}
+                          onChange={(e) => setTemplateText(e.target.value)}
+                          placeholder="Enter your project description here..."
+                          className="min-h-[200px] resize-none"
+                        />
+                      </div>
                     )}
                     {section.codeBlock && (
                       <div className="mb-4">
@@ -322,8 +339,20 @@ const OnboardingStep = () => {
                     </div>
                   </div>
                 )}
+
+                {currentStep.detailedContent.infoPanel && (
+                  <div className="rounded-lg border bg-blue-50 p-6">
+                    <div className="flex items-start gap-3">
+                      <Info className="h-5 w-5 text-blue-600 mt-0.5" />
+                      <div>
+                        <h3 className="font-semibold text-blue-800 mb-2">{currentStep.detailedContent.infoPanel.title}</h3>
+                        <p className="text-sm text-blue-700">{currentStep.detailedContent.infoPanel.content}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-            ) : (
+            ) : currentStepNumber !== 2 && (
               <div className="mb-8 rounded-lg border bg-card p-6">
                 <h2 className="mb-3 font-medium text-sm">What you'll accomplish:</h2>
                 <ul className="space-y-2 text-sm text-muted-foreground">

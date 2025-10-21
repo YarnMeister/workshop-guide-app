@@ -183,9 +183,23 @@ git config --global user.email "jane.doe@email.com"`
     title: "Write Specs",
     description: "Define requirements",
     heading: "Define Your Project Requirements",
-    content: "Let's start by clearly defining what you want to build. This step will help you create a solid foundation for your project by outlining the key features, user stories, and technical requirements.",
+    content: "Let's describe your idea a clearly as possible. Use the template below to frame up your idea. OR use your favourite Ai assistant to help you craft a comprehensive prompt for Lovable to build your initial prompt",
     ctaText: "Next",
     ctaAction: "/onboarding/step/3",
+    detailedContent: {
+      sections: [
+        {
+          title: "Project Description Template",
+          description: "Use this template to describe your project idea. You can edit the text directly in the box below.",
+          templateTextbox: true,
+          templateContent: "This is some placeholder text"
+        }
+      ],
+      infoPanel: {
+        title: "FYI",
+        content: "We're using Lovable to rapidly build the frontend to save us time. It takes forever to build a great experience from scratch using any other approach"
+      }
+    }
   },
   {
     id: 3,
