@@ -4,6 +4,7 @@ import { Header } from "@/components/Header";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Copy, Check } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ONBOARDING_STEPS } from "@/data/steps";
 import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
@@ -123,7 +124,21 @@ const OnboardingStep = () => {
     return null;
   }
 
+  // Check if all steps are completed
+  const allStepsCompleted = currentStep.detailedContent?.sections.length 
+    ? completedSteps.size === currentStep.detailedContent.sections.length
+    : true; // If no detailed content, allow proceeding
+
   const handleCTA = () => {
+    if (!allStepsCompleted) {
+      toast({
+        title: "Complete All Steps",
+        description: "Please mark all steps as complete before proceeding.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     if (currentStep.ctaAction === "/dashboard") {
       toast({
         title: "Onboarding Complete!",
@@ -381,14 +396,26 @@ const OnboardingStep = () => {
                 Previous
               </Button>
               
-              <Button
-                onClick={handleCTA}
-                size="lg"
-                className="gap-2 font-semibold"
-              >
-                {currentStep.ctaText}
-                <ArrowRight className="h-5 w-5" />
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={handleCTA}
+                      size="lg"
+                      className="gap-2 font-semibold"
+                      disabled={!allStepsCompleted}
+                    >
+                      {currentStep.ctaText}
+                      <ArrowRight className="h-5 w-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  {!allStepsCompleted && (
+                    <TooltipContent>
+                      <p>Mark all steps complete to proceed</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
         </main>
