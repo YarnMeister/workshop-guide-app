@@ -4,7 +4,6 @@ import { Header } from "@/components/Header";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Copy, Check } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ONBOARDING_STEPS } from "@/data/steps";
 import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
@@ -396,24 +395,22 @@ const OnboardingStep = () => {
                 Previous
               </Button>
               
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      onClick={handleCTA}
-                      size="lg"
-                      className="gap-2 font-semibold"
-                      disabled={!allStepsCompleted}
-                    >
-                      {currentStep.ctaText}
-                      <ArrowRight className="h-5 w-5" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{allStepsCompleted ? "All steps completed! Ready to proceed." : "Mark all steps complete to proceed"}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <div className="flex flex-col items-end">
+                {!allStepsCompleted && (
+                  <p className="mb-2 text-xs text-muted-foreground">
+                    Mark all steps complete to proceed
+                  </p>
+                )}
+                <Button
+                  onClick={handleCTA}
+                  size="lg"
+                  className="gap-2 font-semibold"
+                  disabled={!allStepsCompleted}
+                >
+                  {currentStep.ctaText}
+                  <ArrowRight className="h-5 w-5" />
+                </Button>
+              </div>
             </div>
           </div>
         </main>
