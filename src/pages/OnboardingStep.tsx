@@ -409,11 +409,9 @@ const OnboardingStep = () => {
                       <ArrowRight className="h-5 w-5" />
                     </Button>
                   </TooltipTrigger>
-                  {!allStepsCompleted && (
-                    <TooltipContent>
-                      <p>Mark all steps complete to proceed</p>
-                    </TooltipContent>
-                  )}
+                  <TooltipContent>
+                    <p>{allStepsCompleted ? "All steps completed! Ready to proceed." : "Mark all steps complete to proceed"}</p>
+                  </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>
