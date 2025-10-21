@@ -53,9 +53,6 @@ const OnboardingStep = () => {
           <div className="mx-auto max-w-3xl animate-fade-in">
             {/* Step header */}
             <div className="mb-8">
-              <div className="mb-2 inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                Step 1
-              </div>
               <h1 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
                 {currentStep.heading}
               </h1>
@@ -84,7 +81,12 @@ const OnboardingStep = () => {
               <div className="mb-8 space-y-6">
                 {currentStep.detailedContent.sections.map((section, index) => (
                   <div key={index} className="rounded-lg border bg-card p-6">
-                    <h2 className="mb-3 font-semibold text-lg">{section.title}</h2>
+                    <div className="mb-3 flex items-center gap-3">
+                      <div className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                        Step {index + 1}
+                      </div>
+                      <h2 className="font-semibold text-lg">{section.title}</h2>
+                    </div>
                     {section.description && (
                       <p className="mb-4 text-sm text-muted-foreground">{section.description}</p>
                     )}
