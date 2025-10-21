@@ -1,73 +1,171 @@
-# Welcome to your Lovable project
+# REA Vibe Coding Workshop
 
-## Project info
+## Overview
+Interactive onboarding instructions for participants of the PropTech Conference on 13 November 2025. This workshop guide app provides step-by-step instructions for setting up development tools and building applications.
 
-**URL**: https://lovable.dev/projects/33b3ddfb-8200-403d-831c-aa1dff1199ed
+## App Pages Overview
 
-## How can I edit this code?
+The workshop guide consists of 6 main pages:
 
-There are several ways of editing your application.
+1. **Setup Tools** (`/onboarding/step/1`)
+   - Install development environment requirements
+   - Create GitHub and Vercel accounts
+   - Install Void editor with secret key
+   - Install command line tools (Git, Node.js)
+   - Configure Git with GitHub account
+   - Step completion tracking with binary sliders
 
-**Use Lovable**
+2. **Write Specs** (`/onboarding/step/2`)
+   - Define project requirements
+   - Create user stories and technical requirements
+   - Placeholder content for future development
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/33b3ddfb-8200-403d-831c-aa1dff1199ed) and start prompting.
+3. **Prototype (UI)** (`/onboarding/step/3`)
+   - Design user interface
+   - Create wireframes and mockups
+   - Interactive prototypes
+   - Placeholder content for future development
 
-Changes made via Lovable will be committed automatically to this repo.
+4. **Export Project** (`/onboarding/step/4`)
+   - Generate code from designs
+   - Export to production-ready code
+   - Placeholder content for future development
 
-**Use your preferred IDE**
+5. **Add Backend** (`/onboarding/step/5`)
+   - Build server logic
+   - Set up APIs and databases
+   - Placeholder content for future development
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+6. **Launch App** (`/onboarding/step/6`)
+   - Deploy to production
+   - Make application accessible to users
+   - Final completion page
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Style Guide
 
-Follow these steps:
+Based on the Setup Tools page implementation, here are the styling patterns for consistent content creation:
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### H1 - Page Headings
+```css
+text-3xl font-bold tracking-tight sm:text-4xl
+```
+- **Usage**: Main page titles (e.g., "Setup Your Development Environment")
+- **Size**: Large, bold, responsive
+- **Example**: Page title at the top of each step
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### H2 - Section Headings
+```css
+font-semibold text-lg
+```
+- **Usage**: Main section titles within steps (e.g., "Create Your Accounts")
+- **Size**: Medium, semibold
+- **Example**: Step titles like "Install Void Editor", "Connect Git to Your GitHub Account"
 
-# Step 3: Install the necessary dependencies.
-npm i
+### H3 - Subsection Headings
+```css
+font-medium text-sm
+```
+- **Usage**: Subsection titles (e.g., "GitHub Account", "Set your name")
+- **Size**: Small, medium weight
+- **Example**: Individual instruction titles within sections
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+### Paragraph Text
+```css
+text-sm text-muted-foreground
+```
+- **Usage**: Instructions, descriptions, and explanatory text
+- **Size**: Small, muted color
+- **Example**: Step descriptions, instruction text, explanations
+
+### Code Blocks
+```css
+overflow-x-auto rounded-md bg-muted p-4 text-sm
+```
+- **Usage**: Code snippets, commands, and technical content
+- **Background**: Light grey (`bg-muted`)
+- **Padding**: 4 units
+- **Example**: Terminal commands, code examples, URLs
+
+### Copyable Commands
+```css
+flex items-center justify-between rounded-md bg-muted p-3 text-sm
+```
+- **Usage**: Individual commands that can be copied to clipboard
+- **Features**: Copy button, grey background, compact padding
+- **Example**: `git config --global user.name "Your Name"`
+
+## Vibe Coding Cheat Sheet
+
+### At the start of each session:
+- **In AI chat window**: Get the latest code from main branch at [@https://github.com/YarnMeister/workshop-guide-app](https://github.com/YarnMeister/workshop-guide-app)
+- **In AI chat window**: Start a new feature branch for (insert short description)
+- **Make changes as needed** by asking AI assistant to update the app in multiple chat requests
+
+### Once changes are made and app looks the way you want it:
+- **In terminal window**: `npm run dev` (this starts the app with latest changes)
+- **Copy paste the URL** in the terminal into your browser to test the app
+
+### Ready to "go live":
+- **In AI chat window**: Merge the current feature branch to main on remote and delete the feature branch once merged
+- **This copies the changes** you made back to GitHub so that others can see your awesome changes
+
+## Technical Stack
+
+- **Frontend**: React + TypeScript
+- **Styling**: Tailwind CSS
+- **UI Components**: shadcn/ui
+- **Build Tool**: Vite
+- **Routing**: React Router
+- **Icons**: Lucide React
+
+## Development
+
+### Prerequisites
+- Node.js (LTS version)
+- npm or yarn
+
+### Getting Started
+```bash
+# Clone the repository
+git clone https://github.com/YarnMeister/workshop-guide-app.git
+
+# Navigate to project directory
+cd workshop-guide-app
+
+# Install dependencies
+npm install
+
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Project Structure
+```
+src/
+├── components/          # Reusable UI components
+├── data/               # Application data (steps, content)
+├── pages/              # Page components
+├── hooks/              # Custom React hooks
+└── lib/                # Utility functions
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Features
 
-**Use GitHub Codespaces**
+- **Step-by-step guidance**: Clear instructions for each workshop phase
+- **Progress tracking**: Binary sliders to mark step completion
+- **Copy-to-clipboard**: Easy command copying for terminal instructions
+- **Responsive design**: Works on desktop and mobile devices
+- **Interactive navigation**: Breadcrumb navigation between steps
+- **Validation**: Next button disabled until all steps are completed
+- **Visual feedback**: Progress summary and completion indicators
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Contributing
 
-## What technologies are used for this project?
+1. Create a feature branch for your changes
+2. Follow the established style guide for content
+3. Test your changes locally with `npm run dev`
+4. Merge to main when ready to deploy
 
-This project is built with:
+## License
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/33b3ddfb-8200-403d-831c-aa1dff1199ed) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+This project is part of the REA Vibe Coding Workshop for the PropTech Conference 2025.
