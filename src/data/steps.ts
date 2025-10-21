@@ -4,7 +4,7 @@ export const ONBOARDING_STEPS = [
     title: "Setup Tools",
     description: "Install requirements",
     heading: "Setup Your Development Environment",
-    content: "Before we dive in, let's make sure you have all the necessary tools installed. You'll need your code editor, terminal access, and any workshop-specific dependencies. Don't worry - we'll guide you through each installation step.",
+    content: "Before we dive in, let's make sure you have all the necessary tools installed. Tick each step off as you go and review the summary at the bottom of the page before you move on to the next page.",
     ctaText: "Next",
     ctaAction: "/onboarding/step/2",
     detailedContent: {

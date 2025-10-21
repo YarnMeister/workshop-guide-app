@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { Header } from "@/components/Header";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ImageIcon, Copy, Check } from "lucide-react";
+import { ArrowRight, Copy, Check } from "lucide-react";
 import { ONBOARDING_STEPS } from "@/data/steps";
 import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
@@ -139,20 +139,6 @@ const OnboardingStep = () => {
               </p>
             </div>
 
-            {/* Visual placeholder */}
-            <div className="mb-8 overflow-hidden rounded-xl border bg-muted/30">
-              <div className="flex aspect-video items-center justify-center bg-gradient-to-br from-muted to-muted/50">
-                <div className="text-center">
-                  <ImageIcon className="mx-auto h-16 w-16 text-muted-foreground/40 mb-3" />
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Instructional Screenshot
-                  </p>
-                  <p className="text-xs text-muted-foreground/70">
-                    Visual guide for {currentStep.title}
-                  </p>
-                </div>
-              </div>
-            </div>
 
             {/* Detailed content or default information card */}
             {currentStep.detailedContent ? (
