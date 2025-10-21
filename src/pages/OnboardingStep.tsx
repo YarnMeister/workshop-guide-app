@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { Header } from "@/components/Header";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Copy, Check, CheckCircle, Circle } from "lucide-react";
+import { ArrowRight, Copy, Check } from "lucide-react";
 import { ONBOARDING_STEPS } from "@/data/steps";
 import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
@@ -165,18 +165,22 @@ const OnboardingStep = () => {
                         </div>
                         <h2 className="font-semibold text-lg">{section.title}</h2>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => toggleStepCompletion(index)}
-                        className="h-8 w-8 p-0"
-                      >
-                        {completedSteps.has(index) ? (
-                          <CheckCircle className="h-5 w-5 text-green-600" />
-                        ) : (
-                          <Circle className="h-5 w-5 text-muted-foreground" />
-                        )}
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">Todo</span>
+                        <button
+                          onClick={() => toggleStepCompletion(index)}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                            completedSteps.has(index) ? 'bg-primary' : 'bg-muted'
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              completedSteps.has(index) ? 'translate-x-6' : 'translate-x-1'
+                            }`}
+                          />
+                        </button>
+                        <span className="text-xs text-muted-foreground">Done</span>
+                      </div>
                     </div>
                     {section.description && (
                       <p className="mb-4 text-sm text-muted-foreground">{renderTextWithLinks(section.description)}</p>
@@ -333,17 +337,17 @@ const OnboardingStep = () => {
                       <span className="text-sm font-medium">Step {index + 1}: {section.title}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      {completedSteps.has(index) ? (
-                        <>
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                          <span className="text-sm text-green-600 font-medium">Completed</span>
-                        </>
-                      ) : (
-                        <>
-                          <Circle className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground">Not completed</span>
-                        </>
-                      )}
+                      <span className="text-xs text-muted-foreground">Todo</span>
+                      <div className={`relative inline-flex h-5 w-9 items-center rounded-full ${
+                        completedSteps.has(index) ? 'bg-primary' : 'bg-muted'
+                      }`}>
+                        <span
+                          className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                            completedSteps.has(index) ? 'translate-x-5' : 'translate-x-1'
+                          }`}
+                        />
+                      </div>
+                      <span className="text-xs text-muted-foreground">Done</span>
                     </div>
                   </div>
                 ))}
