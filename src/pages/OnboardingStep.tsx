@@ -302,25 +302,27 @@ const OnboardingStep = () => {
                       </div>
                     )}
                     
-                    {/* Step completion toggle at bottom right */}
-                    <div className="mt-6 flex justify-end">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">Todo</span>
-                        <button
-                          onClick={() => toggleStepCompletion(index)}
-                          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                            completedSteps.has(index) ? 'bg-primary' : 'bg-gray-400'
-                          }`}
-                        >
-                          <span
-                            className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
-                              completedSteps.has(index) ? 'translate-x-5' : 'translate-x-1'
+                    {/* Step completion toggle at bottom right - Only show on Setup Tools page (step 1) */}
+                    {currentStepNumber === 1 && (
+                      <div className="mt-6 flex justify-end">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground">Todo</span>
+                          <button
+                            onClick={() => toggleStepCompletion(index)}
+                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                              completedSteps.has(index) ? 'bg-primary' : 'bg-gray-400'
                             }`}
-                          />
-                        </button>
-                        <span className="text-xs text-muted-foreground">Done</span>
+                          >
+                            <span
+                              className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                                completedSteps.has(index) ? 'translate-x-5' : 'translate-x-1'
+                              }`}
+                            />
+                          </button>
+                          <span className="text-xs text-muted-foreground">Done</span>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 ))}
                 
