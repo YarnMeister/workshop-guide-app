@@ -343,47 +343,49 @@ const OnboardingStep = () => {
               </div>
             )}
 
-            {/* Summary Section */}
-            <div className="mb-8 rounded-lg border bg-card p-6">
-              <h2 className="mb-4 font-semibold text-lg">Progress Summary</h2>
-              <div className="space-y-2">
-                {currentStep.detailedContent?.sections.map((section, index) => (
-                  <div key={index} className="flex items-center justify-between py-2">
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-medium">Step {index + 1}: {section.title}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground">Todo</span>
-                      <div className={`relative inline-flex h-5 w-9 items-center rounded-full ${
-                        completedSteps.has(index) ? 'bg-primary' : 'bg-gray-400'
-                      }`}>
-                        <span
-                          className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
-                            completedSteps.has(index) ? 'translate-x-5' : 'translate-x-1'
-                          }`}
-                        />
+            {/* Summary Section - Only show on Setup Tools page (step 1) */}
+            {currentStepNumber === 1 && (
+              <div className="mb-8 rounded-lg border bg-card p-6">
+                <h2 className="mb-4 font-semibold text-lg">Progress Summary</h2>
+                <div className="space-y-2">
+                  {currentStep.detailedContent?.sections.map((section, index) => (
+                    <div key={index} className="flex items-center justify-between py-2">
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm font-medium">Step {index + 1}: {section.title}</span>
                       </div>
-                      <span className="text-xs text-muted-foreground">Done</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">Todo</span>
+                        <div className={`relative inline-flex h-5 w-9 items-center rounded-full ${
+                          completedSteps.has(index) ? 'bg-primary' : 'bg-gray-400'
+                        }`}>
+                          <span
+                            className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                              completedSteps.has(index) ? 'translate-x-5' : 'translate-x-1'
+                            }`}
+                          />
+                        </div>
+                        <span className="text-xs text-muted-foreground">Done</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-4 pt-4 border-t">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">
-                    Progress: {completedSteps.size} of {currentStep.detailedContent?.sections.length || 0} steps completed
-                  </span>
-                  <div className="w-32 bg-muted rounded-full h-2">
-                    <div 
-                      className="bg-primary h-2 rounded-full transition-all duration-300"
-                      style={{ 
-                        width: `${currentStep.detailedContent?.sections.length ? (completedSteps.size / currentStep.detailedContent.sections.length) * 100 : 0}%` 
-                      }}
-                    />
+                  ))}
+                </div>
+                <div className="mt-4 pt-4 border-t">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">
+                      Progress: {completedSteps.size} of {currentStep.detailedContent?.sections.length || 0} steps completed
+                    </span>
+                    <div className="w-32 bg-muted rounded-full h-2">
+                      <div 
+                        className="bg-primary h-2 rounded-full transition-all duration-300"
+                        style={{ 
+                          width: `${currentStep.detailedContent?.sections.length ? (completedSteps.size / currentStep.detailedContent.sections.length) * 100 : 0}%` 
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Navigation Buttons */}
             <div className="flex items-center justify-between">
