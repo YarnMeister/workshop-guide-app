@@ -174,11 +174,23 @@ const OnboardingStep = () => {
                         </div>
                       </div>
                     )}
+                    {section.additionalInstructions && (
+                      <p className="mb-4 text-sm text-muted-foreground">{renderTextWithLinks(section.additionalInstructions)}</p>
+                    )}
                     {section.commands && (
                       <div className="mb-4 space-y-2">
                         {section.commands.map((command, cmdIndex) => (
                           <CopyableCommand key={cmdIndex} command={command} />
                         ))}
+                      </div>
+                    )}
+                    {section.screenshot && (
+                      <div className="mb-4">
+                        <img 
+                          src={`/${section.screenshot}`} 
+                          alt={`Screenshot for ${section.title}`}
+                          className="rounded-lg border shadow-sm max-w-full h-auto"
+                        />
                       </div>
                     )}
                     {section.subsections && (
