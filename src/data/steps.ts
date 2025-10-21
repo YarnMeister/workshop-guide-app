@@ -57,27 +57,44 @@ Windows users: How to open Command Prompt - https://www.youtube.com/watch?v=mTEO
             {
               title: "Install Homebrew",
               codeBlock: `Open "Terminal" (find it using Spotlight search: press ⌘ + Space, then type "Terminal")
+
 Copy and paste this command, then press Enter:
 
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
 Follow the on-screen instructions (you may need to enter your computer password)
+
 When done, close and reopen Terminal`
             },
             {
               title: "Install Git",
-              codeBlock: `In Terminal, type: brew install git
+              codeBlock: `In Terminal, type:
+
+brew install git
+
 Press Enter and wait for it to finish`
             },
             {
               title: "Install npm (Node.js)",
-              codeBlock: `In Terminal, type: brew install node
+              codeBlock: `In Terminal, type:
+
+brew install node
+
 Press Enter and wait for it to finish`
             },
             {
               title: "Verify it worked:",
-              codeBlock: `Type git --version (you should see a version number)
-Type npm --version (you should see a version number)`
+              codeBlock: `Type:
+
+git --version
+
+(you should see a version number)
+
+Type:
+
+npm --version
+
+(you should see a version number)`
             }
           ]
         },
@@ -102,8 +119,18 @@ Check the box that says "Automatically install the necessary tools"`
             {
               title: "Verify it worked:",
               codeBlock: `Open "Command Prompt" (search for "cmd" in Start menu)
-Type git --version (you should see a version number)
-Type npm --version (you should see a version number)`
+
+Type:
+
+git --version
+
+(you should see a version number)
+
+Type:
+
+npm --version
+
+(you should see a version number)`
             }
           ]
         },
@@ -113,6 +140,7 @@ Type npm --version (you should see a version number)`
           codeBlock: `In Terminal (Mac) or Command Prompt (Windows), type these commands (replace with your info):
 
 git config --global user.name "Your Name"
+
 git config --global user.email "your.email@example.com"`
         }
       ],
