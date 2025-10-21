@@ -288,12 +288,8 @@ const OnboardingStep = () => {
                             </div>
                           </div>
                         ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-                
-                {currentStep.detailedContent.troubleshooting && (
+                        
+                        {currentStep.detailedContent.troubleshooting && (
                   <div className="rounded-lg border bg-orange-50 p-6">
                     <h2 className="mb-3 font-semibold text-lg text-orange-800">{currentStep.detailedContent.troubleshooting.title}</h2>
                     <div className="space-y-4">
