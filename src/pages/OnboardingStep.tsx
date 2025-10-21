@@ -64,6 +64,29 @@ const OnboardingStep = () => {
     );
   };
 
+  // Function to render text with clickable links
+  const renderTextWithLinks = (text: string) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = text.split(urlRegex);
+    
+    return parts.map((part, index) => {
+      if (urlRegex.test(part)) {
+        return (
+          <a
+            key={index}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:text-blue-800 underline"
+          >
+            {part}
+          </a>
+        );
+      }
+      return part;
+    });
+  };
+
   useEffect(() => {
     // Check if participant ID exists
     const participantId = sessionStorage.getItem("participantId");
@@ -138,13 +161,13 @@ const OnboardingStep = () => {
                       <h2 className="font-semibold text-lg">{section.title}</h2>
                     </div>
                     {section.description && (
-                      <p className="mb-4 text-sm text-muted-foreground">{section.description}</p>
+                      <p className="mb-4 text-sm text-muted-foreground">{renderTextWithLinks(section.description)}</p>
                     )}
                     {section.codeBlock && (
                       <div className="mb-4">
-                        <pre className="overflow-x-auto rounded-md bg-muted p-4 text-sm">
-                          <code>{section.codeBlock}</code>
-                        </pre>
+                        <div className="overflow-x-auto rounded-md bg-muted p-4 text-sm">
+                          <div className="whitespace-pre-wrap">{renderTextWithLinks(section.codeBlock)}</div>
+                        </div>
                       </div>
                     )}
                     {section.commands && (
@@ -160,12 +183,12 @@ const OnboardingStep = () => {
                           <div key={subIndex} className="border-l-2 border-muted pl-4">
                             <h3 className="mb-2 font-medium text-sm">{subsection.title}</h3>
                             {subsection.description && (
-                              <p className="mb-3 text-sm text-muted-foreground whitespace-pre-line">{subsection.description}</p>
+                              <p className="mb-3 text-sm text-muted-foreground whitespace-pre-line">{renderTextWithLinks(subsection.description)}</p>
                             )}
                             {subsection.codeBlock && (
-                              <pre className="overflow-x-auto rounded-md bg-muted p-3 text-sm">
-                                <code>{subsection.codeBlock}</code>
-                              </pre>
+                              <div className="overflow-x-auto rounded-md bg-muted p-3 text-sm">
+                                <div className="whitespace-pre-wrap">{renderTextWithLinks(subsection.codeBlock)}</div>
+                              </div>
                             )}
                             {subsection.commands && (
                               <div className="space-y-2">
