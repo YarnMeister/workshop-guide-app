@@ -78,9 +78,10 @@ When done, close and reopen Terminal`,
             {
               title: "Verify it worked:",
               description: `Type the commands below one at a time. You should see version numbers for both:`,
-              codeBlock: `git --version
-
-npm --version`
+              commands: [
+                "git --version",
+                "npm --version"
+              ]
             }
           ]
         },
@@ -107,9 +108,10 @@ Check the box that says "Automatically install the necessary tools"`
               description: `Open "Command Prompt" (search for "cmd" in Start menu)
 
 Type the commands below one at a time. You should see version numbers for both:`,
-              codeBlock: `git --version
-
-npm --version`
+              commands: [
+                "git --version",
+                "npm --version"
+              ]
             }
           ]
         },
@@ -118,9 +120,10 @@ npm --version`
           description: `Configure Git with your personal information.
 
 In Terminal (Mac) or Command Prompt (Windows), type these commands one at a time (replace with your info):`,
-          codeBlock: `git config --global user.name "Your Name"
-
-git config --global user.email "your.email@example.com"`
+          commands: [
+            'git config --global user.name "Your Name"',
+            'git config --global user.email "your.email@example.com"'
+          ]
         }
       ],
       troubleshooting: {

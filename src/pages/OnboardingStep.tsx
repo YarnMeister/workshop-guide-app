@@ -141,23 +141,17 @@ const OnboardingStep = () => {
                       <p className="mb-4 text-sm text-muted-foreground">{section.description}</p>
                     )}
                     {section.codeBlock && (
+                      <div className="mb-4">
+                        <pre className="overflow-x-auto rounded-md bg-muted p-4 text-sm">
+                          <code>{section.codeBlock}</code>
+                        </pre>
+                      </div>
+                    )}
+                    {section.commands && (
                       <div className="mb-4 space-y-2">
-                        {section.codeBlock.split('\n').filter(line => line.trim()).map((command, cmdIndex) => {
-                          const trimmedCommand = command.trim();
-                          // Check if this is one of the specific commands that should be copyable
-                          if (trimmedCommand === 'git --version' || 
-                              trimmedCommand === 'npm --version' ||
-                              trimmedCommand.startsWith('git config --global user.name') ||
-                              trimmedCommand.startsWith('git config --global user.email')) {
-                            return <CopyableCommand key={cmdIndex} command={trimmedCommand} />;
-                          }
-                          // For other commands, show as regular code block
-                          return (
-                            <pre key={cmdIndex} className="overflow-x-auto rounded-md bg-muted p-4 text-sm">
-                              <code>{trimmedCommand}</code>
-                            </pre>
-                          );
-                        })}
+                        {section.commands.map((command, cmdIndex) => (
+                          <CopyableCommand key={cmdIndex} command={command} />
+                        ))}
                       </div>
                     )}
                     {section.subsections && (
@@ -169,23 +163,15 @@ const OnboardingStep = () => {
                               <p className="mb-3 text-sm text-muted-foreground whitespace-pre-line">{subsection.description}</p>
                             )}
                             {subsection.codeBlock && (
+                              <pre className="overflow-x-auto rounded-md bg-muted p-3 text-sm">
+                                <code>{subsection.codeBlock}</code>
+                              </pre>
+                            )}
+                            {subsection.commands && (
                               <div className="space-y-2">
-                                {subsection.codeBlock.split('\n').filter(line => line.trim()).map((command, cmdIndex) => {
-                                  const trimmedCommand = command.trim();
-                                  // Check if this is one of the specific commands that should be copyable
-                                  if (trimmedCommand === 'git --version' || 
-                                      trimmedCommand === 'npm --version' ||
-                                      trimmedCommand.startsWith('git config --global user.name') ||
-                                      trimmedCommand.startsWith('git config --global user.email')) {
-                                    return <CopyableCommand key={cmdIndex} command={trimmedCommand} />;
-                                  }
-                                  // For other commands, show as regular code block
-                                  return (
-                                    <pre key={cmdIndex} className="overflow-x-auto rounded-md bg-muted p-3 text-sm">
-                                      <code>{trimmedCommand}</code>
-                                    </pre>
-                                  );
-                                })}
+                                {subsection.commands.map((command, cmdIndex) => (
+                                  <CopyableCommand key={cmdIndex} command={command} />
+                                ))}
                               </div>
                             )}
                           </div>
