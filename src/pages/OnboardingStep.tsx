@@ -305,7 +305,7 @@ const OnboardingStep = () => {
                           </div>
                         )}
                       </div>
-            ) : (
+                    ) : (
               <div className="mb-8 rounded-lg border bg-card p-6">
                 <h2 className="mb-3 font-medium text-sm">What you'll accomplish:</h2>
                 <ul className="space-y-2 text-sm text-muted-foreground">
