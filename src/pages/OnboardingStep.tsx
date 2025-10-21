@@ -79,24 +79,74 @@ const OnboardingStep = () => {
               </div>
             </div>
 
-            {/* Additional information card */}
-            <div className="mb-8 rounded-lg border bg-card p-6">
-              <h2 className="mb-3 font-semibold">What you'll accomplish:</h2>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                  <span>Complete the necessary setup for this step</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                  <span>Verify everything is working correctly</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                  <span>Move forward to the next step</span>
-                </li>
-              </ul>
-            </div>
+            {/* Detailed content or default information card */}
+            {currentStep.detailedContent ? (
+              <div className="mb-8 space-y-6">
+                {currentStep.detailedContent.sections.map((section, index) => (
+                  <div key={index} className="rounded-lg border bg-card p-6">
+                    <h2 className="mb-3 font-semibold text-lg">{section.title}</h2>
+                    {section.description && (
+                      <p className="mb-4 text-sm text-muted-foreground">{section.description}</p>
+                    )}
+                    {section.codeBlock && (
+                      <div className="mb-4">
+                        <pre className="overflow-x-auto rounded-md bg-muted p-4 text-sm">
+                          <code>{section.codeBlock}</code>
+                        </pre>
+                      </div>
+                    )}
+                    {section.subsections && (
+                      <div className="space-y-4">
+                        {section.subsections.map((subsection, subIndex) => (
+                          <div key={subIndex} className="border-l-2 border-muted pl-4">
+                            <h3 className="mb-2 font-medium text-sm">{subsection.title}</h3>
+                            {subsection.codeBlock && (
+                              <pre className="overflow-x-auto rounded-md bg-muted p-3 text-xs">
+                                <code>{subsection.codeBlock}</code>
+                              </pre>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+                
+                {currentStep.detailedContent.troubleshooting && (
+                  <div className="rounded-lg border bg-orange-50 p-6">
+                    <h2 className="mb-3 font-semibold text-lg text-orange-800">{currentStep.detailedContent.troubleshooting.title}</h2>
+                    <div className="space-y-4">
+                      {currentStep.detailedContent.troubleshooting.items.map((item, index) => (
+                        <div key={index} className="border-l-2 border-orange-200 pl-4">
+                          <h3 className="mb-2 font-medium text-sm text-orange-700">{item.title}</h3>
+                          <pre className="overflow-x-auto rounded-md bg-orange-100 p-3 text-xs">
+                            <code>{item.codeBlock}</code>
+                          </pre>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="mb-8 rounded-lg border bg-card p-6">
+                <h2 className="mb-3 font-semibold">What you'll accomplish:</h2>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                    <span>Complete the necessary setup for this step</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                    <span>Verify everything is working correctly</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                    <span>Move forward to the next step</span>
+                  </li>
+                </ul>
+              </div>
+            )}
 
             {/* Navigation Buttons */}
             <div className="flex items-center justify-between">

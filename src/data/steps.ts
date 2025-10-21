@@ -7,6 +7,103 @@ export const ONBOARDING_STEPS = [
     content: "Before we dive in, let's make sure you have all the necessary tools installed. You'll need your code editor, terminal access, and any workshop-specific dependencies. Don't worry - we'll guide you through each installation step.",
     ctaText: "Next",
     ctaAction: "/onboarding/step/2",
+    detailedContent: {
+      sections: [
+        {
+          title: "0) Quick preflight",
+          description: "Make sure you have the basic development tools installed.",
+          codeBlock: `# Make sure Xcode CLT exist (git, make, etc.)
+xcode-select --install 2>/dev/null || true
+
+# Confirm git is present
+git --version`
+        },
+        {
+          title: "1) Install GitHub CLI (gh)",
+          description: "We'll use GitHub CLI to authenticate and manage your repository.",
+          subsections: [
+            {
+              title: "If Homebrew is not installed:",
+              codeBlock: `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
+            },
+            {
+              title: "Add brew to PATH (Apple Silicon default):",
+              codeBlock: `echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+eval "$(/opt/homebrew/bin/brew shellenv)"`
+            },
+            {
+              title: "Install gh:",
+              codeBlock: `brew update
+brew install gh
+gh --version`
+            }
+          ]
+        },
+        {
+          title: "2) Login to GitHub with the right scopes",
+          description: "Authenticate with GitHub and set up the necessary permissions.",
+          codeBlock: `# Start web login (choose: GitHub.com, HTTPS, login via browser)
+gh auth login --hostname github.com --git-protocol https --web
+
+# Verify current auth
+gh auth status -h github.com
+
+# Ensure git uses gh's credentials
+gh auth setup-git
+
+# Refresh/extend scopes to include repo + workflow
+gh auth refresh -h github.com -s repo -s workflow`
+        },
+        {
+          title: "3) Fix remotes (move away from SSH if needed)",
+          description: "Ensure your repository is using HTTPS for easier authentication.",
+          codeBlock: `# Check current remote
+git remote -v
+
+# If you see git@github.com:..., switch to HTTPS:
+git remote set-url origin https://github.com/YarnMeister/sales-dashboard.git
+git remote -v`
+        },
+        {
+          title: "4) Push your branch",
+          description: "Push your changes to the remote repository.",
+          codeBlock: `# Make sure you're on the right branch locally
+git status
+git branch --show-current
+
+# Push and set upstream
+git push -u origin your-branch-name`
+        },
+        {
+          title: "5) Open the PR from CLI",
+          description: "Create a pull request directly from the command line.",
+          codeBlock: `gh pr create \\
+  --base main \\
+  --title "Your PR Title" \\
+  --body "Description of your changes"`
+        }
+      ],
+      troubleshooting: {
+        title: "Troubleshooting (fast fixes)",
+        items: [
+          {
+            title: "workflow scope required error persists",
+            codeBlock: `gh auth refresh -h github.com -s workflow -s repo
+gh auth status -h github.com`
+          },
+          {
+            title: "Pushing still prompts for username/password",
+            codeBlock: `gh auth setup-git
+git config --global credential.helper osxkeychain`
+          },
+          {
+            title: "Remote URL is wrong repo or 404s",
+            codeBlock: `git remote set-url origin https://github.com/YarnMeister/sales-dashboard.git
+gh repo view`
+          }
+        ]
+      }
+    }
   },
   {
     id: 2,
