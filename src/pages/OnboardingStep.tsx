@@ -345,9 +345,8 @@ const OnboardingStep = () => {
                 {currentStep.detailedContent.infoPanel && (
                   <div className="rounded-lg border bg-blue-50 p-6">
                     <div className="flex items-start gap-3">
-                      <Info className="h-5 w-5 text-blue-600 mt-0.5" />
+                      <Info className="h-6 w-6 text-blue-600 mt-0.5" />
                       <div>
-                        <h3 className="font-semibold text-blue-800 mb-2">{currentStep.detailedContent.infoPanel.title}</h3>
                         <p className="text-sm text-blue-700">{currentStep.detailedContent.infoPanel.content}</p>
                       </div>
                     </div>
