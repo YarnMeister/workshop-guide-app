@@ -194,6 +194,13 @@ const OnboardingStep = () => {
                         />
                       </div>
                     )}
+                    {section.exampleCode && (
+                      <div className="mb-4">
+                        <pre className="overflow-x-auto rounded-md bg-muted p-4 text-sm">
+                          <code>{section.exampleCode}</code>
+                        </pre>
+                      </div>
+                    )}
                     {section.tabs && (
                       <div className="mb-4">
                         {/* Tab Headers */}

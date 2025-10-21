@@ -141,7 +141,14 @@ In Terminal (Mac) or Command Prompt (Windows), type these commands one at a time
           commands: [
             'git config --global user.name "Your Name"',
             'git config --global user.email "your.email@example.com"'
-          ]
+          ],
+          additionalInstructions: `**What to use:**
+- **user.name** - Your actual name or GitHub username (e.g., "Sarah Chen"). This will appear on all your code commits to show who made the changes.
+- **user.email** - Use the **same email address you used to sign up for GitHub**. This links your commits to your GitHub account.
+
+**Example:**`,
+          exampleCode: `git config --global user.name "Sarah Chen"
+git config --global user.email "sarah.chen@email.com"`
         }
       ],
       troubleshooting: {
