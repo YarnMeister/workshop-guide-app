@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { Header } from "@/components/Header";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Copy, Check } from "lucide-react";
+import { ArrowRight, Copy, Check, CheckCircle, Circle } from "lucide-react";
 import { ONBOARDING_STEPS } from "@/data/steps";
 import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
@@ -14,6 +14,7 @@ const OnboardingStep = () => {
   const currentStepNumber = parseInt(stepId || "1");
   const [copiedCommands, setCopiedCommands] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState<number>(0);
+  const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   
   const currentStep = ONBOARDING_STEPS.find(step => step.id === currentStepNumber);
 
@@ -40,6 +41,18 @@ const OnboardingStep = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const toggleStepCompletion = (stepIndex: number) => {
+    setCompletedSteps(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(stepIndex)) {
+        newSet.delete(stepIndex);
+      } else {
+        newSet.add(stepIndex);
+      }
+      return newSet;
+    });
   };
 
   // Component for copyable commands
@@ -145,11 +158,25 @@ const OnboardingStep = () => {
               <div className="mb-8 space-y-6">
                 {currentStep.detailedContent.sections.map((section, index) => (
                   <div key={index} className="rounded-lg border bg-card p-6">
-                    <div className="mb-3 flex items-center gap-3">
-                      <div className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                        Step {index + 1}
+                    <div className="mb-3 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                          Step {index + 1}
+                        </div>
+                        <h2 className="font-semibold text-lg">{section.title}</h2>
                       </div>
-                      <h2 className="font-semibold text-lg">{section.title}</h2>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleStepCompletion(index)}
+                        className="h-8 w-8 p-0"
+                      >
+                        {completedSteps.has(index) ? (
+                          <CheckCircle className="h-5 w-5 text-green-600" />
+                        ) : (
+                          <Circle className="h-5 w-5 text-muted-foreground" />
+                        )}
+                      </Button>
                     </div>
                     {section.description && (
                       <p className="mb-4 text-sm text-muted-foreground">{renderTextWithLinks(section.description)}</p>
@@ -295,6 +322,48 @@ const OnboardingStep = () => {
                 </ul>
               </div>
             )}
+
+            {/* Summary Section */}
+            <div className="mb-8 rounded-lg border bg-card p-6">
+              <h2 className="mb-4 font-semibold text-lg">Progress Summary</h2>
+              <div className="space-y-2">
+                {currentStep.detailedContent?.sections.map((section, index) => (
+                  <div key={index} className="flex items-center justify-between py-2">
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-medium">Step {index + 1}: {section.title}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {completedSteps.has(index) ? (
+                        <>
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                          <span className="text-sm text-green-600 font-medium">Completed</span>
+                        </>
+                      ) : (
+                        <>
+                          <Circle className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">Not completed</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 pt-4 border-t">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">
+                    Progress: {completedSteps.size} of {currentStep.detailedContent?.sections.length || 0} steps completed
+                  </span>
+                  <div className="w-32 bg-muted rounded-full h-2">
+                    <div 
+                      className="bg-primary h-2 rounded-full transition-all duration-300"
+                      style={{ 
+                        width: `${currentStep.detailedContent?.sections.length ? (completedSteps.size / currentStep.detailedContent.sections.length) * 100 : 0}%` 
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {/* Navigation Buttons */}
             <div className="flex items-center justify-between">
