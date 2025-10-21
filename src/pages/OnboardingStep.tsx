@@ -170,7 +170,7 @@ const OnboardingStep = () => {
                         <button
                           onClick={() => toggleStepCompletion(index)}
                           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                            completedSteps.has(index) ? 'bg-primary' : 'bg-muted'
+                            completedSteps.has(index) ? 'bg-primary' : 'bg-gray-400'
                           }`}
                         >
                           <span
@@ -339,7 +339,7 @@ const OnboardingStep = () => {
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-muted-foreground">Todo</span>
                       <div className={`relative inline-flex h-5 w-9 items-center rounded-full ${
-                        completedSteps.has(index) ? 'bg-primary' : 'bg-muted'
+                        completedSteps.has(index) ? 'bg-primary' : 'bg-gray-400'
                       }`}>
                         <span
                           className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
