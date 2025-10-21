@@ -10,96 +10,126 @@ export const ONBOARDING_STEPS = [
     detailedContent: {
       sections: [
         {
-          title: "Quick preflight",
-          description: "Make sure you have the basic development tools installed.",
-          codeBlock: `# Make sure Xcode CLT exist (git, make, etc.)
-xcode-select --install 2>/dev/null || true
-
-# Confirm git is present
-git --version`
-        },
-        {
-          title: "Install GitHub CLI (gh)",
-          description: "We'll use GitHub CLI to authenticate and manage your repository.",
+          title: "Create Your Accounts",
+          description: "Set up your GitHub and Vercel accounts to get started.",
           subsections: [
             {
-              title: "If Homebrew is not installed:",
-              codeBlock: `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
+              title: "GitHub Account",
+              codeBlock: `Go to: https://github.com/signup
+Sign up with your email (or log in if you already have an account)
+Keep your username and password handy`
             },
             {
-              title: "Add brew to PATH (Apple Silicon default):",
-              codeBlock: `echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
-eval "$(/opt/homebrew/bin/brew shellenv)"`
-            },
-            {
-              title: "Install gh:",
-              codeBlock: `brew update
-brew install gh
-gh --version`
+              title: "Vercel Account",
+              codeBlock: `Go to: https://vercel.com/signup
+Sign up using your GitHub account (click "Continue with GitHub")
+This will link your accounts automatically`
             }
           ]
         },
         {
-          title: "Login to GitHub with the right scopes",
-          description: "Authenticate with GitHub and set up the necessary permissions.",
-          codeBlock: `# Start web login (choose: GitHub.com, HTTPS, login via browser)
-gh auth login --hostname github.com --git-protocol https --web
+          title: "Install Void Editor",
+          description: "Download and install the Void code editor.",
+          codeBlock: `For Mac & Windows:
 
-# Verify current auth
-gh auth status -h github.com
-
-# Ensure git uses gh's credentials
-gh auth setup-git
-
-# Refresh/extend scopes to include repo + workflow
-gh auth refresh -h github.com -s repo -s workflow`
+Download from: https://voideditor.com/download-beta
+Mac: Open the downloaded file and drag Void to your Applications folder
+Windows: Run the installer and follow the prompts
+Launch Void to make sure it opens`
         },
         {
-          title: "Fix remotes (move away from SSH if needed)",
-          description: "Ensure your repository is using HTTPS for easier authentication.",
-          codeBlock: `# Check current remote
-git remote -v
+          title: "Install Command Line Tools",
+          description: "Learn how to access Terminal/Command Prompt and install development tools.",
+          subsections: [
+            {
+              title: "Don't know where to find Terminal (Command Prompt on Windows)?",
+              codeBlock: `Watch these quick videos:
 
-# If you see git@github.com:..., switch to HTTPS:
-git remote set-url origin https://github.com/YarnMeister/sales-dashboard.git
-git remote -v`
+Mac users: How to open Terminal - https://www.youtube.com/watch?v=PT4607L5xho
+Windows users: How to open Command Prompt - https://www.youtube.com/watch?v=mTEOwzbnXqM`
+            }
+          ]
         },
         {
-          title: "Push your branch",
-          description: "Push your changes to the remote repository.",
-          codeBlock: `# Make sure you're on the right branch locally
-git status
-git branch --show-current
+          title: "For Mac Users",
+          description: "Install Homebrew, Git, and Node.js on macOS.",
+          subsections: [
+            {
+              title: "Install Homebrew",
+              codeBlock: `Open "Terminal" (find it using Spotlight search: press ⌘ + Space, then type "Terminal")
+Copy and paste this command, then press Enter:
 
-# Push and set upstream
-git push -u origin your-branch-name`
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+Follow the on-screen instructions (you may need to enter your computer password)
+When done, close and reopen Terminal`
+            },
+            {
+              title: "Install Git",
+              codeBlock: `In Terminal, type: brew install git
+Press Enter and wait for it to finish`
+            },
+            {
+              title: "Install npm (Node.js)",
+              codeBlock: `In Terminal, type: brew install node
+Press Enter and wait for it to finish`
+            },
+            {
+              title: "Verify it worked:",
+              codeBlock: `Type git --version (you should see a version number)
+Type npm --version (you should see a version number)`
+            }
+          ]
         },
         {
-          title: "Open the PR from CLI",
-          description: "Create a pull request directly from the command line.",
-          codeBlock: `gh pr create \\
-  --base main \\
-  --title "Your PR Title" \\
-  --body "Description of your changes"`
+          title: "For Windows Users",
+          description: "Install Git and Node.js on Windows.",
+          subsections: [
+            {
+              title: "Install Git",
+              codeBlock: `Download from: https://git-scm.com/download/win
+Run the installer
+Use all default options (just keep clicking "Next")
+Important: When asked about "Adjusting your PATH environment," select "Git from the command line and also from 3rd-party software"`
+            },
+            {
+              title: "Install Node.js (includes npm)",
+              codeBlock: `Download from: https://nodejs.org/ (choose the LTS version)
+Run the installer
+Use all default options (click "Next" through everything)
+Check the box that says "Automatically install the necessary tools"`
+            },
+            {
+              title: "Verify it worked:",
+              codeBlock: `Open "Command Prompt" (search for "cmd" in Start menu)
+Type git --version (you should see a version number)
+Type npm --version (you should see a version number)`
+            }
+          ]
+        },
+        {
+          title: "Connect Git to Your GitHub Account",
+          description: "Configure Git with your personal information.",
+          codeBlock: `In Terminal (Mac) or Command Prompt (Windows), type these commands (replace with your info):
+
+git config --global user.name "Your Name"
+git config --global user.email "your.email@example.com"`
         }
       ],
       troubleshooting: {
-        title: "Troubleshooting (fast fixes)",
+        title: "Troubleshooting",
         items: [
           {
-            title: "workflow scope required error persists",
-            codeBlock: `gh auth refresh -h github.com -s workflow -s repo
-gh auth status -h github.com`
+            title: "Command not found errors?",
+            codeBlock: `Try closing and reopening your Terminal/Command Prompt`
           },
           {
-            title: "Pushing still prompts for username/password",
-            codeBlock: `gh auth setup-git
-git config --global credential.helper osxkeychain`
+            title: "Installation stuck?",
+            codeBlock: `Make sure you have a stable internet connection`
           },
           {
-            title: "Remote URL is wrong repo or 404s",
-            codeBlock: `git remote set-url origin https://github.com/YarnMeister/sales-dashboard.git
-gh repo view`
+            title: "Still having issues?",
+            codeBlock: `Take a screenshot of any error messages to show at the workshop`
           }
         ]
       }
