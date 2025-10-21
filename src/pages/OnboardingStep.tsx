@@ -77,7 +77,11 @@ const OnboardingStep = () => {
             href={part}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-600 hover:text-blue-800 underline"
+            className="text-blue-600 hover:text-blue-800 underline cursor-pointer"
+            onClick={(e) => {
+              e.preventDefault();
+              window.open(part, '_blank', 'noopener,noreferrer');
+            }}
           >
             {part}
           </a>
