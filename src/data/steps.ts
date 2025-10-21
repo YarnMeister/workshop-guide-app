@@ -10,7 +10,7 @@ export const ONBOARDING_STEPS = [
     detailedContent: {
       sections: [
         {
-          title: "0) Quick preflight",
+          title: "Quick preflight",
           description: "Make sure you have the basic development tools installed.",
           codeBlock: `# Make sure Xcode CLT exist (git, make, etc.)
 xcode-select --install 2>/dev/null || true
@@ -19,7 +19,7 @@ xcode-select --install 2>/dev/null || true
 git --version`
         },
         {
-          title: "1) Install GitHub CLI (gh)",
+          title: "Install GitHub CLI (gh)",
           description: "We'll use GitHub CLI to authenticate and manage your repository.",
           subsections: [
             {
@@ -40,7 +40,7 @@ gh --version`
           ]
         },
         {
-          title: "2) Login to GitHub with the right scopes",
+          title: "Login to GitHub with the right scopes",
           description: "Authenticate with GitHub and set up the necessary permissions.",
           codeBlock: `# Start web login (choose: GitHub.com, HTTPS, login via browser)
 gh auth login --hostname github.com --git-protocol https --web
@@ -55,7 +55,7 @@ gh auth setup-git
 gh auth refresh -h github.com -s repo -s workflow`
         },
         {
-          title: "3) Fix remotes (move away from SSH if needed)",
+          title: "Fix remotes (move away from SSH if needed)",
           description: "Ensure your repository is using HTTPS for easier authentication.",
           codeBlock: `# Check current remote
 git remote -v
@@ -65,7 +65,7 @@ git remote set-url origin https://github.com/YarnMeister/sales-dashboard.git
 git remote -v`
         },
         {
-          title: "4) Push your branch",
+          title: "Push your branch",
           description: "Push your changes to the remote repository.",
           codeBlock: `# Make sure you're on the right branch locally
 git status
@@ -75,7 +75,7 @@ git branch --show-current
 git push -u origin your-branch-name`
         },
         {
-          title: "5) Open the PR from CLI",
+          title: "Open the PR from CLI",
           description: "Create a pull request directly from the command line.",
           codeBlock: `gh pr create \\
   --base main \\
