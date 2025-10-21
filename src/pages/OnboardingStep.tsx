@@ -266,46 +266,50 @@ const OnboardingStep = () => {
                                 ))}
                               </div>
                             )}
-                            
-                            {/* Step completion toggle at bottom right */}
-                            <div className="mt-6 flex justify-end">
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-muted-foreground">Todo</span>
-                                <button
-                                  onClick={() => toggleStepCompletion(index)}
-                                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                                    completedSteps.has(index) ? 'bg-primary' : 'bg-gray-400'
-                                  }`}
-                                >
-                                  <span
-                                    className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
-                                      completedSteps.has(index) ? 'translate-x-5' : 'translate-x-1'
-                                    }`}
-                                  />
-                                </button>
-                                <span className="text-xs text-muted-foreground">Done</span>
-                              </div>
-                            </div>
                           </div>
                         ))}
-                        
-                        {currentStep.detailedContent.troubleshooting && (
-                          <div className="rounded-lg border bg-orange-50 p-6">
-                            <h2 className="mb-3 font-semibold text-lg text-orange-800">{currentStep.detailedContent.troubleshooting.title}</h2>
-                            <div className="space-y-4">
-                              {currentStep.detailedContent.troubleshooting.items.map((item, index) => (
-                                <div key={index} className="border-l-2 border-orange-200 pl-4">
-                                  <h3 className="mb-2 font-medium text-sm text-orange-700">{item.title}</h3>
-                                  <pre className="overflow-x-auto rounded-md bg-orange-100 p-3 text-sm">
-                                    <code>{item.codeBlock}</code>
-                                  </pre>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
                       </div>
-                    ) : (
+                    )}
+                    
+                    {/* Step completion toggle at bottom right */}
+                    <div className="mt-6 flex justify-end">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">Todo</span>
+                        <button
+                          onClick={() => toggleStepCompletion(index)}
+                          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                            completedSteps.has(index) ? 'bg-primary' : 'bg-gray-400'
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                              completedSteps.has(index) ? 'translate-x-5' : 'translate-x-1'
+                            }`}
+                          />
+                        </button>
+                        <span className="text-xs text-muted-foreground">Done</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                {currentStep.detailedContent.troubleshooting && (
+                  <div className="rounded-lg border bg-orange-50 p-6">
+                    <h2 className="mb-3 font-semibold text-lg text-orange-800">{currentStep.detailedContent.troubleshooting.title}</h2>
+                    <div className="space-y-4">
+                      {currentStep.detailedContent.troubleshooting.items.map((item, index) => (
+                        <div key={index} className="border-l-2 border-orange-200 pl-4">
+                          <h3 className="mb-2 font-medium text-sm text-orange-700">{item.title}</h3>
+                          <pre className="overflow-x-auto rounded-md bg-orange-100 p-3 text-sm">
+                            <code>{item.codeBlock}</code>
+                          </pre>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
               <div className="mb-8 rounded-lg border bg-card p-6">
                 <h2 className="mb-3 font-medium text-sm">What you'll accomplish:</h2>
                 <ul className="space-y-2 text-sm text-muted-foreground">
