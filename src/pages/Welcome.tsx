@@ -15,6 +15,7 @@ const Welcome = () => {
 
   // Check for existing progress on mount
   useEffect(() => {
+    console.log("Welcome page - checking progress:", progress);
     if (progress.participantId && progress.currentStepId) {
       // Restore session storage for backward compatibility
       sessionStorage.setItem("participantId", progress.participantId);

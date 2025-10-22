@@ -37,6 +37,7 @@ export const getStoredProgress = (): WorkshopProgress => {
 export const saveProgress = (progress: WorkshopProgress): void => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+    console.log('Progress saved:', progress);
   } catch (error) {
     console.error('Error saving to localStorage:', error);
   }

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test LocalStorage</title>
+</head>
+<body>
+    <h1>LocalStorage Test</h1>
+    <button onclick="checkStorage()">Check Storage</button>
+    <button onclick="clearStorage()">Clear Storage</button>
+    <pre id="output"></pre>
+    
+    <script>
+        function checkStorage() {
+            const data = localStorage.getItem('workshop_progress');
+            document.getElementById('output').textContent = data ? JSON.stringify(JSON.parse(data), null, 2) : 'No data found';
+        }
+        
+        function clearStorage() {
+            localStorage.removeItem('workshop_progress');
+            document.getElementById('output').textContent = 'Storage cleared';
+        }
+    </script>
+</body>
+</html>

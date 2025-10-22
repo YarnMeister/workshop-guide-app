@@ -125,11 +125,15 @@ const OnboardingStep = () => {
         variant: "destructive",
       });
       navigate("/");
+      return;
     }
 
     // Update current step in progress
     updateProgress({ currentStepId: currentStepNumber });
+  }, [currentStepNumber, navigate, updateProgress]);
 
+  // Separate effect for loading saved data
+  useEffect(() => {
     // Load saved data based on current step
     if (currentStepNumber === 1) {
       // Load saved todo states for Setup page
@@ -148,7 +152,7 @@ const OnboardingStep = () => {
         setTemplateText(currentStep.detailedContent.sections[0].templateContent);
       }
     }
-  }, [navigate, currentStepNumber, currentStep, updateProgress]);
+  }, [currentStepNumber, progress.setupPageTodos, progress.writeSpecsTemplate, currentStep]);
 
   if (!currentStep) {
     navigate("/");
