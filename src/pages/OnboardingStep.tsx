@@ -8,6 +8,7 @@ import { ArrowRight, Copy, Check, Info } from "lucide-react";
 import { ONBOARDING_STEPS } from "@/data/steps";
 import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { useWorkshopProgress } from "@/hooks/useWorkshopProgress";
 
 const OnboardingStep = () => {
   const { stepId } = useParams();
@@ -17,6 +18,7 @@ const OnboardingStep = () => {
   const [activeTab, setActiveTab] = useState<number>(0);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [templateText, setTemplateText] = useState<string>("");
+  const { progress, updateProgress, updateTodoStatus } = useWorkshopProgress();
   
   const currentStep = ONBOARDING_STEPS.find(step => step.id === currentStepNumber);
 
@@ -53,6 +55,12 @@ const OnboardingStep = () => {
       } else {
         newSet.add(stepIndex);
       }
+      
+      // Save to localStorage for Setup page
+      if (currentStepNumber === 1) {
+        updateTodoStatus(stepIndex, newSet.has(stepIndex));
+      }
+      
       return newSet;
     });
   };
@@ -119,11 +127,28 @@ const OnboardingStep = () => {
       navigate("/");
     }
 
-    // Initialize template text for step 2
-    if (currentStepNumber === 2 && currentStep?.detailedContent?.sections?.[0]?.templateContent) {
-      setTemplateText(currentStep.detailedContent.sections[0].templateContent);
+    // Update current step in progress
+    updateProgress({ currentStepId: currentStepNumber });
+
+    // Load saved data based on current step
+    if (currentStepNumber === 1) {
+      // Load saved todo states for Setup page
+      const savedTodos = new Set<number>();
+      Object.entries(progress.setupPageTodos).forEach(([index, completed]) => {
+        if (completed) {
+          savedTodos.add(parseInt(index));
+        }
+      });
+      setCompletedSteps(savedTodos);
+    } else if (currentStepNumber === 2) {
+      // Load saved template text for Write Specs page
+      if (progress.writeSpecsTemplate) {
+        setTemplateText(progress.writeSpecsTemplate);
+      } else if (currentStep?.detailedContent?.sections?.[0]?.templateContent) {
+        setTemplateText(currentStep.detailedContent.sections[0].templateContent);
+      }
     }
-  }, [navigate, currentStepNumber, currentStep]);
+  }, [navigate, currentStepNumber, currentStep, updateProgress]);
 
   if (!currentStep) {
     navigate("/");
@@ -146,6 +171,13 @@ const OnboardingStep = () => {
         variant: "destructive",
       });
       return;
+    }
+    
+    // Mark current page as completed
+    const completedPages = [...progress.completedPages];
+    if (!completedPages.includes(currentStepNumber)) {
+      completedPages.push(currentStepNumber);
+      updateProgress({ completedPages });
     }
     
     if (currentStep.ctaAction === "/dashboard") {
@@ -195,7 +227,10 @@ const OnboardingStep = () => {
                       <div className="mb-4">
                         <Textarea
                           value={templateText}
-                          onChange={(e) => setTemplateText(e.target.value)}
+                          onChange={(e) => {
+                            setTemplateText(e.target.value);
+                            updateProgress({ writeSpecsTemplate: e.target.value });
+                          }}
                           placeholder="Enter your project description here..."
                           className="min-h-[200px] resize-none"
                         />

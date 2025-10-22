@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,10 +6,28 @@ import { Label } from "@/components/ui/label";
 import { Header } from "@/components/Header";
 import { ArrowRight, Users } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useWorkshopProgress } from "@/hooks/useWorkshopProgress";
 
 const Welcome = () => {
   const [participantId, setParticipantId] = useState("");
   const navigate = useNavigate();
+  const { progress, updateProgress } = useWorkshopProgress();
+
+  // Check for existing progress on mount
+  useEffect(() => {
+    if (progress.participantId && progress.currentStepId) {
+      // Restore session storage for backward compatibility
+      sessionStorage.setItem("participantId", progress.participantId);
+      
+      toast({
+        title: "Welcome back!",
+        description: "Resuming where you left off...",
+      });
+      
+      // Navigate to their last page
+      navigate(`/onboarding/step/${progress.currentStepId}`);
+    }
+  }, [progress.participantId, progress.currentStepId, navigate]);
 
   const handleStart = () => {
     if (!participantId.trim()) {
@@ -21,8 +39,12 @@ const Welcome = () => {
       return;
     }
 
-    // Store participant ID in session storage
+    // Store participant ID in both session storage and localStorage
     sessionStorage.setItem("participantId", participantId);
+    updateProgress({ 
+      participantId, 
+      currentStepId: 1 
+    });
     
     toast({
       title: "Welcome!",
