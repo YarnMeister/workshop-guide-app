@@ -250,6 +250,18 @@ const OnboardingStep = () => {
                     {section.additionalInstructions && (
                       <p className="mb-4 text-sm text-muted-foreground">{renderTextWithLinks(section.additionalInstructions)}</p>
                     )}
+                    {section.bulletPoints && (
+                      <div className="mb-4">
+                        <ul className="space-y-2 text-sm text-muted-foreground">
+                          {section.bulletPoints.map((point, pointIndex) => (
+                            <li key={pointIndex} className="flex items-start gap-2">
+                              <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                              <span>{point}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                     {section.commands && (
                       <div className="mb-4 space-y-2">
                         {section.commands.map((command, cmdIndex) => (

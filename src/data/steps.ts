@@ -218,6 +218,48 @@ git config --global user.email "jane.doe@email.com"`
     content: "Time to turn your designs into actual code! We'll export your prototype into clean, production-ready code that you can customize and extend.",
     ctaText: "Next",
     ctaAction: "/onboarding/step/5",
+    detailedContent: {
+      sections: [
+        {
+          title: "Connect to GitHub",
+          description: "From the Lovable editor, click the GitHub icon in the top-right toolbar.\nThis opens the integration panel.",
+          screenshot: "Lovable_1.png"
+        },
+        {
+          title: "Link Your GitHub Account",
+          description: "Select Connect GitHub to authorise Lovable with your GitHub account.\nYou'll be redirected to GitHub to grant access, then returned to Lovable.",
+          screenshot: "Lovable_2.png"
+        },
+        {
+          title: "Choose Your Organisation",
+          description: "Once connected, choose your personal GitHub account (or an organisation you belong to) from the list under GitHub Organisations, then click Connect Project.",
+          screenshot: "Lovable_3.png"
+        },
+        {
+          title: "Confirm the Transfer",
+          description: "A confirmation window appears.\nClick Transfer anyway to move the project to your GitHub account and activate two-way sync.\n\n⚠️ This step is not reversible—the Lovable project will now live in GitHub.",
+          screenshot: "Lovable_4.png"
+        },
+        {
+          title: "Verify the Connection",
+          description: "After transfer, the GitHub panel will show your project as Connected.\nUse the View on GitHub button to open the repository in a new tab, or copy the HTTPS/SSH clone link to pull it locally.",
+          screenshot: "Lovable_5.png"
+        },
+        {
+          title: "You're Done!",
+          description: "Your prototype now syncs 2-way with GitHub.\nYou can:",
+          bulletPoints: [
+            "Open the repo in VS Code or your favourite IDE",
+            "Push/pull updates freely", 
+            "Continue editing in Lovable (it syncs automatically with GitHub)"
+          ]
+        }
+      ],
+      infoPanel: {
+        title: "FYI",
+        content: "Once connected to GitHub, your Lovable project will automatically sync changes in both directions. You can continue editing in Lovable or switch to your local development environment."
+      }
+    }
   },
   {
     id: 5,
