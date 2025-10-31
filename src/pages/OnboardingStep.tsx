@@ -9,6 +9,7 @@ import { ONBOARDING_STEPS } from "@/data/steps";
 import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useWorkshopProgress } from "@/hooks/useWorkshopProgress";
+import { enhancePromptWithAI } from "@/services/openrouter";
 
 const OnboardingStep = () => {
   const { stepId } = useParams();
@@ -18,6 +19,7 @@ const OnboardingStep = () => {
   const [activeTab, setActiveTab] = useState<number>(0);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [templateText, setTemplateText] = useState<string>("");
+  const [isProcessingAI, setIsProcessingAI] = useState<boolean>(false);
   const { progress, updateProgress, updateTodoStatus } = useWorkshopProgress();
   
   const currentStep = ONBOARDING_STEPS.find(step => step.id === currentStepNumber);
@@ -161,6 +163,17 @@ const OnboardingStep = () => {
       } else if (currentStep?.detailedContent?.sections?.[0]?.templateContent) {
         setTemplateText(currentStep.detailedContent.sections[0].templateContent);
       }
+      
+      // Show AI enhancement error if any
+      if (progress.aiEnhancementError) {
+        setTimeout(() => {
+          toast({
+            title: "AI Enhancement Notice",
+            description: progress.aiEnhancementError + " You can retry by going back to Write Specs.",
+            variant: "destructive",
+          });
+        }, 500);
+      }
     }
   }, [currentStepNumber, progress.setupPageTodos, progress.writeSpecsTemplate, progress.prototypeTemplate, currentStep]);
 
@@ -176,7 +189,7 @@ const OnboardingStep = () => {
         : true)
     : true; // For all other steps, always allow proceeding
 
-  const handleCTA = () => {
+  const handleCTA = async () => {
     // Only check completion for Setup Tools page (step 1)
     if (currentStepNumber === 1 && !allStepsCompleted) {
       toast({
@@ -185,6 +198,62 @@ const OnboardingStep = () => {
         variant: "destructive",
       });
       return;
+    }
+    
+    // Process AI enhancement when moving from Write Specs to Prototype
+    if (currentStepNumber === 2) {
+      setIsProcessingAI(true);
+      
+      // Save original text
+      updateProgress({ writeSpecsOriginal: templateText });
+      
+      toast({
+        title: "Enhancing with AI...",
+        description: "Creating a well-structured Lovable prompt",
+      });
+      
+      try {
+        const result = await enhancePromptWithAI(templateText);
+        
+        if (result.success) {
+          // Save the enhanced prompt for the prototype page
+          updateProgress({ 
+            prototypeTemplate: result.content,
+            aiEnhancementError: undefined
+          });
+          
+          toast({
+            title: "AI Enhancement Complete",
+            description: "Your prompt has been enhanced and is ready on the next page",
+          });
+        } else {
+          // Save error and use original text
+          updateProgress({ 
+            prototypeTemplate: templateText,
+            aiEnhancementError: result.error
+          });
+          
+          toast({
+            title: "AI Enhancement Failed",
+            description: result.error || "Using your original text instead",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error('AI enhancement error:', error);
+        updateProgress({ 
+          prototypeTemplate: templateText,
+          aiEnhancementError: 'Unexpected error during AI enhancement'
+        });
+        
+        toast({
+          title: "Error",
+          description: "Something went wrong. Using your original text.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsProcessingAI(false);
+      }
     }
     
     // Mark current page as completed
@@ -244,7 +313,10 @@ const OnboardingStep = () => {
                           onChange={(e) => {
                             setTemplateText(e.target.value);
                             if (currentStepNumber === 2) {
-                              updateProgress({ writeSpecsTemplate: e.target.value });
+                              updateProgress({ 
+                                writeSpecsTemplate: e.target.value,
+                                writeSpecsOriginal: e.target.value 
+                              });
                             } else if (currentStepNumber === 3) {
                               updateProgress({ prototypeTemplate: e.target.value });
                             }
@@ -505,10 +577,18 @@ const OnboardingStep = () => {
                   onClick={handleCTA}
                   size="lg"
                   className="gap-2 font-semibold"
-                  disabled={currentStepNumber === 1 && !allStepsCompleted}
+                  disabled={(currentStepNumber === 1 && !allStepsCompleted) || isProcessingAI}
                 >
-                  {currentStep.ctaText}
-                  <ArrowRight className="h-5 w-5" />
+                  {isProcessingAI ? (
+                    <>
+                      <span className="animate-pulse">Enhancing with AI...</span>
+                    </>
+                  ) : (
+                    <>
+                      {currentStep.ctaText}
+                      <ArrowRight className="h-5 w-5" />
+                    </>
+                  )}
                 </Button>
               </div>
             </div>

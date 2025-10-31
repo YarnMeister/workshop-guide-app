@@ -10,7 +10,9 @@ export interface WorkshopProgress {
     [sectionIndex: number]: boolean;
   };
   writeSpecsTemplate: string;
+  writeSpecsOriginal: string; // Store original user input
   prototypeTemplate: string;
+  aiEnhancementError?: string; // Store any AI error for display
 }
 
 // Default progress state
@@ -20,7 +22,9 @@ export const defaultProgress: WorkshopProgress = {
   completedPages: [],
   setupPageTodos: {},
   writeSpecsTemplate: '',
+  writeSpecsOriginal: '',
   prototypeTemplate: '',
+  aiEnhancementError: undefined,
 };
 
 // Helper functions
