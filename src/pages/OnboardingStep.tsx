@@ -151,8 +151,18 @@ const OnboardingStep = () => {
       } else if (currentStep?.detailedContent?.sections?.[0]?.templateContent) {
         setTemplateText(currentStep.detailedContent.sections[0].templateContent);
       }
+    } else if (currentStepNumber === 3) {
+      // Load saved template text for Prototype page - default to Write Specs content if empty
+      if (progress.prototypeTemplate) {
+        setTemplateText(progress.prototypeTemplate);
+      } else if (progress.writeSpecsTemplate) {
+        // Pre-fill with Write Specs content
+        setTemplateText(progress.writeSpecsTemplate);
+      } else if (currentStep?.detailedContent?.sections?.[0]?.templateContent) {
+        setTemplateText(currentStep.detailedContent.sections[0].templateContent);
+      }
     }
-  }, [currentStepNumber, progress.setupPageTodos, progress.writeSpecsTemplate, currentStep]);
+  }, [currentStepNumber, progress.setupPageTodos, progress.writeSpecsTemplate, progress.prototypeTemplate, currentStep]);
 
   if (!currentStep) {
     navigate("/");
@@ -233,7 +243,11 @@ const OnboardingStep = () => {
                           value={templateText}
                           onChange={(e) => {
                             setTemplateText(e.target.value);
-                            updateProgress({ writeSpecsTemplate: e.target.value });
+                            if (currentStepNumber === 2) {
+                              updateProgress({ writeSpecsTemplate: e.target.value });
+                            } else if (currentStepNumber === 3) {
+                              updateProgress({ prototypeTemplate: e.target.value });
+                            }
                           }}
                           placeholder="Enter your project description here..."
                           className="min-h-[200px] resize-none"

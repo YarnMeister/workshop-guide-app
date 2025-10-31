@@ -10,6 +10,7 @@ export interface WorkshopProgress {
     [sectionIndex: number]: boolean;
   };
   writeSpecsTemplate: string;
+  prototypeTemplate: string;
 }
 
 // Default progress state
@@ -19,6 +20,7 @@ export const defaultProgress: WorkshopProgress = {
   completedPages: [],
   setupPageTodos: {},
   writeSpecsTemplate: '',
+  prototypeTemplate: '',
 };
 
 // Helper functions

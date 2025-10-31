@@ -195,10 +195,7 @@ git config --global user.email "jane.doe@email.com"`
           templateContent: "This is some placeholder text"
         }
       ],
-      infoPanel: {
-        title: "FYI",
-        content: "We're using Lovable to rapidly build the frontend to save us time. It takes forever to build a great experience from scratch using any other approach"
-      }
+=======
     }
   },
   {
@@ -209,6 +206,37 @@ git config --global user.email "jane.doe@email.com"`
     content: "Now let's design the user interface for your application. We'll create wireframes, mockups, and interactive prototypes to visualize how users will interact with your product.",
     ctaText: "Next",
     ctaAction: "/onboarding/step/4",
+    detailedContent: {
+      sections: [
+        {
+          title: "Step 1: Prepare Your Prompt",
+          description: "Copy your project description from the previous page or type a new prompt below. This will be used to generate your UI prototype.",
+          templateTextbox: true,
+          templateContent: ""
+        },
+        {
+          title: "Step 2: Generate Your Prototype",
+          description: "Navigate to Lovable and create your prototype.",
+          subsections: [
+            {
+              title: "Go to Lovable",
+              codeBlock: `Open a new tab and navigate to: https://lovable.dev/`
+            },
+            {
+              title: "Create Your Project",
+              codeBlock: `1. Click "Create New Project" or similar button
+2. Paste your prompt from Step 1
+3. Let Lovable generate your UI prototype
+4. Make any adjustments or refinements as needed`
+            }
+          ]
+        }
+      ],
+      infoPanel: {
+        title: "FYI",
+        content: "We're using Lovable to rapidly build the frontend to save us time. It takes forever to build a great experience from scratch using any other approach"
+      }
+    }
   },
   {
     id: 4,
