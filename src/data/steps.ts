@@ -35,10 +35,15 @@ This will link your accounts automatically`
 Download from: https://voideditor.com/download-beta
 Mac: Open the downloaded file and drag Void to your Applications folder
 Windows: Run the installer and follow the prompts`,
+      ]
+    }
+          screenshot: "p1-image-1.png"
+=======
           additionalInstructions: "Launch Void to make sure it opens. Complete the setup wizard and on the step shown in the screenshot below, enter the secret key:",
           commands: [
             "sk-ar3x-pkxX8c-erCr9-cvD-rr4R"
-    }
+          ],
+          screenshot: "p1-image-1.png"
 =======
       ]
     }
@@ -157,11 +162,19 @@ Type the commands below one at a time. You should see version numbers for both:`
             {
               title: "Example:",
               codeBlock: `git config --global user.name "Jane Doe"
+      ]
+    }
+      troubleshooting: {
+=======
 git config --global user.email "jane.doe@email.com"`
             }
           ]
-        }
     }
+=======
+        }
+      ]
+    }
+      troubleshooting: {
 =======
       ]
     }
