@@ -38,7 +38,10 @@ Windows: Run the installer and follow the prompts`,
           additionalInstructions: "Launch Void to make sure it opens. Complete the setup wizard and on the step shown in the screenshot below, enter the secret key:",
           commands: [
             "sk-ar3x-pkxX8c-erCr9-cvD-rr4R"
-          ],
+    }
+=======
+      ]
+    }
           screenshot: "p1-image-1.png"
         },
         {
@@ -158,7 +161,10 @@ git config --global user.email "jane.doe@email.com"`
             }
           ]
         }
-      ],
+    }
+=======
+      ]
+    }
       troubleshooting: {
         title: "Troubleshooting",
         items: [
