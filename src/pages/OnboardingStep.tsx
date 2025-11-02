@@ -295,6 +295,19 @@ const OnboardingStep = () => {
             {/* Detailed content or default information card */}
             {currentStep.detailedContent ? (
               <div className="mb-8 space-y-6">
+                {/* Info Panel - Show at top for step 1, bottom for other steps */}
+                {currentStep.detailedContent.infoPanel && currentStepNumber === 1 && (
+                  <div className="rounded-lg border bg-blue-50 p-6">
+                    <div className="flex items-start gap-3">
+                      <Info className="h-6 w-6 text-blue-600 mt-0.5 shrink-0" />
+                      <div>
+                        <h3 className="mb-2 font-semibold text-base text-blue-900">{currentStep.detailedContent.infoPanel.title}</h3>
+                        <p className="text-sm text-blue-700">{renderTextWithLinks(currentStep.detailedContent.infoPanel.content)}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
                 {currentStep.detailedContent.sections.map((section, index) => (
                   <div key={index} className="rounded-lg border bg-card p-6">
                             <div className="mb-3 flex items-center gap-3">
@@ -482,12 +495,14 @@ const OnboardingStep = () => {
                   </div>
                 )}
 
-                {currentStep.detailedContent.infoPanel && (
+                {/* Info Panel - Show at bottom for steps other than step 1 */}
+                {currentStep.detailedContent.infoPanel && currentStepNumber !== 1 && (
                   <div className="rounded-lg border bg-blue-50 p-6">
                     <div className="flex items-start gap-3">
                       <Info className="h-6 w-6 text-blue-600 mt-0.5" />
                       <div>
-                        <p className="text-sm text-blue-700">{currentStep.detailedContent.infoPanel.content}</p>
+                        <h3 className="mb-2 font-semibold text-base text-blue-900">{currentStep.detailedContent.infoPanel.title}</h3>
+                        <p className="text-sm text-blue-700">{renderTextWithLinks(currentStep.detailedContent.infoPanel.content)}</p>
                       </div>
                     </div>
                   </div>
