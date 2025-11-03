@@ -107,6 +107,70 @@ When done, close and reopen Terminal`,
                       "git --version",
                       "npm --version"
                     ]
+                  },
+                  {
+                    title: "Add Git and Node.js to Your PATH (Mac)",
+                    description: `Normally Git and Node.js add themselves to your PATH automatically when installed with Homebrew or from their official installers.
+
+If your terminal can't find them (e.g. running git --version or node --version gives "command not found"), follow these steps:
+
+Option 1 — Quick check (most common fix)
+
+Open a NEW Terminal.
+
+Run these commands to verify if they're already in your PATH:`,
+                    commands: [
+                      "git --version",
+                      "node --version"
+                    ]
+                  },
+                  {
+                    title: "Option 2 — Add them manually",
+                    description: `If both return version numbers — you're good to go 🎉
+
+If not, continue below.
+
+Depending on how you installed Git and Node.js, their binaries might live in one of these directories:
+
+/usr/local/bin
+/opt/homebrew/bin
+
+1. Open your shell config file
+
+Depending on your macOS setup, open one of:`,
+                    commands: [
+                      "open -e ~/.zshrc      # for macOS Catalina and later (default shell)",
+                      "open -e ~/.bash_profile   # for older versions"
+                    ]
+                  },
+                  {
+                    title: "2. Add PATH to config file",
+                    description: `Add the following line at the bottom of the file that opened:
+
+export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
+
+Then save and close the file.`,
+                    codeBlock: `export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"`
+                  },
+                  {
+                    title: "3. Reload and confirm setup",
+                    description: `In Terminal, run the command below that matches the file you edited (if you edited ~/.zshrc, use the first command; if you edited ~/.bash_profile, use the second):`,
+                    commands: [
+                      "source ~/.zshrc",
+                      "source ~/.bash_profile"
+                    ]
+                  },
+                  {
+                    title: "4. Confirm setup worked",
+                    description: `Now verify both commands work:`,
+                    commands: [
+                      "git --version",
+                      "node --version"
+                    ]
+                  },
+                  {
+                    title: "Success!",
+                    description: `You should now see both commands return version numbers — meaning your PATH is set up correctly`
                   }
                 ]
               }
@@ -138,6 +202,39 @@ Type the commands below one at a time. You should see version numbers for both:`
                       "git --version",
                       "npm --version"
                     ]
+                  },
+                  {
+                    title: "Add Git and Node.js to Your PATH (Windows)",
+                    description: `Normally Git and Node.js add themselves to your PATH automatically when installed from their official installers.
+
+If your Command Prompt can't find them (e.g. running git --version or node --version gives "command not found"), follow these steps:`
+                  },
+                  {
+                    title: "Method 1: Using System Settings",
+                    description: `You can add both manually to Windows PATH:
+
+1. Press Windows + R, type: sysdm.cpl → Enter
+
+2. Go to Advanced tab → click Environment Variables
+
+3. Under System variables, find Path → click Edit
+
+4. Click New, then add these (adjust if your install paths differ):
+
+• C:\\Program Files\\Git\\cmd
+• C:\\Program Files\\nodejs`
+                  },
+                  {
+                    title: "Verify PATH is set correctly",
+                    description: `Close and reopen Command Prompt, then run:`,
+                    commands: [
+                      "git --version",
+                      "npm --version"
+                    ]
+                  },
+                  {
+                    title: "Success!",
+                    description: `You should now see both commands return version numbers — meaning your PATH is set up correctly`
                   }
                 ]
               }
