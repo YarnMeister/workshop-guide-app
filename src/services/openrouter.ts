@@ -10,41 +10,91 @@ interface OpenRouterResponse {
   };
 }
 
-export async function enhancePromptWithAI(userInput: string): Promise<{ success: boolean; content: string; error?: string }> {
+export async function enhancePromptWithAI(prdContent: string): Promise<{ success: boolean; content: string; error?: string }> {
   const apiKey = import.meta.env.VITE_OPEN_ROUTER_API_KEY;
   
   if (!apiKey) {
     return {
       success: false,
-      content: userInput,
+      content: '',
       error: 'API key not configured. Please add VITE_OPEN_ROUTER_API_KEY to your .env.local file.'
     };
   }
 
-  const systemPrompt = `You are an expert at creating prompts for Lovable (a web app builder AI). 
-Your task is to transform user ideas into well-structured, comprehensive prompts that will generate excellent web applications.
+  const systemPrompt = `You are an expert at transforming product requirements into clear, actionable prompts for Lovable (an AI-powered web app builder).
 
-IMPORTANT REQUIREMENTS:
-1. The generated app MUST use localStorage for data persistence
-2. Be specific about UI components and layout
-3. Include user flows and interactions
-4. Specify responsive design requirements
-5. Mention error handling and edge cases
-6. Use modern React patterns and best practices
+## Your Task
 
-OUTPUT FORMAT:
-- Start with a clear project title and description
-- List key features with detailed specifications
-- Describe the UI/UX in detail
-- Specify data models and localStorage structure
-- Include technical requirements
-- End with success criteria`;
+Convert the user's mini PRD into a well-structured Lovable prompt that will generate a working prototype.
 
-  const userPrompt = `Transform this idea into a comprehensive Lovable prompt:
+## Core Principles
 
-"${userInput}"
+- **No code blocks or pseudo-code** - Write everything in natural language
+- **Use localStorage** - Always specify browser localStorage for data persistence (no backend)
+- **Be specific and actionable** - Clear direction on layout, functionality, and interactions
+- **Preserve the user's vision** - Stay true to their design mood and feature priorities
 
-Create a well-structured prompt that will generate a fully functional web application with localStorage for data persistence. Be specific about features, UI components, and technical implementation.`;
+## Output Structure
+
+**Opening (1-2 sentences)**
+"Build a [type of app] that [primary purpose] for [target user]."
+
+**Core Functionality**
+- Main features and how they work
+- User interactions and flows
+- Data handling with localStorage
+- AI/intelligent components and behavior
+
+**UI/Design**
+- Overall layout and structure
+- Design mood and style
+- Key UI components
+- Responsive behavior
+
+**User Flow**
+- Step-by-step interaction flow
+- What happens on key actions
+- State changes and feedback
+
+**Technical Notes**
+- localStorage for all data persistence
+- Any specific libraries or integrations
+- Responsive requirements
+
+## Formatting
+
+- Clear paragraphs and natural language
+- Bullet points for feature lists
+- Bold for key sections
+- No code syntax or technical jargon
+
+## Example Transformation
+
+**PRD says:** "Must-have: User can add items to a list"  
+**Transform to:** "Users can add new items by typing into an input field and clicking an 'Add' button. Each item displays with a checkbox and delete option. Store all items in localStorage for persistence."
+
+## Include
+
+✅ Specific UI elements (buttons, forms, cards)  
+✅ Exact interactions (click, type, drag)  
+✅ Data storage with localStorage  
+✅ Visual style descriptors  
+✅ Success/error handling
+
+## Avoid
+
+❌ Code snippets or pseudo-code  
+❌ Vague phrases like "implement functionality"  
+❌ Backend/database references  
+❌ Overly technical implementation details
+
+Now transform the mini PRD into a polished Lovable prompt.`;
+
+  const userPrompt = `Transform this mini PRD into a well-structured Lovable prompt:
+
+${prdContent}
+
+Create a comprehensive prompt that will generate a fully functional web application prototype using localStorage for all data persistence. Be specific about features, UI components, interactions, and design direction.`;
 
   try {
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -105,7 +155,7 @@ Create a well-structured prompt that will generate a fully functional web applic
 
     return {
       success: false,
-      content: userInput,
+      content: '',
       error: errorMessage
     };
   }

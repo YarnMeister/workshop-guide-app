@@ -291,18 +291,15 @@ git config --global user.email "jane.doe@email.com"`
     title: "Write Specs",
     description: "Define requirements",
     heading: "Define Your Project Requirements",
-    content: "Let's describe your idea a clearly as possible. Use the template below to frame up your idea. OR use your favourite Ai assistant to help you craft a comprehensive prompt for Lovable to build your initial prompt",
+    content: "Let's capture your project idea! Fill out the sections below to describe what you're building. You can expand each section as needed, and feel free to skip any that don't apply.",
     ctaText: "Next",
     ctaAction: "/onboarding/step/3",
     detailedContent: {
-      sections: [
-        {
-          title: "Project Description Template",
-          description: "Use this template to describe your project idea. You can edit the text directly in the box below.",
-          templateTextbox: true,
-          templateContent: "This is some placeholder text"
-        }
-      ]
+      infoPanel: {
+        title: "Tips for filling this out",
+        content: "Be specific but concise - aim for clarity over length. Use examples when helpful. It's okay to leave sections blank if not applicable. Focus on what you want, not how to build it (that's for the AI to figure out)."
+      },
+      prdTemplate: true
     }
   },
   {
@@ -310,19 +307,19 @@ git config --global user.email "jane.doe@email.com"`
     title: "Prototype (UI)",
     description: "Design interface",
     heading: "Create Your User Interface Prototype",
-    content: "Now let's design the user interface for your application. We'll create wireframes, mockups, and interactive prototypes to visualize how users will interact with your product.",
+    content: "Review and copy your AI-generated prompt below, then use it in Lovable to create your prototype. The prompt has been optimized specifically for Lovable's AI builder to generate a working prototype with all the features you specified.",
     ctaText: "Next",
     ctaAction: "/onboarding/step/4",
     detailedContent: {
       sections: [
         {
-          title: "Step 1: Prepare Your Prompt",
-          description: "Copy your project description from the previous page or type a new prompt below. This will be used to generate your UI prototype.",
+          title: "Review your prompt",
+          description: "Review the auto-generated prompt and fine-tune any details you like before clicking the button to copy your prompt to clipboard, ready for step 2",
           templateTextbox: true,
           templateContent: ""
         },
         {
-          title: "Step 2: Generate Your Prototype",
+          title: "Generate Your Prototype",
           description: "Navigate to Lovable and create your prototype.",
           subsections: [
             {
@@ -332,7 +329,7 @@ git config --global user.email "jane.doe@email.com"`
             {
               title: "Create Your Project",
               codeBlock: `1. Click "Create New Project" or similar button
-2. Paste your prompt from Step 1
+2. Paste your prompt from the clipboard (you copied it in Step 1)
 3. Let Lovable generate your UI prototype
 4. Make any adjustments or refinements as needed`
             }
@@ -382,25 +379,25 @@ git config --global user.email "jane.doe@email.com"`
         },
         {
           title: "You're Done!",
-          description: "Your prototype now syncs 2-way with GitHub.\nYou can:",
+          description: "Your prototype is now hosted in GitHub which means you can:",
           bulletPoints: [
-            "Open the repo in VS Code or your favourite IDE",
-            "Push/pull updates freely", 
-            "Continue editing in Lovable (it syncs automatically with GitHub)"
+            "Open the code in Void Editor (you downloaded this earlier)",
+            "Use the chat window in Void to make changes to the app using natural language",
+            "Connect the app in GitHub to a hosting service (we'll do this on the last page)"
           ]
         }
       ],
       infoPanel: {
         title: "FYI",
-        content: "Once connected to GitHub, your Lovable project will automatically sync changes in both directions. You can continue editing in Lovable or switch to your local development environment."
+        content: "While you have the Github project page open, copy and paste the URL somewhere so you can use it in the next few pages."
       }
     }
   },
   {
     id: 5,
-    title: "Add Backend",
+    title: "Customise app",
     description: "Build server logic",
-    heading: "Add Backend Functionality",
+    heading: "Add custom code to your Application",
     content: "Now let's add the backend logic to make your application fully functional. We'll set up APIs, databases, and server-side logic to power your application.",
     ctaText: "Next",
     ctaAction: "/onboarding/step/6",

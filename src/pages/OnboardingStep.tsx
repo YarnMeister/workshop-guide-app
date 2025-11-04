@@ -10,6 +10,9 @@ import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useWorkshopProgress } from "@/hooks/useWorkshopProgress";
 import { enhancePromptWithAI } from "@/services/openrouter";
+import { PRDForm } from "@/components/PRDForm";
+import { PRDAnswers } from "@/utils/storage";
+import { formatPRDForAI } from "@/utils/prdFormatter";
 
 const OnboardingStep = () => {
   const { stepId } = useParams();
@@ -147,21 +150,16 @@ const OnboardingStep = () => {
       });
       setCompletedSteps(savedTodos);
     } else if (currentStepNumber === 2) {
-      // Load saved template text for Write Specs page
-      if (progress.writeSpecsTemplate) {
-        setTemplateText(progress.writeSpecsTemplate);
-      } else if (currentStep?.detailedContent?.sections?.[0]?.templateContent) {
-        setTemplateText(currentStep.detailedContent.sections[0].templateContent);
-      }
+      // PRD form handles its own state via progress.prdAnswers
+      // No need to load templateText for step 2 anymore
     } else if (currentStepNumber === 3) {
-      // Load saved template text for Prototype page - default to Write Specs content if empty
+      // Load saved template text for Prototype page - use formatted PRD if empty
       if (progress.prototypeTemplate) {
         setTemplateText(progress.prototypeTemplate);
-      } else if (progress.writeSpecsTemplate) {
-        // Pre-fill with Write Specs content
-        setTemplateText(progress.writeSpecsTemplate);
-      } else if (currentStep?.detailedContent?.sections?.[0]?.templateContent) {
-        setTemplateText(currentStep.detailedContent.sections[0].templateContent);
+      } else {
+        // Fallback to formatted PRD if no AI-enhanced prompt exists
+        const prdFormatted = formatPRDForAI(progress.prdAnswers);
+        setTemplateText(prdFormatted || '');
       }
       
       // Show AI enhancement error if any
@@ -175,7 +173,7 @@ const OnboardingStep = () => {
         }, 500);
       }
     }
-  }, [currentStepNumber, progress.setupPageTodos, progress.writeSpecsTemplate, progress.prototypeTemplate, currentStep]);
+  }, [currentStepNumber, progress.setupPageTodos, progress.writeSpecsTemplate, progress.prototypeTemplate, progress.prdAnswers, currentStep]);
 
   if (!currentStep) {
     navigate("/");
@@ -204,8 +202,19 @@ const OnboardingStep = () => {
     if (currentStepNumber === 2) {
       setIsProcessingAI(true);
       
-      // Save original text
-      updateProgress({ writeSpecsOriginal: templateText });
+      // Format PRD answers for AI processing
+      const prdFormatted = formatPRDForAI(progress.prdAnswers);
+      
+      // Check if there's any content to process
+      if (!prdFormatted.trim() || prdFormatted === "# Mini PRD\n\n") {
+        toast({
+          title: "No Content",
+          description: "Please fill out at least one section before proceeding.",
+          variant: "destructive",
+        });
+        setIsProcessingAI(false);
+        return;
+      }
       
       toast({
         title: "Enhancing with AI...",
@@ -213,7 +222,7 @@ const OnboardingStep = () => {
       });
       
       try {
-        const result = await enhancePromptWithAI(templateText);
+        const result = await enhancePromptWithAI(prdFormatted);
         
         if (result.success) {
           // Save the enhanced prompt for the prototype page
@@ -227,28 +236,29 @@ const OnboardingStep = () => {
             description: "Your prompt has been enhanced and is ready on the next page",
           });
         } else {
-          // Save error and use original text
+          // Save error - show message but still allow proceeding
           updateProgress({ 
-            prototypeTemplate: templateText,
+            prototypeTemplate: prdFormatted,
             aiEnhancementError: result.error
           });
           
           toast({
             title: "AI Enhancement Failed",
-            description: result.error || "Using your original text instead",
+            description: result.error || "Using your PRD content instead",
             variant: "destructive",
           });
         }
       } catch (error) {
         console.error('AI enhancement error:', error);
+        const prdFormatted = formatPRDForAI(progress.prdAnswers);
         updateProgress({ 
-          prototypeTemplate: templateText,
+          prototypeTemplate: prdFormatted,
           aiEnhancementError: 'Unexpected error during AI enhancement'
         });
         
         toast({
           title: "Error",
-          description: "Something went wrong. Using your original text.",
+          description: "Something went wrong. Using your PRD content.",
           variant: "destructive",
         });
       } finally {
@@ -295,8 +305,8 @@ const OnboardingStep = () => {
             {/* Detailed content or default information card */}
             {currentStep.detailedContent ? (
               <div className="mb-8 space-y-6">
-                {/* Info Panel - Show at top for step 1, bottom for other steps */}
-                {currentStep.detailedContent.infoPanel && currentStepNumber === 1 && (
+                {/* Info Panel - Show at top for step 1 and step 2 */}
+                {currentStep.detailedContent.infoPanel && (currentStepNumber === 1 || currentStepNumber === 2) && (
                   <div className="rounded-lg border bg-blue-50 p-6">
                     <div className="flex items-start gap-3">
                       <Info className="h-6 w-6 text-blue-600 mt-0.5 shrink-0" />
@@ -308,7 +318,18 @@ const OnboardingStep = () => {
                   </div>
                 )}
                 
-                {currentStep.detailedContent.sections.map((section, index) => (
+                {/* PRD Form for step 2 */}
+                {currentStep.detailedContent.prdTemplate && currentStepNumber === 2 && (
+                  <PRDForm
+                    answers={progress.prdAnswers}
+                    onUpdate={(answers: PRDAnswers) => {
+                      updateProgress({ prdAnswers: answers });
+                    }}
+                  />
+                )}
+                
+                {/* Regular sections (for non-PRD pages) */}
+                {!currentStep.detailedContent.prdTemplate && currentStep.detailedContent.sections && currentStep.detailedContent.sections.map((section, index) => (
                   <div key={index} className="rounded-lg border bg-card p-6">
                             <div className="mb-3 flex items-center gap-3">
                               <div className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
@@ -321,22 +342,44 @@ const OnboardingStep = () => {
                     )}
                     {section.templateTextbox && (
                       <div className="mb-4">
-                        <Textarea
-                          value={templateText}
-                          onChange={(e) => {
-                            setTemplateText(e.target.value);
-                            if (currentStepNumber === 2) {
-                              updateProgress({ 
-                                writeSpecsTemplate: e.target.value,
-                                writeSpecsOriginal: e.target.value 
-                              });
-                            } else if (currentStepNumber === 3) {
-                              updateProgress({ prototypeTemplate: e.target.value });
-                            }
-                          }}
-                          placeholder="Enter your project description here..."
-                          className="min-h-[200px] resize-none"
-                        />
+                        <div className="relative">
+                          <Textarea
+                            value={templateText}
+                            onChange={(e) => {
+                              setTemplateText(e.target.value);
+                              if (currentStepNumber === 2) {
+                                updateProgress({ 
+                                  writeSpecsTemplate: e.target.value,
+                                  writeSpecsOriginal: e.target.value 
+                                });
+                              } else if (currentStepNumber === 3) {
+                                updateProgress({ prototypeTemplate: e.target.value });
+                              }
+                            }}
+                            placeholder="Enter your project description here..."
+                            className={`${currentStepNumber === 3 ? 'min-h-[600px]' : 'min-h-[200px]'} resize-none pr-12`}
+                          />
+                          {currentStepNumber === 3 && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => copyToClipboard(templateText)}
+                              className="absolute top-2 right-2"
+                            >
+                              {copiedCommands.has(templateText) ? (
+                                <>
+                                  <Check className="h-4 w-4 mr-2 text-green-600" />
+                                  Copied!
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="h-4 w-4 mr-2" />
+                                  Copy prompt
+                                </>
+                              )}
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     )}
                     {section.codeBlock && (
@@ -369,7 +412,7 @@ const OnboardingStep = () => {
                       </div>
                     )}
                     {section.screenshot && (
-                      <div className="mb-4">
+                      <div className={`mb-4 ${currentStepNumber === 4 && index === 1 ? 'max-w-[50%]' : ''}`}>
                         <img 
                           src={`/${section.screenshot}`} 
                           alt={`Screenshot for ${section.title}`}
