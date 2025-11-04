@@ -397,10 +397,374 @@ git config --global user.email "jane.doe@email.com"`
     id: 5,
     title: "Customise app",
     description: "Build server logic",
-    heading: "Add custom code to your Application",
-    content: "Now let's add the backend logic to make your application fully functional. We'll set up APIs, databases, and server-side logic to power your application.",
+    heading: "Vibe Coder Hub - Customise Your Application",
+    content: "Your guide to safely experimenting with code like a pro. Use AI assistance to make changes, test locally, and iterate confidently.",
     ctaText: "Next",
     ctaAction: "/onboarding/step/6",
+    detailedContent: {
+      infoPanel: {
+        title: "Welcome to vibe coding!",
+        content: "You don't need to know how everything works — you just need to know what to ask the AI. Every change is reversible, and you can't permanently damage your app."
+      },
+      sections: [
+        {
+          title: "Void Editor Overview",
+          description: "Get familiar with the key areas of Void Editor before you start coding:",
+          subsections: [
+            {
+              title: "File Explorer",
+              description: `This panel lists all the files and folders in your project repository. Use it to browse your codebase, open files for editing, or check configuration files such as package.json, .env.local, and vite.config.ts.`,
+              screenshot: "Void-1.png"
+            },
+            {
+              title: "Code Editor & File Inspector",
+              description: `This is where the contents of each file are displayed. You can view, edit, and review code directly here. You'll also use this section later to insert API keys or update environment variables. The editor provides syntax highlighting, inline error hints, and live updates synced to your connected GitHub repository.`,
+              screenshot: "Void-2.png"
+            },
+            {
+              title: "AI Chat Window",
+              description: `This built-in assistant works like ChatGPT or Claude but with full awareness of your project files. You can ask it to explain, modify, or create code, and it will automatically update the corresponding files in your workspace. Treat it as your coding copilot — it can see your repo structure, interpret your instructions, and write or refactor code for you.`,
+              screenshot: "Void-3.png"
+            }
+          ]
+        },
+        {
+          title: "Coding Mindset",
+          description: "Before we start, let's set the right expectations:",
+          bulletPoints: [
+            "You don't need to know how everything works — you just need to know what to ask the AI",
+            "Focus on intent: describe what you want to achieve, not how to code it",
+            "If something breaks, that's normal. Every coder breaks things — and fixes them again",
+            "You can't permanently damage the app. Every change is reversible"
+          ]
+        },
+        {
+          title: "Sync Void Editor with GitHub",
+          description: "Clone your GitHub repository to your local computer and open it in Void Editor.",
+          subsections: [
+            {
+              title: "Clone Your Repository",
+              description: `First, you need to download your project from GitHub to your computer. You'll need the GitHub repository URL (you should have copied this from the previous page).
+
+In the AI chat window in Void Editor, ask the AI to clone your repository:`,
+              commands: [
+                "clone my repository from [your-github-repo-url]"
+              ]
+            },
+            {
+              title: "⚠️ Important",
+              description: `The repository will be cloned into the current folder you're in. Make sure you're in the folder where you want to save your project (like Documents or Desktop).
+
+Ask one of the facilitators to help you with this step if you are not confident with changing directories in your terminal/command prompt.`
+            },
+            {
+              title: "Where Does It Get Saved?",
+              description: `By default, git clone creates a new folder with your project name in your current directory. 
+
+If you want to save it in a specific location, you can:
+1. Navigate to that folder first (ask the AI: "change directory to Documents" or "cd to Desktop")
+2. Then clone the repository
+
+The AI will create a folder with your project name in whatever folder you're currently in.`
+            },
+            {
+              title: "Example",
+              codeBlock: `clone my repository from https://github.com/yourusername/your-project-name.git
+
+The AI will run the git clone command for you. This creates a folder on your computer with all your project files.`
+            },
+            {
+              title: "Open Your Project in Void Editor",
+              codeBlock: `1. Open Void Editor
+2. Click "Open Folder" or use File → Open Folder
+3. Navigate to the project folder you just cloned
+4. Select the folder and click "Open"`
+            },
+            {
+              title: "Pull Latest from Main",
+              description: `Before making changes, always pull the latest code from GitHub. This ensures you're working with the most recent version.
+
+In the AI chat window in Void Editor, ask the AI to pull the latest changes:`,
+              commands: [
+                "pull the latest from main branch"
+              ]
+            },
+            {
+              title: "What the AI Does",
+              codeBlock: `The AI will run these commands for you:
+• git checkout main
+• git pull origin main
+
+This updates your local copy with any new changes from GitHub.`
+            },
+            {
+              title: "What's Actually Happening",
+              codeBlock: `When you clone, you're downloading a complete copy of your project from GitHub to your computer. When you pull, you're updating that copy with any new changes from GitHub.`
+            }
+          ]
+        },
+        {
+          title: "Create a Feature Branch",
+          description: "Create your own workspace to safely make changes without affecting the main app.",
+          subsections: [
+            {
+              title: "In AI Chat Window",
+              description: `Type this command in the AI chat window in Void Editor:`,
+              commands: [
+                "create new feature branch called [describe-your-change]"
+              ]
+            },
+            {
+              title: "Example",
+              commands: [
+                "create new feature branch called update-welcome-text"
+              ]
+            },
+            {
+              title: "Why Feature Branches Matter",
+              description: `Think of your codebase like a digital workshop:
+
+• The main branch is the finished display shelf
+• A feature branch is your personal workbench where you can edit and test freely
+• Once your changes are complete, you move them from your workbench to the shelf (merge into main)
+
+Using feature branches keeps related edits together as one package (for example, "update logo" and "resize logo"). This reduces unnecessary deployments, saving time when deploying to production later.`
+            },
+            {
+              title: "Visual Analogy",
+              codeBlock: `Imagine a team Miro board:
+
+• The main wall is the shared board that everyone can see
+• Each participant has a tracing sheet — their own feature branch
+• You can sketch, colour, and revise freely on your sheet
+• When ready, you overlay your tracing sheet onto the main board (merge to main)
+
+This ensures everyone's contributions are combined neatly without overwriting each other's work.`
+            },
+            {
+              title: "What's Actually Happening",
+              codeBlock: `The AI makes a new copy of the code just for you. This copy is completely separate from the main app, so you can experiment freely without breaking anything.`
+            }
+          ]
+        },
+        {
+          title: "Test Your Changes Locally",
+          description: "Run your app locally to preview changes before publishing.",
+          subsections: [
+            {
+              title: "Start Development Server",
+              description: `In the Terminal window (in Void Editor), run:`,
+              commands: [
+                "npm run dev"
+              ]
+            },
+            {
+              title: "What This Does",
+              description: `This command starts your app in development mode, running a local version on your computer that automatically refreshes when you make changes.
+
+You'll see a local address like:
+http://localhost:3000
+
+Hold Ctrl (or Cmd on Mac) and click the address shown in your Void terminal where you typed "npm run dev" to open it in your browser.`
+            },
+            {
+              title: "Verify Your Changes",
+              description: `Use this preview to:
+• Verify your edits appear correctly
+• Check layouts, text, and images
+• Ask the AI to correct anything that looks off`
+            },
+            {
+              title: "If Changes Don't Appear",
+              codeBlock: `Press Ctrl + C (or Cmd + C on Mac) in the terminal to stop the app
+
+Then run npm run dev again to restart it`
+            },
+            {
+              title: "What's Actually Happening",
+              codeBlock: `Starts a mini web server on your laptop so you can test locally. The app runs on your computer, not on the internet, so you can experiment safely.`
+            }
+          ]
+        },
+        {
+          title: "Merge & Push to GitHub",
+          description: "Complete your changes and publish them to GitHub.",
+          subsections: [
+            {
+              title: "In AI Chat Window",
+              description: `Once you're happy with your changes, type:`,
+              commands: [
+                "merge this feature branch to main and push to remote"
+              ]
+            },
+            {
+              title: "What Happens",
+              description: `This final command wraps up all your work and uploads it to GitHub. When integrated with Vercel (we'll do this on the next page) it will automatically deploy the latest version of main to a live URL.
+
+Analogy: This is like packaging your finished feature and placing it on the public display shelf for everyone to see.`
+            },
+            {
+              title: "What's Actually Happening",
+              codeBlock: `Combines your edits into the official project and pushes to GitHub. Your changes are now part of the main app and will be deployed to production.`
+            }
+          ]
+        },
+        {
+          title: "Common AI Prompts",
+          description: "Ready-made prompts you can use in the AI chat window:",
+          tabs: [
+            {
+              title: "Code Adjustments",
+              content: {
+                subsections: [
+                  {
+                    title: "Examples",
+                    description: `Ready-made prompts you can copy and use:`,
+                    commands: [
+                      "Change the button colour to match the brand palette",
+                      "Add a new section on the homepage titled \"About Us\"",
+                      "Remove the background image from the login page",
+                      "Update the footer text to include contact information",
+                      "Change the font size of the main heading"
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              title: "Debugging",
+              content: {
+                subsections: [
+                  {
+                    title: "Examples",
+                    description: `Ready-made prompts you can copy and use:`,
+                    commands: [
+                      "The app isn't loading correctly — help me find the error",
+                      "Fix the layout alignment on the setup page",
+                      "Explain what this error message means and how to fix it",
+                      "The button isn't working when I click it",
+                      "The page is blank, what went wrong?"
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              title: "Learning",
+              content: {
+                subsections: [
+                  {
+                    title: "Examples",
+                    description: `Ready-made prompts you can copy and use:`,
+                    commands: [
+                      "Explain what this line of code does",
+                      "Show me how this component connects to the page",
+                      "What does this function do?",
+                      "How does this feature work?",
+                      "Why is this code structured this way?"
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          title: "If Something Isn't Working",
+          description: "Don't panic! Here's a simple troubleshooting checklist:",
+          subsections: [
+            {
+              title: "1. Restart the dev server",
+              codeBlock: `Press Ctrl + C (or Cmd + C on Mac) in the terminal
+
+Then run: npm run dev again`
+            },
+            {
+              title: "2. Check your branch name",
+              description: `Make sure you're still on your feature branch, not main.
+
+Ask the AI: "What branch am I currently on?"`
+            },
+            {
+              title: "3. Ask the AI directly",
+              codeBlock: `Explain what might be wrong and how to fix it
+
+Or describe the problem: "The app is showing an error when I..."
+              `
+            },
+            {
+              title: "4. Reset if needed",
+              description: `If all else fails and you're not happy with the current version, ask the AI assistant to delete the current branch and then try a different approach.`
+            }
+          ]
+        },
+        {
+          title: "Success Patterns - Best Practices",
+          description: "Follow these patterns for smooth vibe coding:",
+          bulletPoints: [
+            "Use descriptive branch names (e.g., update-homepage-text, not test1)",
+            "Review your app in the browser before merging",
+            "Ask 'why' questions to the AI — they build understanding faster than 'how'",
+            "Commit and merge when your change feels complete, not perfect"
+          ]
+        },
+        {
+          title: "Vibe Coder's Glossary",
+          description: "Quick definitions for common terms:",
+          tabs: [
+            {
+              title: "A-C",
+              content: {
+                subsections: [
+                  {
+                    title: "Branch",
+                    codeBlock: `A separate workspace for your edits. Like a personal copy of the code where you can experiment safely.`
+                  },
+                  {
+                    title: "Commit",
+                    codeBlock: `A snapshot of your progress. Like saving a checkpoint in a video game.`
+                  }
+                ]
+              }
+            },
+            {
+              title: "D-M",
+              content: {
+                subsections: [
+                  {
+                    title: "Deploy",
+                    codeBlock: `Publishing your work to the live web version. Making your app accessible to users on the internet.`
+                  },
+                  {
+                    title: "Main Branch",
+                    codeBlock: `The primary version of your code. The "official" version that everyone sees.`
+                  },
+                  {
+                    title: "Merge",
+                    codeBlock: `Combining your branch with the main app. Moving your changes from your workspace into the official project.`
+                  }
+                ]
+              }
+            },
+            {
+              title: "R-Z",
+              content: {
+                subsections: [
+                  {
+                    title: "Repo (Repository)",
+                    codeBlock: `The digital folder that holds all project files. Like a Dropbox folder for code.`
+                  },
+                  {
+                    title: "Feature Branch",
+                    codeBlock: `Your personal workspace for making changes. A temporary copy of the code where you can experiment.`
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     id: 6,

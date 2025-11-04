@@ -329,12 +329,50 @@ const OnboardingStep = () => {
                 )}
                 
                 {/* Regular sections (for non-PRD pages) */}
-                {!currentStep.detailedContent.prdTemplate && currentStep.detailedContent.sections && currentStep.detailedContent.sections.map((section, index) => (
-                  <div key={index} className="rounded-lg border bg-card p-6">
+                {!currentStep.detailedContent.prdTemplate && currentStep.detailedContent.sections && currentStep.detailedContent.sections.map((section, index) => {
+                  // Insert info panel for step 5 after first section (Void Editor Overview)
+                  const shouldInsertInfoPanel = currentStepNumber === 5 && index === 1 && currentStep.detailedContent?.infoPanel;
+                  
+                  // Define context panels that shouldn't have step numbers
+                  const contextPanels = ['Void Editor Overview', 'Coding Mindset', 'Success Patterns - Best Practices', 'Vibe Coder\'s Glossary'];
+                  const isContextPanel = contextPanels.includes(section.title);
+                  
+                  // Calculate step number: count only workflow steps (skip context panels)
+                  let stepNumber = 0;
+                  if (!isContextPanel) {
+                    let workflowStepCount = 0;
+                    for (let i = 0; i <= index; i++) {
+                      if (!contextPanels.includes(currentStep.detailedContent.sections[i].title)) {
+                        workflowStepCount++;
+                      }
+                      if (i === index) {
+                        stepNumber = workflowStepCount;
+                      }
+                    }
+                  }
+                  
+                  return (
+                    <div key={index}>
+                      {/* Info Panel for step 5 - positioned after Void Editor Overview */}
+                      {shouldInsertInfoPanel && (
+                        <div className="rounded-lg border bg-blue-50 p-6 mb-6">
+                          <div className="flex items-start gap-3">
+                            <Info className="h-6 w-6 text-blue-600 mt-0.5 shrink-0" />
+                            <div>
+                              <h3 className="mb-2 font-semibold text-base text-blue-900">{currentStep.detailedContent.infoPanel.title}</h3>
+                              <p className="text-sm text-blue-700">{renderTextWithLinks(currentStep.detailedContent.infoPanel.content)}</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="rounded-lg border bg-card p-6">
                             <div className="mb-3 flex items-center gap-3">
-                              <div className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                                Step {index + 1}
-                              </div>
+                              {!isContextPanel && (
+                                <div className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                                  Step {stepNumber}
+                                </div>
+                              )}
                               <h2 className="font-semibold text-lg">{section.title}</h2>
                             </div>
                     {section.description && (
@@ -475,26 +513,38 @@ const OnboardingStep = () => {
                     )}
                     {section.subsections && (
                       <div className="space-y-4">
-                        {section.subsections.map((subsection, subIndex) => (
-                          <div key={subIndex} className="border-l-2 border-muted pl-4">
-                            <h3 className="mb-2 font-medium text-sm">{subsection.title}</h3>
-                            {subsection.description && (
-                              <p className="mb-3 text-sm text-muted-foreground whitespace-pre-line">{renderTextWithLinks(subsection.description)}</p>
-                            )}
-                            {subsection.codeBlock && (
-                              <div className="overflow-x-auto rounded-md bg-muted p-3 text-sm">
-                                <div className="whitespace-pre-wrap">{renderTextWithLinks(subsection.codeBlock)}</div>
-                              </div>
-                            )}
-                            {subsection.commands && (
-                              <div className="space-y-2">
-                                {subsection.commands.map((command, cmdIndex) => (
-                                  <CopyableCommand key={cmdIndex} command={command} />
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        ))}
+                        {section.subsections.map((subsection, subIndex) => {
+                          const isWarning = subsection.title?.includes('⚠️');
+                          return (
+                            <div key={subIndex} className={`border-l-2 pl-4 ${isWarning ? 'border-red-300 bg-red-50 rounded-r-md p-4' : 'border-muted'}`}>
+                              <h3 className={`mb-2 font-medium text-sm ${isWarning ? 'text-red-900' : ''}`}>{subsection.title}</h3>
+                              {subsection.description && (
+                                <p className={`mb-3 text-sm whitespace-pre-line ${isWarning ? 'text-red-800' : 'text-muted-foreground'}`}>{renderTextWithLinks(subsection.description)}</p>
+                              )}
+                              {subsection.codeBlock && (
+                                <div className="overflow-x-auto rounded-md bg-muted p-3 text-sm">
+                                  <div className="whitespace-pre-wrap">{renderTextWithLinks(subsection.codeBlock)}</div>
+                                </div>
+                              )}
+                              {subsection.commands && (
+                                <div className="space-y-2">
+                                  {subsection.commands.map((command, cmdIndex) => (
+                                    <CopyableCommand key={cmdIndex} command={command} />
+                                  ))}
+                                </div>
+                              )}
+                              {subsection.screenshot && (
+                                <div className="mb-4 mt-3">
+                                  <img 
+                                    src={`/${subsection.screenshot}`} 
+                                    alt={`Screenshot for ${subsection.title}`}
+                                    className="rounded-lg border shadow-sm max-w-full h-auto"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                     
@@ -520,7 +570,9 @@ const OnboardingStep = () => {
                       </div>
                     )}
                   </div>
-                ))}
+                </div>
+                );
+                })}
                 
                 {currentStep.detailedContent.troubleshooting && (
                   <div className="rounded-lg border bg-orange-50 p-6">
@@ -538,8 +590,8 @@ const OnboardingStep = () => {
                   </div>
                 )}
 
-                {/* Info Panel - Show at bottom for steps other than step 1 */}
-                {currentStep.detailedContent.infoPanel && currentStepNumber !== 1 && (
+                {/* Info Panel - Show at bottom for steps other than step 1, step 2, and step 5 */}
+                {currentStep.detailedContent.infoPanel && currentStepNumber !== 1 && currentStepNumber !== 2 && currentStepNumber !== 5 && (
                   <div className="rounded-lg border bg-blue-50 p-6">
                     <div className="flex items-start gap-3">
                       <Info className="h-6 w-6 text-blue-600 mt-0.5" />
