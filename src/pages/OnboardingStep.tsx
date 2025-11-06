@@ -27,7 +27,7 @@ const OnboardingStep = () => {
   const [isProcessingAI, setIsProcessingAI] = useState<boolean>(false);
   const [isRevealingKey, setIsRevealingKey] = useState<boolean>(false);
   const { progress, updateProgress, updateTodoStatus } = useWorkshopProgress();
-  const { name, apiKeyMasked, apiKey, setApiKey } = useParticipant();
+  const { name, apiKeyMasked, apiKey, setApiKey, isAuthenticated, isLoading: participantLoading } = useParticipant();
   
   const currentStep = ONBOARDING_STEPS.find(step => step.id === currentStepNumber);
 
@@ -227,12 +227,25 @@ const OnboardingStep = () => {
   };
 
   useEffect(() => {
-    // Check if participant ID exists
-    const participantId = sessionStorage.getItem("participantId");
-    if (!participantId) {
+    console.log('[OnboardingStep] useEffect triggered', { 
+      currentStepNumber, 
+      isAuthenticated, 
+      participantLoading,
+      participantId: progress.participantId 
+    });
+    
+    // Wait for participant loading to complete
+    if (participantLoading) {
+      console.log('[OnboardingStep] Participant still loading, skipping check');
+      return;
+    }
+
+    // Check if participant is authenticated
+    if (!isAuthenticated || !progress.participantId) {
+      console.log('[OnboardingStep] No authenticated participant, redirecting to welcome');
       toast({
         title: "Access Denied",
-        description: "Please enter your participant number first.",
+        description: "Please enter your participant code first.",
         variant: "destructive",
       });
       navigate("/");
@@ -240,8 +253,9 @@ const OnboardingStep = () => {
     }
 
     // Update current step in progress
+    console.log('[OnboardingStep] Updating current step to', currentStepNumber);
     updateProgress({ currentStepId: currentStepNumber });
-  }, [currentStepNumber, navigate, updateProgress]);
+  }, [currentStepNumber, navigate, updateProgress, isAuthenticated, participantLoading, progress.participantId]);
 
   // Separate effect for loading saved data
   useEffect(() => {
