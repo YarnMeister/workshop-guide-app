@@ -7,26 +7,26 @@ export default async function handler(
   req: VercelRequest,
   res: VercelResponse
 ): Promise<void> {
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.setHeader('Content-Type', 'application/json');
-
-  // Handle OPTIONS preflight
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
-
-  // Only allow POST
-  if (req.method !== 'POST') {
-    res.status(405).json({ success: false, error: 'Method not allowed' });
-    return;
-  }
-
   try {
+    // Set CORS headers
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Content-Type', 'application/json');
+
+    // Handle OPTIONS preflight
+    if (req.method === 'OPTIONS') {
+      res.status(200).end();
+      return;
+    }
+
+    // Only allow POST
+    if (req.method !== 'POST') {
+      res.status(405).json({ success: false, error: 'Method not allowed' });
+      return;
+    }
+
     // Check environment variables
     if (!process.env.COOKIE_SECRET) {
       console.error('COOKIE_SECRET environment variable not set');
@@ -40,7 +40,23 @@ export default async function handler(
       return;
     }
 
-    const { code } = req.body;
+    // Parse request body
+    let code: string;
+    try {
+      if (typeof req.body === 'string') {
+        const parsed = JSON.parse(req.body);
+        code = parsed.code;
+      } else if (req.body && typeof req.body === 'object') {
+        code = req.body.code;
+      } else {
+        res.status(400).json({ success: false, error: 'Invalid request body' });
+        return;
+      }
+    } catch (parseError) {
+      console.error('Body parse error:', parseError);
+      res.status(400).json({ success: false, error: 'Invalid request body' });
+      return;
+    }
 
     if (!code || typeof code !== 'string') {
       res.status(400).json({ success: false, error: 'Invalid code' });
@@ -79,6 +95,10 @@ export default async function handler(
     });
   } catch (error) {
     console.error('Claim error:', error);
-    res.status(500).json({ success: false, error: 'Internal server error' });
+    try {
+      res.status(500).json({ success: false, error: 'Internal server error' });
+    } catch (sendError) {
+      console.error('Failed to send error response:', sendError);
+    }
   }
 }
