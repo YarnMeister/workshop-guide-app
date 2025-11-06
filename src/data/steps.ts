@@ -810,8 +810,39 @@ Or describe the problem: "The app is showing an error when I..."
     title: "Launch to the Web",
     description: "Deploy your app live via Vercel",
     heading: "Launch to the Web",
-    content: "Congratulations! You're ready to launch your application to the world. We'll deploy it to a production environment and make it accessible to users.",
+    content: "Follow these steps to connect your GitHub repo and auto-deploy every time you merge to main.",
     ctaText: "Complete",
     ctaAction: "/dashboard",
+    detailedContent: {
+      sections: [
+        {
+          title: "Create a New Project",
+          description: "From your [Vercel dashboard](https://vercel.com/), click Add New → Project.",
+          screenshot: "Vercel-1.png"
+        },
+        {
+          title: "Import Your GitHub Repo",
+          description: "Log into or choose your GitHub account then find the project you exported from Lovable previously and click Import.",
+          screenshot: "Vercel-2.png"
+        },
+        {
+          title: "Configure the Project",
+          description: "Give your project a name, this will be embedded in the public URL. Then click Deploy.",
+          screenshot: "Vercel-3.png"
+        },
+        {
+          title: "Wait for Deployment",
+          description: "Vercel will build and deploy your app automatically. Watch the progress at the bottom of the page until it completes.",
+          screenshot: "Vercel-4.png"
+        },
+        {
+          title: "View Your Live App",
+          description: `Once complete, click Continue to Dashboard. Your app is now live on a Vercel URL.
+
+Any future merge to main (via AI assisted prompts) in GitHub will trigger a fresh deployment.`,
+          screenshot: "Vercel-5.png"
+        }
+      ]
+    }
   },
 ];

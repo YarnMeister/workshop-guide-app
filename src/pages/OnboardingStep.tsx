@@ -95,29 +95,90 @@ const OnboardingStep = () => {
 
   // Function to render text with clickable links
   const renderTextWithLinks = (text: string) => {
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    const parts = text.split(urlRegex);
+    const parts: Array<{ type: 'text' | 'markdown-link' | 'url'; content: string; url?: string }> = [];
     
-    return parts.map((part, index) => {
-      if (urlRegex.test(part)) {
-        return (
+    // First, find all markdown-style links [text](url)
+    const markdownLinkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+    let lastIndex = 0;
+    let match;
+    
+    while ((match = markdownLinkRegex.exec(text)) !== null) {
+      // Add text before the link
+      if (match.index > lastIndex) {
+        parts.push({ type: 'text', content: text.substring(lastIndex, match.index) });
+      }
+      
+      // Add the markdown link
+      parts.push({
+        type: 'markdown-link',
+        content: match[1],
+        url: match[2]
+      });
+      
+      lastIndex = match.index + match[0].length;
+    }
+    
+    // Add remaining text after last markdown link
+    if (lastIndex < text.length) {
+      parts.push({ type: 'text', content: text.substring(lastIndex) });
+    }
+    
+    // If no markdown links found, process the whole text
+    if (parts.length === 0) {
+      parts.push({ type: 'text', content: text });
+    }
+    
+    // Now process each part for plain URLs
+    const result: React.ReactNode[] = [];
+    
+    parts.forEach((part, partIndex) => {
+      if (part.type === 'markdown-link') {
+        // Render markdown link
+        result.push(
           <a
-            key={index}
-            href={part}
+            key={`link-${partIndex}`}
+            href={part.url}
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-600 hover:text-blue-800 underline cursor-pointer"
             onClick={(e) => {
               e.preventDefault();
-              window.open(part, '_blank', 'noopener,noreferrer');
+              window.open(part.url, '_blank', 'noopener,noreferrer');
             }}
           >
-            {part}
+            {part.content}
           </a>
         );
+      } else {
+        // Process text for plain URLs
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        const textParts = part.content.split(urlRegex);
+        
+        textParts.forEach((textPart, textIndex) => {
+          if (urlRegex.test(textPart)) {
+            result.push(
+              <a
+                key={`url-${partIndex}-${textIndex}`}
+                href={textPart}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-800 underline cursor-pointer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.open(textPart, '_blank', 'noopener,noreferrer');
+                }}
+              >
+                {textPart}
+              </a>
+            );
+          } else if (textPart) {
+            result.push(textPart);
+          }
+        });
       }
-      return part;
     });
+    
+    return result;
   };
 
   useEffect(() => {
