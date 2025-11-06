@@ -445,12 +445,6 @@ const OnboardingStep = () => {
       updateProgress({ completedPages });
     }
     
-    if (currentStep.ctaAction === "/dashboard") {
-      toast({
-        title: "Onboarding Complete!",
-        description: "You're ready to start the workshop. Great job!",
-      });
-    }
     navigate(currentStep.ctaAction);
   };
 
