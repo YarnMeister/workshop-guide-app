@@ -8,10 +8,6 @@ export const ONBOARDING_STEPS = [
     ctaText: "Next",
     ctaAction: "/onboarding/step/2",
     detailedContent: {
-      infoPanel: {
-        title: "Quick Tip",
-        content: "Once you've created your GitHub account, it's much quicker and easier to create accounts for Vercel and Lovable using your GitHub account for authentication. This links your accounts automatically and saves you time!"
-      },
       sections: [
         {
           title: "Create Your Accounts",
@@ -22,6 +18,10 @@ export const ONBOARDING_STEPS = [
               codeBlock: `Go to: https://github.com/signup
 Sign up with your email (or log in if you already have an account)
 Keep your username and password handy`
+            },
+            {
+              title: "Quick Tip",
+              description: "Once you've created your GitHub account, it's much quicker and easier to create accounts for Vercel and Lovable using your GitHub account for authentication. This links your accounts automatically and saves you time!"
             },
             {
               title: "Vercel Account",
