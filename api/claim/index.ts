@@ -3,46 +3,56 @@ import { createCookie, verifyCookie } from '../utils/cookies';
 import { getParticipantByCode } from '../utils/participants';
 import { maskApiKey } from '../utils/maskApiKey';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(
+  req: VercelRequest,
+  res: VercelResponse
+): Promise<void> {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Content-Type', 'application/json');
 
   // Handle OPTIONS preflight
   if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    res.status(200).end();
+    return;
   }
 
   // Only allow POST
   if (req.method !== 'POST') {
-    return res.status(405).json({ success: false, error: 'Method not allowed' });
+    res.status(405).json({ success: false, error: 'Method not allowed' });
+    return;
   }
 
   try {
     // Check environment variables
     if (!process.env.COOKIE_SECRET) {
       console.error('COOKIE_SECRET environment variable not set');
-      return res.status(500).json({ success: false, error: 'Server configuration error' });
+      res.status(500).json({ success: false, error: 'Server configuration error' });
+      return;
     }
 
     if (!process.env.PARTICIPANTS_JSON) {
       console.error('PARTICIPANTS_JSON environment variable not set');
-      return res.status(500).json({ success: false, error: 'Server configuration error' });
+      res.status(500).json({ success: false, error: 'Server configuration error' });
+      return;
     }
 
     const { code } = req.body;
 
     if (!code || typeof code !== 'string') {
-      return res.status(400).json({ success: false, error: 'Invalid code' });
+      res.status(400).json({ success: false, error: 'Invalid code' });
+      return;
     }
 
     // Lookup participant (case-sensitive, exact match)
     const participant = getParticipantByCode(code.trim());
 
     if (!participant) {
-      return res.status(404).json({ success: false, error: 'Invalid code' });
+      res.status(404).json({ success: false, error: 'Invalid code' });
+      return;
     }
 
     // Create signed cookie with minimal data
@@ -61,7 +71,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.setHeader('Set-Cookie', cookie);
 
     // Return success response (never return full API key)
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       participantId: code.trim(),
       name: participant.name,
@@ -69,8 +79,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   } catch (error) {
     console.error('Claim error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return res.status(500).json({ success: false, error: 'Internal server error' });
+    res.status(500).json({ success: false, error: 'Internal server error' });
   }
 }
-
