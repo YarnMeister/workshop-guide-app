@@ -19,6 +19,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
+    // Check environment variables
+    if (!process.env.COOKIE_SECRET) {
+      console.error('COOKIE_SECRET environment variable not set');
+      return res.status(200).json({ authenticated: false });
+    }
+
     // Get cookie from request (Vercel parses cookies automatically)
     const cookieHeader = req.headers.cookie || '';
     const cookieMatch = cookieHeader.match(/participant_session=([^;]+)/);

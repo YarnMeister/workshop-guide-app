@@ -21,6 +21,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
+    // Check environment variables
+    if (!process.env.COOKIE_SECRET) {
+      console.error('COOKIE_SECRET environment variable not set');
+      return res.status(500).json({ success: false, error: 'Server configuration error' });
+    }
+
+    if (!process.env.PARTICIPANTS_JSON) {
+      console.error('PARTICIPANTS_JSON environment variable not set');
+      return res.status(500).json({ success: false, error: 'Server configuration error' });
+    }
+
     // Get cookie from request (Vercel parses cookies automatically)
     const cookieHeader = req.headers.cookie || '';
     const cookieMatch = cookieHeader.match(/participant_session=([^;]+)/);
@@ -55,6 +66,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   } catch (error) {
     console.error('Reveal key error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return res.status(500).json({ success: false, error: 'Internal server error' });
   }
 }
