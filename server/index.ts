@@ -2,10 +2,39 @@ import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
 
 // Load environment variables from .env.local (for local dev) or .env
 dotenv.config({ path: '.env.local' });
 dotenv.config(); // Fallback to .env if .env.local doesn't exist
+
+// Special handling for PARTICIPANTS_JSON because it contains special characters (#) that break dotenv parsing
+// Read it directly from the file to avoid comment parsing issues
+if (!process.env.PARTICIPANTS_JSON || process.env.PARTICIPANTS_JSON.length < 10) {
+  try {
+    const envLocalPath = path.join(process.cwd(), '.env.local');
+    if (fs.existsSync(envLocalPath)) {
+      const envContent = fs.readFileSync(envLocalPath, 'utf-8');
+      // Match PARTICIPANTS_JSON= followed by the JSON value (handle quoted and unquoted)
+      const jsonMatch = envContent.match(/^PARTICIPANTS_JSON=(.+)$/m);
+      if (jsonMatch && jsonMatch[1]) {
+        let jsonValue = jsonMatch[1].trim();
+        // Remove surrounding quotes if present
+        if ((jsonValue.startsWith('"') && jsonValue.endsWith('"')) ||
+            (jsonValue.startsWith("'") && jsonValue.endsWith("'"))) {
+          jsonValue = jsonValue.slice(1, -1);
+          // Unescape escaped quotes
+          jsonValue = jsonValue.replace(/\\"/g, '"').replace(/\\'/g, "'");
+        }
+        process.env.PARTICIPANTS_JSON = jsonValue;
+        console.log(`Loaded PARTICIPANTS_JSON directly from file (${jsonValue.length} chars)`);
+      }
+    }
+  } catch (error) {
+    console.error('Failed to read PARTICIPANTS_JSON from .env.local file:', error);
+  }
+}
 
 const app = express();
 
