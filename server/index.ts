@@ -1,6 +1,11 @@
+import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import crypto from 'crypto';
+
+// Load environment variables from .env.local (for local dev) or .env
+dotenv.config({ path: '.env.local' });
+dotenv.config(); // Fallback to .env if .env.local doesn't exist
 
 const app = express();
 
@@ -32,7 +37,23 @@ function loadParticipants(): Record<string, { name: string; apiKey: string }> {
   }
 
   try {
-    const parsed = JSON.parse(participantsJson) as Record<string, { name: string; apiKey: string }>;
+    // Check if it's already a parsed object (shouldn't happen, but be safe)
+    if (typeof participantsJson === 'object') {
+      participantsCache = participantsJson as Record<string, { name: string; apiKey: string }>;
+      return participantsCache;
+    }
+
+    // Remove any surrounding quotes if present
+    let jsonString = participantsJson.trim();
+    if ((jsonString.startsWith('"') && jsonString.endsWith('"')) ||
+        (jsonString.startsWith("'") && jsonString.endsWith("'"))) {
+      jsonString = jsonString.slice(1, -1);
+      // Unescape any escaped quotes
+      jsonString = jsonString.replace(/\\"/g, '"').replace(/\\'/g, "'");
+    }
+
+    // Parse the JSON string
+    const parsed = JSON.parse(jsonString) as Record<string, { name: string; apiKey: string }>;
     if (typeof parsed !== 'object' || parsed === null) {
       throw new Error('Invalid PARTICIPANTS_JSON format');
     }
@@ -56,10 +77,16 @@ function loadParticipants(): Record<string, { name: string; apiKey: string }> {
       }
     }
 
+    console.log(`Loaded ${Object.keys(parsed).length} participants`);
     participantsCache = parsed;
     return participantsCache;
   } catch (error) {
     console.error('Failed to parse PARTICIPANTS_JSON:', error);
+    if (error instanceof SyntaxError) {
+      console.error('JSON parse error. PARTICIPANTS_JSON length:', participantsJson.length);
+      console.error('First 200 chars:', participantsJson.substring(0, 200));
+      console.error('Last 100 chars:', participantsJson.substring(Math.max(0, participantsJson.length - 100)));
+    }
     participantsCache = {};
     return participantsCache;
   }
