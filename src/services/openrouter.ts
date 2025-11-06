@@ -10,14 +10,18 @@ interface OpenRouterResponse {
   };
 }
 
-export async function enhancePromptWithAI(prdContent: string): Promise<{ success: boolean; content: string; error?: string }> {
-  const apiKey = import.meta.env.VITE_OPEN_ROUTER_API_KEY;
-  
+export async function enhancePromptWithAI(
+  prdContent: string,
+  getApiKey: () => Promise<string | null>
+): Promise<{ success: boolean; content: string; error?: string }> {
+  // Get API key from provided function (which checks memory first)
+  const apiKey = await getApiKey();
+
   if (!apiKey) {
     return {
       success: false,
       content: '',
-      error: 'API key not configured. Please add VITE_OPEN_ROUTER_API_KEY to your .env.local file.'
+      error: 'API key not available. Please enter your participant code on the Welcome page and try again.'
     };
   }
 
@@ -143,7 +147,7 @@ Create a comprehensive prompt that will generate a fully functional web applicat
     
     if (error instanceof Error) {
       if (error.message.includes('401')) {
-        errorMessage = 'Invalid API key. Please check your VITE_OPEN_ROUTER_API_KEY in .env.local';
+        errorMessage = 'Invalid API key. Please check your participant code or contact support.';
       } else if (error.message.includes('429')) {
         errorMessage = 'Rate limit exceeded. Please try again in a few moments.';
       } else if (error.message.includes('Failed to fetch')) {
