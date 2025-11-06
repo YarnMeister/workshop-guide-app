@@ -9,7 +9,9 @@ import { ONBOARDING_STEPS } from "@/data/steps";
 import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useWorkshopProgress } from "@/hooks/useWorkshopProgress";
+import { useParticipant } from "@/hooks/useParticipant";
 import { enhancePromptWithAI } from "@/services/openrouter";
+import { revealApiKey } from "@/services/participant";
 import { PRDForm } from "@/components/PRDForm";
 import { PRDAnswers } from "@/utils/storage";
 import { formatPRDForAI } from "@/utils/prdFormatter";
@@ -23,7 +25,9 @@ const OnboardingStep = () => {
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [templateText, setTemplateText] = useState<string>("");
   const [isProcessingAI, setIsProcessingAI] = useState<boolean>(false);
+  const [isRevealingKey, setIsRevealingKey] = useState<boolean>(false);
   const { progress, updateProgress, updateTodoStatus } = useWorkshopProgress();
+  const { name, apiKeyMasked, apiKey, setApiKey } = useParticipant();
   
   const currentStep = ONBOARDING_STEPS.find(step => step.id === currentStepNumber);
 
@@ -49,6 +53,47 @@ const OnboardingStep = () => {
         description: "Could not copy to clipboard",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleRevealAndCopyKey = async () => {
+    // If we already have the key in memory, use it
+    if (apiKey) {
+      await copyToClipboard(apiKey);
+      toast({
+        title: "Key copied!",
+        description: "Full API key copied to clipboard",
+      });
+      return;
+    }
+
+    setIsRevealingKey(true);
+    try {
+      const result = await revealApiKey();
+      if (result.success && result.apiKey) {
+        // Store in memory for future use
+        setApiKey(result.apiKey);
+        await copyToClipboard(result.apiKey);
+        toast({
+          title: "Key copied!",
+          description: "Full API key copied to clipboard",
+        });
+      } else {
+        toast({
+          title: "Failed to retrieve key",
+          description: result.error || "Please try again or re-enter your participant code",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Reveal key error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to retrieve key. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRevealingKey(false);
     }
   };
 
@@ -318,7 +363,20 @@ const OnboardingStep = () => {
         });
         
         try {
-          const result = await enhancePromptWithAI(prdFormatted);
+          // Create getApiKey function that checks memory first, then calls API
+          const getApiKey = async (): Promise<string | null> => {
+            if (apiKey) {
+              return apiKey;
+            }
+            const result = await revealApiKey();
+            if (result.success && result.apiKey) {
+              setApiKey(result.apiKey);
+              return result.apiKey;
+            }
+            return null;
+          };
+
+          const result = await enhancePromptWithAI(prdFormatted, getApiKey);
           
           if (result.success) {
             // Save the enhanced prompt and cache it
@@ -405,6 +463,15 @@ const OnboardingStep = () => {
             {/* Detailed content or default information card */}
             {currentStep.detailedContent ? (
               <div className="mb-8 space-y-6">
+                {/* Personalized greeting for step 1 */}
+                {currentStepNumber === 1 && name && (
+                  <div className="rounded-lg border bg-primary/5 p-4 mb-4">
+                    <p className="text-lg font-semibold text-foreground">
+                      Welcome {name},
+                    </p>
+                  </div>
+                )}
+                
                 {/* Info Panel - Show at top for step 1 and step 2 */}
                 {currentStep.detailedContent.infoPanel && (currentStepNumber === 1 || currentStepNumber === 2) && (
                   <div className="rounded-lg border bg-blue-50 p-6">
@@ -544,9 +611,51 @@ const OnboardingStep = () => {
                     )}
                     {section.commands && (
                       <div className="mb-4 space-y-2">
-                        {section.commands.map((command, cmdIndex) => (
-                          <CopyableCommand key={cmdIndex} command={command} />
-                        ))}
+                        {section.commands.map((command, cmdIndex) => {
+                          // Special handling for Void Editor key on step 1
+                          if (currentStepNumber === 1 && section.title === "Install Void Editor" && command === "sk-ar3x-pkxX8c-erCr9-cvD-rr4R") {
+                            // Replace with masked key from participant state
+                            const displayKey = apiKeyMasked || "sk-or-v1-**********";
+                            return (
+                              <div key={cmdIndex} className="space-y-2">
+                                <div className="flex items-center justify-between rounded-md bg-muted p-3 text-sm">
+                                  <code className="flex-1 font-mono">{displayKey}</code>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => copyToClipboard(displayKey)}
+                                    className="ml-2 h-8 w-8 p-0"
+                                    disabled={copiedCommands.has(displayKey)}
+                                  >
+                                    {copiedCommands.has(displayKey) ? (
+                                      <Check className="h-4 w-4 text-green-600" />
+                                    ) : (
+                                      <Copy className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={handleRevealAndCopyKey}
+                                  disabled={isRevealingKey}
+                                  className="w-full"
+                                >
+                                  {isRevealingKey ? (
+                                    "Retrieving..."
+                                  ) : (
+                                    <>
+                                      <Copy className="h-4 w-4 mr-2" />
+                                      Copy Full Key
+                                    </>
+                                  )}
+                                </Button>
+                              </div>
+                            );
+                          }
+                          // Regular command display
+                          return <CopyableCommand key={cmdIndex} command={command} />;
+                        })}
                       </div>
                     )}
                     {section.screenshot && (

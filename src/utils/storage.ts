@@ -47,6 +47,8 @@ export interface PRDAnswers {
 // Type definitions
 export interface WorkshopProgress {
   participantId: string | null;
+  participantName: string | null; // NEW: Participant's name from code lookup
+  apiKeyMasked: string | null; // NEW: Masked API key for display (never store full key)
   currentStepId: number;
   completedPages: number[];
   setupPageTodos: {
@@ -105,6 +107,8 @@ const defaultPRDAnswers: PRDAnswers = {
 // Default progress state
 export const defaultProgress: WorkshopProgress = {
   participantId: null,
+  participantName: null,
+  apiKeyMasked: null,
   currentStepId: 1,
   completedPages: [],
   setupPageTodos: {},
@@ -134,6 +138,13 @@ export const getStoredProgress = (): WorkshopProgress => {
           constraints: { boundaries: '' },
           additionalContext: { otherDetails: '' },
         };
+      }
+      // Ensure new fields exist (migration from old storage)
+      if (parsed.participantName === undefined) {
+        parsed.participantName = null;
+      }
+      if (parsed.apiKeyMasked === undefined) {
+        parsed.apiKeyMasked = null;
       }
       return parsed;
     }

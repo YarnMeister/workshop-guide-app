@@ -2,10 +2,11 @@ import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Home } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useParticipant } from "@/hooks/useParticipant";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const participantId = sessionStorage.getItem("participantId");
+  const { participantId, name } = useParticipant();
 
   return (
     <div className="min-h-screen bg-background">
@@ -23,7 +24,7 @@ const Dashboard = () => {
             Onboarding Complete!
           </h1>
           <p className="mb-8 text-lg text-muted-foreground">
-            Great job, Participant {participantId}! You've successfully completed all onboarding steps and you're ready to start the workshop.
+            Great job{name ? `, ${name}` : participantId ? `, Participant ${participantId}` : ''}! You've successfully completed all onboarding steps and you're ready to start the workshop.
           </p>
 
           {/* Success card */}

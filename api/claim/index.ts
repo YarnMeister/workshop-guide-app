@@ -1,0 +1,64 @@
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { createCookie, verifyCookie } from '../utils/cookies';
+import { getParticipantByCode } from '../utils/participants';
+import { maskApiKey } from '../utils/maskApiKey';
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  // Handle OPTIONS preflight
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  // Only allow POST
+  if (req.method !== 'POST') {
+    return res.status(405).json({ success: false, error: 'Method not allowed' });
+  }
+
+  try {
+    const { code } = req.body;
+
+    if (!code || typeof code !== 'string') {
+      return res.status(400).json({ success: false, error: 'Invalid code' });
+    }
+
+    // Lookup participant (case-sensitive, exact match)
+    const participant = getParticipantByCode(code.trim());
+
+    if (!participant) {
+      return res.status(404).json({ success: false, error: 'Invalid code' });
+    }
+
+    // Create signed cookie with minimal data
+    const cookiePayload = {
+      code: code.trim(),
+      name: participant.name,
+      participantId: code.trim(), // Use code as participantId
+    };
+
+    const cookie = createCookie(cookiePayload);
+
+    // Mask API key (show first 8 chars)
+    const maskedKey = maskApiKey(participant.apiKey);
+
+    // Set cookie
+    res.setHeader('Set-Cookie', cookie);
+
+    // Return success response (never return full API key)
+    return res.status(200).json({
+      success: true,
+      participantId: code.trim(),
+      name: participant.name,
+      apiKeyMasked: maskedKey,
+    });
+  } catch (error) {
+    console.error('Claim error:', error);
+    return res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+}
+
