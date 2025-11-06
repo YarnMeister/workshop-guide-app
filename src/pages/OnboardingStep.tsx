@@ -477,15 +477,6 @@ const OnboardingStep = () => {
             {/* Detailed content or default information card */}
             {currentStep.detailedContent ? (
               <div className="mb-8 space-y-6">
-                {/* Personalized greeting for step 1 */}
-                {currentStepNumber === 1 && name && (
-                  <div className="rounded-lg border bg-primary/5 p-4 mb-4">
-                    <p className="text-lg font-semibold text-foreground">
-                      Welcome {name},
-                    </p>
-                  </div>
-                )}
-                
                 {/* Info Panel - Show at top for step 1 and step 2 */}
                 {currentStep.detailedContent.infoPanel && (currentStepNumber === 1 || currentStepNumber === 2) && (
                   <div className="rounded-lg border bg-blue-50 p-6">
@@ -631,37 +622,19 @@ const OnboardingStep = () => {
                             // Replace with masked key from participant state
                             const displayKey = apiKeyMasked || "sk-or-v1-**********";
                             return (
-                              <div key={cmdIndex} className="space-y-2">
-                                <div className="flex items-center justify-between rounded-md bg-muted p-3 text-sm">
-                                  <code className="flex-1 font-mono">{displayKey}</code>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => copyToClipboard(displayKey)}
-                                    className="ml-2 h-8 w-8 p-0"
-                                    disabled={copiedCommands.has(displayKey)}
-                                  >
-                                    {copiedCommands.has(displayKey) ? (
-                                      <Check className="h-4 w-4 text-green-600" />
-                                    ) : (
-                                      <Copy className="h-4 w-4" />
-                                    )}
-                                  </Button>
-                                </div>
+                              <div key={cmdIndex} className="flex items-center justify-between rounded-md bg-muted p-3 text-sm">
+                                <code className="flex-1 font-mono">{displayKey}</code>
                                 <Button
-                                  variant="outline"
+                                  variant="ghost"
                                   size="sm"
                                   onClick={handleRevealAndCopyKey}
+                                  className="ml-2 h-8 w-8 p-0"
                                   disabled={isRevealingKey}
-                                  className="w-full"
                                 >
                                   {isRevealingKey ? (
-                                    "Retrieving..."
+                                    <Check className="h-4 w-4 text-green-600" />
                                   ) : (
-                                    <>
-                                      <Copy className="h-4 w-4 mr-2" />
-                                      Copy Full Key
-                                    </>
+                                    <Copy className="h-4 w-4" />
                                   )}
                                 </Button>
                               </div>
