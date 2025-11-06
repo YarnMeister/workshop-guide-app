@@ -1,16 +1,3 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { checkSession } from '@/services/participant';
-import { useWorkshopProgress } from '@/hooks/useWorkshopProgress';
-
-interface ParticipantState {
-  participantId: string | null;
-  name: string | null;
-  apiKeyMasked: string | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  apiKey: string | null; // Store revealed key in memory
-}
-
 import { useState, useEffect, useCallback } from 'react';
 import { checkSession } from '@/services/participant';
 import { useWorkshopProgress } from '@/hooks/useWorkshopProgress';
