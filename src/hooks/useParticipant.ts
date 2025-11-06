@@ -11,9 +11,24 @@ interface ParticipantState {
   apiKey: string | null; // Store revealed key in memory
 }
 
+import { useState, useEffect, useCallback } from 'react';
+import { checkSession } from '@/services/participant';
+import { useWorkshopProgress } from '@/hooks/useWorkshopProgress';
+
+interface ParticipantState {
+  participantId: string | null;
+  name: string | null;
+  apiKeyMasked: string | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  apiKey: string | null; // Store revealed key in memory
+}
+
+// Module-level flag to prevent multiple simultaneous session checks
+let sessionCheckInProgress = false;
+
 export function useParticipant() {
   const { progress, updateProgress } = useWorkshopProgress();
-  const hasCheckedSession = useRef(false);
   
   const [state, setState] = useState<ParticipantState>({
     participantId: progress.participantId,
@@ -26,20 +41,20 @@ export function useParticipant() {
 
   // Check session on mount only
   useEffect(() => {
-    // Prevent multiple session checks
-    if (hasCheckedSession.current) {
-      console.log('[useParticipant] Session already checked, skipping');
+    // Prevent multiple simultaneous session checks across all hook instances
+    if (sessionCheckInProgress) {
+      console.log('[useParticipant] Session check already in progress, skipping');
       return;
     }
     
-    hasCheckedSession.current = true;
+    sessionCheckInProgress = true;
     console.log('[useParticipant] Starting session check...');
     
     const restoreSession = async () => {
-      // If we have localStorage data, check if session is still valid
-      if (progress.participantId && progress.participantName) {
-        console.log('[useParticipant] Found localStorage data, checking session...');
-        try {
+      try {
+        // If we have localStorage data, check if session is still valid
+        if (progress.participantId && progress.participantName) {
+          console.log('[useParticipant] Found localStorage data, checking session...');
           const session = await checkSession();
           console.log('[useParticipant] Session check result:', session);
           if (session.authenticated && session.participantId === progress.participantId) {
@@ -71,14 +86,9 @@ export function useParticipant() {
               apiKeyMasked: null,
             });
           }
-        } catch (error) {
-          console.error('[useParticipant] Session check failed:', error);
-          setState(prev => ({ ...prev, isLoading: false }));
-        }
-      } else {
-        // No existing data, check for cookie anyway
-        console.log('[useParticipant] No localStorage data, checking cookie...');
-        try {
+        } else {
+          // No existing data, check for cookie anyway
+          console.log('[useParticipant] No localStorage data, checking cookie...');
           const session = await checkSession();
           console.log('[useParticipant] Cookie check result:', session);
           if (session.authenticated && session.participantId && session.name) {
@@ -107,17 +117,12 @@ export function useParticipant() {
               apiKey: null,
             });
           }
-        } catch (error) {
-          console.error('[useParticipant] Session check failed:', error);
-          setState({
-            participantId: null,
-            name: null,
-            apiKeyMasked: null,
-            isAuthenticated: false,
-            isLoading: false,
-            apiKey: null,
-          });
         }
+      } catch (error) {
+        console.error('[useParticipant] Session check failed:', error);
+        setState(prev => ({ ...prev, isLoading: false }));
+      } finally {
+        sessionCheckInProgress = false;
       }
     };
 

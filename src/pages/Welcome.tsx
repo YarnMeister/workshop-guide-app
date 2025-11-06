@@ -24,9 +24,13 @@ const Welcome = () => {
       participantId, 
       isLoading, 
       currentStepId: progress.currentStepId,
-      hasParticipantId: !!progress.participantId,
-      hasParticipantName: !!progress.participantName 
+      pathname: window.location.pathname
     });
+    
+    // Don't navigate if we're not on the welcome page
+    if (window.location.pathname !== '/') {
+      return;
+    }
     
     // Migration: If old participantId exists but no name, prompt to re-enter code
     if (progress.participantId && !progress.participantName && !isLoading) {
@@ -42,8 +46,8 @@ const Welcome = () => {
     }
 
     // If authenticated and has progress, navigate to current step
-    // Only navigate if we're still on the welcome page
-    if (isAuthenticated && participantId && progress.currentStepId && !isLoading && window.location.pathname === '/') {
+    // Only navigate if we're still on the welcome page and loading is complete
+    if (isAuthenticated && participantId && progress.currentStepId && !isLoading) {
       console.log('[Welcome] Authenticated user detected, navigating to step', progress.currentStepId);
       toast({
         title: "Welcome back!",

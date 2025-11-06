@@ -27,7 +27,7 @@ const OnboardingStep = () => {
   const [isProcessingAI, setIsProcessingAI] = useState<boolean>(false);
   const [isRevealingKey, setIsRevealingKey] = useState<boolean>(false);
   const { progress, updateProgress, updateTodoStatus } = useWorkshopProgress();
-  const { name, apiKeyMasked, apiKey, setApiKey, isAuthenticated, isLoading: participantLoading } = useParticipant();
+  const { name, apiKeyMasked, apiKey, setApiKey, isAuthenticated, isLoading: participantLoading, participantId } = useParticipant();
   
   const currentStep = ONBOARDING_STEPS.find(step => step.id === currentStepNumber);
 
@@ -231,7 +231,7 @@ const OnboardingStep = () => {
       currentStepNumber, 
       isAuthenticated, 
       participantLoading,
-      participantId: progress.participantId 
+      participantId: participantId || progress.participantId 
     });
     
     // Wait for participant loading to complete
@@ -240,9 +240,14 @@ const OnboardingStep = () => {
       return;
     }
 
-    // Check if participant is authenticated
-    if (!isAuthenticated || !progress.participantId) {
-      console.log('[OnboardingStep] No authenticated participant, redirecting to welcome');
+    // Check if participant is authenticated - use hook's participantId, not progress.participantId
+    // The hook's state is the source of truth
+    if (!isAuthenticated || !participantId) {
+      console.log('[OnboardingStep] No authenticated participant, redirecting to welcome', {
+        isAuthenticated,
+        participantId,
+        progressParticipantId: progress.participantId
+      });
       toast({
         title: "Access Denied",
         description: "Please enter your participant code first.",
@@ -255,7 +260,7 @@ const OnboardingStep = () => {
     // Update current step in progress
     console.log('[OnboardingStep] Updating current step to', currentStepNumber);
     updateProgress({ currentStepId: currentStepNumber });
-  }, [currentStepNumber, navigate, updateProgress, isAuthenticated, participantLoading, progress.participantId]);
+  }, [currentStepNumber, navigate, updateProgress, isAuthenticated, participantLoading, participantId, progress.participantId]);
 
   // Separate effect for loading saved data
   useEffect(() => {
