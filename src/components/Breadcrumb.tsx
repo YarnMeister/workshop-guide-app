@@ -1,7 +1,8 @@
 import { Check, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useWorkshopProgress } from "@/hooks/useWorkshopProgress";
-import { useNavigate } from "react-router-dom";
+import { useParticipant } from "@/hooks/useParticipant";
+import { logout } from "@/services/participant";
 import { toast } from "@/hooks/use-toast";
 
 export interface Step {
@@ -17,17 +18,35 @@ interface BreadcrumbProps {
 
 export const Breadcrumb = ({ steps, currentStep }: BreadcrumbProps) => {
   const { resetProgress } = useWorkshopProgress();
-  const navigate = useNavigate();
+  const { clearParticipant } = useParticipant();
 
-  const handleClearProgress = () => {
+  const handleClearProgress = async () => {
     if (confirm("Are you sure you want to clear all progress and start over?")) {
+      console.log('[Breadcrumb] Clearing all progress...');
+      
+      try {
+        // Clear session cookie on server
+        await logout();
+        console.log('[Breadcrumb] Session cookie cleared');
+      } catch (error) {
+        console.error('[Breadcrumb] Error clearing session:', error);
+      }
+      
+      // Clear localStorage progress
       resetProgress();
-      sessionStorage.clear();
+      
+      // Clear participant state
+      clearParticipant();
+      
       toast({
         title: "Progress cleared",
         description: "All progress has been reset. Returning to welcome page...",
       });
-      navigate("/");
+      
+      // Force a hard reload to clear all state and ensure fresh start
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 500);
     }
   };
 

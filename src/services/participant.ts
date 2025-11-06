@@ -87,3 +87,24 @@ export async function revealApiKey(): Promise<RevealKeyResponse> {
   }
 }
 
+/**
+ * Logout - clears session cookie
+ */
+export async function logout(): Promise<{ success: boolean; error?: string }> {
+  try {
+    const response = await fetch('/api/logout', {
+      method: 'POST',
+      credentials: 'include',
+    });
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Logout error:', error);
+    return {
+      success: false,
+      error: 'Failed to logout. Please try again.',
+    };
+  }
+}
+

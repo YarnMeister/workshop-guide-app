@@ -311,6 +311,18 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Logout endpoint - clears session cookie
+app.post('/api/logout', async (req, res) => {
+  try {
+    // Clear the session cookie by setting it to expire immediately
+    res.setHeader('Set-Cookie', `${COOKIE_NAME}=; Max-Age=0; Path=/; SameSite=Lax; HttpOnly`);
+    res.status(200).json({ success: true, message: 'Logged out successfully' });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
 // Export for Vercel serverless
 export default app;
 
