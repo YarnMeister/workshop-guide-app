@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { checkSession } from '@/services/participant';
 import { useWorkshopProgress } from '@/hooks/useWorkshopProgress';
 
@@ -13,6 +13,8 @@ interface ParticipantState {
 
 export function useParticipant() {
   const { progress, updateProgress } = useWorkshopProgress();
+  const hasCheckedSession = useRef(false);
+  
   const [state, setState] = useState<ParticipantState>({
     participantId: progress.participantId,
     name: progress.participantName,
@@ -24,28 +26,43 @@ export function useParticipant() {
 
   // Check session on mount only
   useEffect(() => {
+    // Prevent multiple session checks
+    if (hasCheckedSession.current) {
+      console.log('[useParticipant] Session already checked, skipping');
+      return;
+    }
+    
+    hasCheckedSession.current = true;
+    console.log('[useParticipant] Starting session check...');
+    
     const restoreSession = async () => {
       // If we have localStorage data, check if session is still valid
       if (progress.participantId && progress.participantName) {
+        console.log('[useParticipant] Found localStorage data, checking session...');
         try {
           const session = await checkSession();
+          console.log('[useParticipant] Session check result:', session);
           if (session.authenticated && session.participantId === progress.participantId) {
             // Session is valid, use existing data
+            console.log('[useParticipant] Session valid, restoring from localStorage');
             setState({
               participantId: progress.participantId,
               name: progress.participantName,
               apiKeyMasked: progress.apiKeyMasked,
               isAuthenticated: true,
               isLoading: false,
+              apiKey: null,
             });
           } else {
             // Session expired or invalid
+            console.log('[useParticipant] Session expired or invalid, clearing data');
             setState({
               participantId: null,
               name: null,
               apiKeyMasked: null,
               isAuthenticated: false,
               isLoading: false,
+              apiKey: null,
             });
             // Clear invalid localStorage data
             updateProgress({
@@ -55,44 +72,50 @@ export function useParticipant() {
             });
           }
         } catch (error) {
-          console.error('Session check failed:', error);
+          console.error('[useParticipant] Session check failed:', error);
           setState(prev => ({ ...prev, isLoading: false }));
         }
       } else {
         // No existing data, check for cookie anyway
+        console.log('[useParticipant] No localStorage data, checking cookie...');
         try {
           const session = await checkSession();
+          console.log('[useParticipant] Cookie check result:', session);
           if (session.authenticated && session.participantId && session.name) {
             // We have a valid session but no localStorage data
-            // This shouldn't happen normally, but handle it gracefully
+            console.log('[useParticipant] Cookie valid, restoring from session');
             setState({
               participantId: session.participantId,
               name: session.name,
               apiKeyMasked: null, // Will be set on next claim or reveal
               isAuthenticated: true,
               isLoading: false,
+              apiKey: null,
             });
             updateProgress({
               participantId: session.participantId,
               participantName: session.name,
             });
           } else {
+            console.log('[useParticipant] No valid session found');
             setState({
               participantId: null,
               name: null,
               apiKeyMasked: null,
               isAuthenticated: false,
               isLoading: false,
+              apiKey: null,
             });
           }
         } catch (error) {
-          console.error('Session check failed:', error);
+          console.error('[useParticipant] Session check failed:', error);
           setState({
             participantId: null,
             name: null,
             apiKeyMasked: null,
             isAuthenticated: false,
             isLoading: false,
+            apiKey: null,
           });
         }
       }
@@ -102,6 +125,7 @@ export function useParticipant() {
   }, []); // Empty deps - run once on mount only
 
   const setParticipant = useCallback((participantId: string, name: string, apiKeyMasked: string) => {
+    console.log('[useParticipant] Setting participant:', { participantId, name });
     setState({
       participantId,
       name,
@@ -118,6 +142,7 @@ export function useParticipant() {
   }, [updateProgress]);
 
   const clearParticipant = useCallback(() => {
+    console.log('[useParticipant] Clearing participant');
     setState({
       participantId: null,
       name: null,

@@ -19,8 +19,18 @@ const Welcome = () => {
 
   // Check for existing progress on mount
   useEffect(() => {
+    console.log('[Welcome] useEffect triggered', { 
+      isAuthenticated, 
+      participantId, 
+      isLoading, 
+      currentStepId: progress.currentStepId,
+      hasParticipantId: !!progress.participantId,
+      hasParticipantName: !!progress.participantName 
+    });
+    
     // Migration: If old participantId exists but no name, prompt to re-enter code
     if (progress.participantId && !progress.participantName && !isLoading) {
+      console.log('[Welcome] Old participantId detected, prompting re-entry');
       toast({
         title: "Please re-enter your participant code",
         description: "We've updated our system. Please enter your participant code to continue.",
@@ -28,10 +38,13 @@ const Welcome = () => {
       });
       // Clear old participantId
       updateProgress({ participantId: null });
+      return; // Don't navigate
     }
 
     // If authenticated and has progress, navigate to current step
-    if (isAuthenticated && participantId && progress.currentStepId && !isLoading) {
+    // Only navigate if we're still on the welcome page
+    if (isAuthenticated && participantId && progress.currentStepId && !isLoading && window.location.pathname === '/') {
+      console.log('[Welcome] Authenticated user detected, navigating to step', progress.currentStepId);
       toast({
         title: "Welcome back!",
         description: `Resuming where you left off${name ? `, ${name}` : ''}...`,
