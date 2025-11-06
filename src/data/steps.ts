@@ -1,9 +1,9 @@
 export const ONBOARDING_STEPS = [
   {
     id: 1,
-    title: "Setup Tools",
-    description: "Install requirements",
-    heading: "Setup Your Development Environment",
+    title: "Set Up Your Tools",
+    description: "Prepare your environment for coding",
+    heading: "Set Up Your Tools",
     content: "Before we dive in, let's make sure you have all the necessary tools installed. Tick each step off as you go and review the summary at the bottom of the page before you move on to the next page.",
     ctaText: "Next",
     ctaAction: "/onboarding/step/2",
@@ -288,9 +288,9 @@ git config --global user.email "jane.doe@email.com"`
   },
   {
     id: 2,
-    title: "Write Specs",
-    description: "Define requirements",
-    heading: "Define Your Project Requirements",
+    title: "Define the App Vision",
+    description: "Write a mini-PRD the AI can understand",
+    heading: "Define the App Vision",
     content: "Let's capture your project idea! Fill out the sections below to describe what you're building. You can expand each section as needed, and feel free to skip any that don't apply.",
     ctaText: "Next",
     ctaAction: "/onboarding/step/3",
@@ -304,9 +304,9 @@ git config --global user.email "jane.doe@email.com"`
   },
   {
     id: 3,
-    title: "Prototype (UI)",
-    description: "Design interface",
-    heading: "Create Your User Interface Prototype",
+    title: "Generate the Prototype",
+    description: "Turn your PRD into a working UI",
+    heading: "Generate the Prototype",
     content: "Review and copy your AI-generated prompt below, then use it in Lovable to create your prototype. The prompt has been optimized specifically for Lovable's AI builder to generate a working prototype with all the features you specified.",
     ctaText: "Next",
     ctaAction: "/onboarding/step/4",
@@ -344,9 +344,9 @@ git config --global user.email "jane.doe@email.com"`
   },
   {
     id: 4,
-    title: "Export project",
-    description: "Generate code",
-    heading: "Export Your Project Code",
+    title: "Export to GitHub",
+    description: "Move your project into your personal repo",
+    heading: "Export to GitHub",
     content: "Time to turn your designs into actual code! We'll export your prototype into clean, production-ready code that you can customize and extend.",
     ctaText: "Next",
     ctaAction: "/onboarding/step/5",
@@ -395,17 +395,13 @@ git config --global user.email "jane.doe@email.com"`
   },
   {
     id: 5,
-    title: "Customise app",
-    description: "Build server logic",
-    heading: "Vibe Coder Hub - Customise Your Application",
-    content: "Your guide to safely experimenting with code like a pro. Use AI assistance to make changes, test locally, and iterate confidently.",
+    title: "Learn the Vibe Coding Flow",
+    description: "Get familiar with core concepts and commands",
+    heading: "Learn the Vibe Coding Flow",
+    content: "Your guide to safely experimenting with code like a pro. Learn the tools, mindset, and best practices for AI-assisted development.",
     ctaText: "Next",
     ctaAction: "/onboarding/step/6",
     detailedContent: {
-      infoPanel: {
-        title: "Welcome to vibe coding!",
-        content: "You don't need to know how everything works — you just need to know what to ask the AI. Every change is reversible, and you can't permanently damage your app."
-      },
       sections: [
         {
           title: "Void Editor Overview",
@@ -438,6 +434,89 @@ git config --global user.email "jane.doe@email.com"`
             "You can't permanently damage the app. Every change is reversible"
           ]
         },
+        {
+          title: "Vibe Coding Lifecycle",
+          description: "This visual guide shows the iterative workflow you'll follow when making code changes. Each cycle represents one complete iteration: clone or pull the latest code, create a feature branch, make changes, test locally, then merge and push to GitHub. Repeat as needed!",
+          screenshot: "vibe-coding-lifecycle_1.png"
+        },
+        {
+          title: "Success Patterns - Best Practices",
+          description: "Follow these patterns for smooth vibe coding:",
+          bulletPoints: [
+            "Use descriptive branch names (e.g., update-homepage-text, not test1)",
+            "Review your app in the browser before merging",
+            "Ask 'why' questions to the AI — they build understanding faster than 'how'",
+            "Commit and merge when your change feels complete, not perfect"
+          ]
+        },
+        {
+          title: "Vibe Coder's Glossary",
+          description: "Quick definitions for common terms:",
+          tabs: [
+            {
+              title: "A-C",
+              content: {
+                subsections: [
+                  {
+                    title: "Branch",
+                    codeBlock: `A separate workspace for your edits. Like a personal copy of the code where you can experiment safely.`
+                  },
+                  {
+                    title: "Commit",
+                    codeBlock: `A snapshot of your progress. Like saving a checkpoint in a video game.`
+                  }
+                ]
+              }
+            },
+            {
+              title: "D-M",
+              content: {
+                subsections: [
+                  {
+                    title: "Deploy",
+                    codeBlock: `Publishing your work to the live web version. Making your app accessible to users on the internet.`
+                  },
+                  {
+                    title: "Main Branch",
+                    codeBlock: `The primary version of your code. The "official" version that everyone sees.`
+                  },
+                  {
+                    title: "Merge",
+                    codeBlock: `Combining your branch with the main app. Moving your changes from your workspace into the official project.`
+                  }
+                ]
+              }
+            },
+            {
+              title: "R-Z",
+              content: {
+                subsections: [
+                  {
+                    title: "Repo (Repository)",
+                    codeBlock: `The digital folder that holds all project files. Like a Dropbox folder for code.`
+                  },
+                  {
+                    title: "Feature Branch",
+                    codeBlock: `Your personal workspace for making changes. A temporary copy of the code where you can experiment.`
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    id: 6,
+    title: "Make Your First Commit",
+    description: "Run, test, and merge your first code update",
+    heading: "Make Your First Commit",
+    content: "Follow these step-by-step instructions to make your first code changes and commit them to GitHub.",
+    ctaText: "Next",
+    ctaAction: "/onboarding/step/7",
+    detailedContent: {
+      sections: [
         {
           title: "Sync Void Editor with GitHub",
           description: "Clone your GitHub repository to your local computer and open it in Void Editor.",
@@ -697,80 +776,40 @@ Or describe the problem: "The app is showing an error when I..."
               description: `If all else fails and you're not happy with the current version, ask the AI assistant to delete the current branch and then try a different approach.`
             }
           ]
-        },
-        {
-          title: "Success Patterns - Best Practices",
-          description: "Follow these patterns for smooth vibe coding:",
-          bulletPoints: [
-            "Use descriptive branch names (e.g., update-homepage-text, not test1)",
-            "Review your app in the browser before merging",
-            "Ask 'why' questions to the AI — they build understanding faster than 'how'",
-            "Commit and merge when your change feels complete, not perfect"
-          ]
-        },
-        {
-          title: "Vibe Coder's Glossary",
-          description: "Quick definitions for common terms:",
-          tabs: [
-            {
-              title: "A-C",
-              content: {
-                subsections: [
-                  {
-                    title: "Branch",
-                    codeBlock: `A separate workspace for your edits. Like a personal copy of the code where you can experiment safely.`
-                  },
-                  {
-                    title: "Commit",
-                    codeBlock: `A snapshot of your progress. Like saving a checkpoint in a video game.`
-                  }
-                ]
-              }
-            },
-            {
-              title: "D-M",
-              content: {
-                subsections: [
-                  {
-                    title: "Deploy",
-                    codeBlock: `Publishing your work to the live web version. Making your app accessible to users on the internet.`
-                  },
-                  {
-                    title: "Main Branch",
-                    codeBlock: `The primary version of your code. The "official" version that everyone sees.`
-                  },
-                  {
-                    title: "Merge",
-                    codeBlock: `Combining your branch with the main app. Moving your changes from your workspace into the official project.`
-                  }
-                ]
-              }
-            },
-            {
-              title: "R-Z",
-              content: {
-                subsections: [
-                  {
-                    title: "Repo (Repository)",
-                    codeBlock: `The digital folder that holds all project files. Like a Dropbox folder for code.`
-                  },
-                  {
-                    title: "Feature Branch",
-                    codeBlock: `Your personal workspace for making changes. A temporary copy of the code where you can experiment.`
-                  }
-                ]
-              }
-            }
-          ]
         }
       ]
     }
   },
   {
-    id: 6,
-    title: "Launch App",
-    description: "Deploy to production",
-    heading: "Launch Your Application",
+    id: 7,
+    title: "Extend Your App",
+    description: "Add data, logic, and AI-powered features",
+    heading: "Extend Your App",
+    content: "Take your app to the next level by adding more sophisticated features. You'll likely have time to add only one of these so choose wisely. Go on... be a real PM",
+    ctaText: "Next",
+    ctaAction: "/onboarding/step/8",
+    detailedContent: {
+      sections: [
+        {
+          title: "Add an AI Assistant in your app workflow",
+          description: "Coming soon - instructions for adding AI capabilities to your application."
+        },
+        {
+          title: "Add a full Database",
+          description: "Coming soon - instructions for integrating a database into your application."
+        },
+        {
+          title: "Integrate real data using an API",
+          description: "Coming soon - instructions for connecting your app to external APIs."
+        }
+      ]
+    }
+  },
+  {
+    id: 8,
+    title: "Launch to the Web",
+    description: "Deploy your app live via Vercel",
+    heading: "Launch to the Web",
     content: "Congratulations! You're ready to launch your application to the world. We'll deploy it to a production environment and make it accessible to users.",
     ctaText: "Complete",
     ctaAction: "/dashboard",

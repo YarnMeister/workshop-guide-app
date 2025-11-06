@@ -155,6 +155,12 @@ export const saveProgress = (progress: WorkshopProgress): void => {
 export const clearProgress = (): void => {
   try {
     localStorage.removeItem(STORAGE_KEY);
+    // Clear all cached Lovable prompts
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('lovablePrompt_')) {
+        localStorage.removeItem(key);
+      }
+    });
   } catch (error) {
     console.error('Error clearing localStorage:', error);
   }

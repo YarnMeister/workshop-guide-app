@@ -153,13 +153,29 @@ const OnboardingStep = () => {
       // PRD form handles its own state via progress.prdAnswers
       // No need to load templateText for step 2 anymore
     } else if (currentStepNumber === 3) {
-      // Load saved template text for Prototype page - use formatted PRD if empty
+      // Load saved template text for Prototype page
+      // First check if we have it in progress
       if (progress.prototypeTemplate) {
         setTemplateText(progress.prototypeTemplate);
       } else {
-        // Fallback to formatted PRD if no AI-enhanced prompt exists
+        // Check cache for this PRD content
         const prdFormatted = formatPRDForAI(progress.prdAnswers);
-        setTemplateText(prdFormatted || '');
+        if (prdFormatted.trim() && prdFormatted !== "# Mini PRD\n\n") {
+          const prdHash = btoa(prdFormatted).slice(0, 50);
+          const cacheKey = `lovablePrompt_${prdHash}`;
+          const cachedPrompt = localStorage.getItem(cacheKey);
+          
+          if (cachedPrompt) {
+            // Load from cache and update progress
+            setTemplateText(cachedPrompt);
+            updateProgress({ prototypeTemplate: cachedPrompt });
+          } else {
+            // Fallback to formatted PRD if no cache exists
+            setTemplateText(prdFormatted || '');
+          }
+        } else {
+          setTemplateText('');
+        }
       }
       
       // Show AI enhancement error if any
@@ -200,8 +216,6 @@ const OnboardingStep = () => {
     
     // Process AI enhancement when moving from Write Specs to Prototype
     if (currentStepNumber === 2) {
-      setIsProcessingAI(true);
-      
       // Format PRD answers for AI processing
       const prdFormatted = formatPRDForAI(progress.prdAnswers);
       
@@ -212,57 +226,82 @@ const OnboardingStep = () => {
           description: "Please fill out at least one section before proceeding.",
           variant: "destructive",
         });
-        setIsProcessingAI(false);
         return;
       }
+
+      // Generate a simple hash of the PRD content to use as cache key
+      const prdHash = btoa(prdFormatted).slice(0, 50);
+      const cacheKey = `lovablePrompt_${prdHash}`;
       
-      toast({
-        title: "Enhancing with AI...",
-        description: "Creating a well-structured Lovable prompt",
-      });
+      // Check if we already have a cached prompt for this PRD content
+      const cachedPrompt = localStorage.getItem(cacheKey);
       
-      try {
-        const result = await enhancePromptWithAI(prdFormatted);
-        
-        if (result.success) {
-          // Save the enhanced prompt for the prototype page
-          updateProgress({ 
-            prototypeTemplate: result.content,
-            aiEnhancementError: undefined
-          });
-          
-          toast({
-            title: "AI Enhancement Complete",
-            description: "Your prompt has been enhanced and is ready on the next page",
-          });
-        } else {
-          // Save error - show message but still allow proceeding
-          updateProgress({ 
-            prototypeTemplate: prdFormatted,
-            aiEnhancementError: result.error
-          });
-          
-          toast({
-            title: "AI Enhancement Failed",
-            description: result.error || "Using your PRD content instead",
-            variant: "destructive",
-          });
-        }
-      } catch (error) {
-        console.error('AI enhancement error:', error);
-        const prdFormatted = formatPRDForAI(progress.prdAnswers);
+      if (cachedPrompt) {
+        // Use cached prompt
         updateProgress({ 
-          prototypeTemplate: prdFormatted,
-          aiEnhancementError: 'Unexpected error during AI enhancement'
+          prototypeTemplate: cachedPrompt,
+          aiEnhancementError: undefined
         });
         
         toast({
-          title: "Error",
-          description: "Something went wrong. Using your PRD content.",
-          variant: "destructive",
+          title: "Using cached prompt",
+          description: "Loading your previously generated prompt",
         });
-      } finally {
-        setIsProcessingAI(false);
+      } else {
+        // Only call AI if we don't have a cached version
+        setIsProcessingAI(true);
+        
+        toast({
+          title: "Enhancing with AI...",
+          description: "Creating a well-structured Lovable prompt",
+        });
+        
+        try {
+          const result = await enhancePromptWithAI(prdFormatted);
+          
+          if (result.success) {
+            // Save the enhanced prompt and cache it
+            updateProgress({ 
+              prototypeTemplate: result.content,
+              aiEnhancementError: undefined
+            });
+            
+            // Cache the result in localStorage with PRD hash as key
+            localStorage.setItem(cacheKey, result.content);
+            
+            toast({
+              title: "AI Enhancement Complete",
+              description: "Your prompt has been enhanced and is ready on the next page",
+            });
+          } else {
+            // Save error - show message but still allow proceeding
+            updateProgress({ 
+              prototypeTemplate: prdFormatted,
+              aiEnhancementError: result.error
+            });
+            
+            toast({
+              title: "AI Enhancement Failed",
+              description: result.error || "Using your PRD content instead",
+              variant: "destructive",
+            });
+          }
+        } catch (error) {
+          console.error('AI enhancement error:', error);
+          const prdFormatted = formatPRDForAI(progress.prdAnswers);
+          updateProgress({ 
+            prototypeTemplate: prdFormatted,
+            aiEnhancementError: 'Unexpected error during AI enhancement'
+          });
+          
+          toast({
+            title: "Error",
+            description: "Something went wrong. Using your PRD content.",
+            variant: "destructive",
+          });
+        } finally {
+          setIsProcessingAI(false);
+        }
       }
     }
     
@@ -334,7 +373,7 @@ const OnboardingStep = () => {
                   const shouldInsertInfoPanel = currentStepNumber === 5 && index === 1 && currentStep.detailedContent?.infoPanel;
                   
                   // Define context panels that shouldn't have step numbers
-                  const contextPanels = ['Void Editor Overview', 'Coding Mindset', 'Success Patterns - Best Practices', 'Vibe Coder\'s Glossary'];
+                  const contextPanels = ['Void Editor Overview', 'Coding Mindset', 'Vibe Coding Lifecycle', 'Success Patterns - Best Practices', 'Vibe Coder\'s Glossary'];
                   const isContextPanel = contextPanels.includes(section.title);
                   
                   // Calculate step number: count only workflow steps (skip context panels)
@@ -450,7 +489,10 @@ const OnboardingStep = () => {
                       </div>
                     )}
                     {section.screenshot && (
-                      <div className={`mb-4 ${currentStepNumber === 4 && index === 1 ? 'max-w-[50%]' : ''}`}>
+                      <div className={`mb-4 ${
+                        currentStepNumber === 4 && index === 1 ? 'max-w-[50%]' : 
+                        section.title === 'Vibe Coding Lifecycle' ? 'max-w-[70%]' : ''
+                      }`}>
                         <img 
                           src={`/${section.screenshot}`} 
                           alt={`Screenshot for ${section.title}`}
