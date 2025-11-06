@@ -65,6 +65,11 @@ function loadParticipants(): Record<string, { name: string; apiKey: string }> {
     return participantsCache;
   }
 
+  // Log diagnostics for production debugging
+  console.log(`PARTICIPANTS_JSON length: ${participantsJson.length}`);
+  console.log(`PARTICIPANTS_JSON first 50 chars: ${participantsJson.substring(0, 50)}`);
+  console.log(`PARTICIPANTS_JSON last 50 chars: ${participantsJson.substring(Math.max(0, participantsJson.length - 50))}`);
+
   try {
     // Check if it's already a parsed object (shouldn't happen, but be safe)
     if (typeof participantsJson === 'object') {
@@ -79,6 +84,23 @@ function loadParticipants(): Record<string, { name: string; apiKey: string }> {
       jsonString = jsonString.slice(1, -1);
       // Unescape any escaped quotes
       jsonString = jsonString.replace(/\\"/g, '"').replace(/\\'/g, "'");
+    }
+
+    // Check if the JSON appears truncated (doesn't end with } or }])
+    const trimmed = jsonString.trim();
+    if (!trimmed.endsWith('}') && !trimmed.endsWith('}]')) {
+      console.error('PARTICIPANTS_JSON appears truncated - does not end with }');
+      console.error(`Last 100 chars: ${trimmed.substring(Math.max(0, trimmed.length - 100))}`);
+      
+      // Try to find where it was truncated (look for incomplete JSON)
+      const lastOpeningBrace = trimmed.lastIndexOf('{');
+      const lastClosingBrace = trimmed.lastIndexOf('}');
+      if (lastOpeningBrace > lastClosingBrace) {
+        console.error('PARTICIPANTS_JSON is truncated - unclosed brace detected');
+      }
+      
+      participantsCache = {};
+      return participantsCache;
     }
 
     // Parse the JSON string
