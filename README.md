@@ -47,9 +47,25 @@ The workshop guide consists of 8 onboarding steps plus Welcome and Dashboard pag
 
 ### Backend
 - **Runtime**: Node.js
-- **Framework**: Express.js (local dev) + Vercel serverless functions (production)
-- **Session Management**: Cookie-based with HMAC signing
+- **Framework**: Express.js (unified across local and production)
+- **Database**: Neon Postgres (serverless PostgreSQL)
+- **Database Client**: pg (node-postgres) with connection pooling
+- **Session Management**: Cookie-based with HMAC signing (HttpOnly, 8-hour expiration)
 - **External APIs**: OpenRouter API (Claude 3.5 Sonnet for AI enhancement)
+
+### Unified Backend Architecture
+The app uses a **single Express.js application** that runs identically in both local development and production:
+
+- **Local Development**: Express server runs on port 3001, proxied by Vite dev server on port 8080
+- **Production (Vercel)**: Same Express app runs as a serverless function via `api/index.ts`
+- **Key Benefit**: Identical behavior in both environments - no dual architecture complexity
+
+**How it works:**
+1. `server/index.ts` - Main Express application with all routes and middleware
+2. `api/index.ts` - Thin wrapper that imports and exports the Express app for Vercel
+3. In local dev: `server/index.ts` starts HTTP server on port 3001
+4. In production: Vercel invokes the exported app from `api/index.ts`
+5. Same database connection pooling, same routes, same logic everywhere
 
 ## Development
 
@@ -78,14 +94,20 @@ npm run dev:server  # Express server on port 3001
 
 ### Environment Setup
 
-Create a `.env.local` file in the root directory:
+Create a `.env.local` file in the root directory (see `.env.example` for template):
 
 ```env
+# OpenRouter API Key (for AI enhancement features)
+VITE_OPEN_ROUTER_API_KEY=sk-or-v1-your-key-here
+
 # Required for participant authentication
 COOKIE_SECRET=your-secret-key-here-min-32-chars
 
 # Participant data (JSON string format)
 PARTICIPANTS_JSON={"CODE1":{"name":"Participant Name","apiKey":"sk-or-v1-..."},"CODE2":{...}}
+
+# Neon Database URL (PostgreSQL connection string)
+DATABASE_URL=postgresql://user:password@host/database?sslmode=require
 
 # CORS origin (optional, defaults to *)
 ALLOWED_ORIGIN=http://localhost:8080
@@ -97,6 +119,7 @@ NODE_ENV=development
 **Important Notes:**
 - `COOKIE_SECRET` must be at least 32 characters for security
 - `PARTICIPANTS_JSON` must be a valid JSON string (can contain special characters like `#`)
+- `DATABASE_URL` must be a valid PostgreSQL connection string (Neon provides this)
 - For production, set these in Vercel environment variables
 
 ### Project Structure
