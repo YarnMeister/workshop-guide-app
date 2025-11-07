@@ -1,7 +1,8 @@
 import { Check, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useWorkshopProgress } from "@/hooks/useWorkshopProgress";
-import { useNavigate } from "react-router-dom";
+import { useParticipant } from "@/hooks/useParticipant";
+import { logout } from "@/services/participant";
 import { toast } from "@/hooks/use-toast";
 
 export interface Step {
@@ -17,17 +18,35 @@ interface BreadcrumbProps {
 
 export const Breadcrumb = ({ steps, currentStep }: BreadcrumbProps) => {
   const { resetProgress } = useWorkshopProgress();
-  const navigate = useNavigate();
+  const { clearParticipant } = useParticipant();
 
-  const handleClearProgress = () => {
+  const handleClearProgress = async () => {
     if (confirm("Are you sure you want to clear all progress and start over?")) {
+      console.log('[Breadcrumb] Clearing all progress...');
+      
+      try {
+        // Clear session cookie on server
+        await logout();
+        console.log('[Breadcrumb] Session cookie cleared');
+      } catch (error) {
+        console.error('[Breadcrumb] Error clearing session:', error);
+      }
+      
+      // Clear localStorage progress
       resetProgress();
-      sessionStorage.clear();
+      
+      // Clear participant state
+      clearParticipant();
+      
       toast({
         title: "Progress cleared",
         description: "All progress has been reset. Returning to welcome page...",
       });
-      navigate("/");
+      
+      // Force a hard reload to clear all state and ensure fresh start
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 500);
     }
   };
 
@@ -38,19 +57,19 @@ export const Breadcrumb = ({ steps, currentStep }: BreadcrumbProps) => {
           <h2 className="text-sm font-semibold text-muted-foreground mb-4">
             ONBOARDING PROGRESS
           </h2>
-          <ol className="relative space-y-6">
+          <ol className="relative">
           {steps.map((step, index) => {
             const isCompleted = step.id < currentStep;
             const isCurrent = step.id === currentStep;
             const isUpcoming = step.id > currentStep;
 
             return (
-              <li key={step.id} className="relative animate-slide-in-left" style={{ animationDelay: `${index * 0.1}s` }}>
+              <li key={step.id} className="relative animate-slide-in-left mb-5" style={{ animationDelay: `${index * 0.1}s` }}>
                 <div className="flex items-start gap-4">
                   {/* Step indicator */}
                   <div
                     className={cn(
-                      "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 font-semibold transition-all",
+                      "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 font-semibold transition-all relative z-10",
                       isCompleted && "border-primary bg-primary text-primary-foreground",
                       isCurrent && "border-primary bg-background text-primary shadow-lg shadow-primary/20",
                       isUpcoming && "border-muted bg-background text-muted-foreground"
@@ -64,29 +83,30 @@ export const Breadcrumb = ({ steps, currentStep }: BreadcrumbProps) => {
                   </div>
 
                   {/* Step content */}
-                  <div className="flex-1 pt-1">
+                  <div className="flex-1 pt-1 min-h-[2.5rem]">
                     <h3
                       className={cn(
-                        "font-semibold transition-colors",
+                        "font-semibold text-sm leading-tight transition-colors",
                         isCurrent && "text-foreground",
                         (isCompleted || isUpcoming) && "text-muted-foreground"
                       )}
                     >
                       {step.title}
                     </h3>
-                    <p className="mt-1 text-xs text-muted-foreground">
+                    <p className="mt-1 text-xs text-muted-foreground leading-tight">
                       {step.description}
                     </p>
                   </div>
                 </div>
 
-                {/* Connecting line */}
+                {/* Connecting line - extends from bottom of circle to top of next circle */}
                 {index < steps.length - 1 && (
                   <div
                     className={cn(
-                      "absolute left-5 top-10 h-6 w-0.5 transition-colors",
+                      "absolute left-5 top-10 w-0.5 transition-colors",
                       isCompleted ? "bg-primary" : "bg-border"
                     )}
+                    style={{ height: 'calc(3rem + 2.4px)' }}
                   />
                 )}
               </li>

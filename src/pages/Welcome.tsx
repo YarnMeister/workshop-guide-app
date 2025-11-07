@@ -7,52 +7,109 @@ import { Header } from "@/components/Header";
 import { ArrowRight, Users, Sparkles } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useWorkshopProgress } from "@/hooks/useWorkshopProgress";
+import { useParticipant } from "@/hooks/useParticipant";
+import { claimParticipantCode } from "@/services/participant";
 
 const Welcome = () => {
-  const [participantId, setParticipantId] = useState("");
+  const [code, setCode] = useState("");
+  const [isClaiming, setIsClaiming] = useState(false);
   const navigate = useNavigate();
   const { progress, updateProgress } = useWorkshopProgress();
+  const { isAuthenticated, isLoading, participantId, name, setParticipant } = useParticipant();
 
   // Check for existing progress on mount
   useEffect(() => {
-    console.log("Welcome page - checking progress:", progress);
-    if (progress.participantId && progress.currentStepId) {
-      // Restore session storage for backward compatibility
-      sessionStorage.setItem("participantId", progress.participantId);
-      
+    console.log('[Welcome] useEffect triggered', { 
+      isAuthenticated, 
+      participantId, 
+      isLoading, 
+      currentStepId: progress.currentStepId,
+      pathname: window.location.pathname
+    });
+    
+    // Don't navigate if we're not on the welcome page
+    if (window.location.pathname !== '/') {
+      return;
+    }
+    
+    // Migration: If old participantId exists but no name, prompt to re-enter code
+    if (progress.participantId && !progress.participantName && !isLoading) {
+      console.log('[Welcome] Old participantId detected, prompting re-entry');
+      toast({
+        title: "Please re-enter your participant code",
+        description: "We've updated our system. Please enter your participant code to continue.",
+        variant: "default",
+      });
+      // Clear old participantId
+      updateProgress({ participantId: null });
+      return; // Don't navigate
+    }
+
+    // If authenticated and has progress, navigate to current step
+    // Only navigate if we're still on the welcome page and loading is complete
+    if (isAuthenticated && participantId && progress.currentStepId && !isLoading) {
+      console.log('[Welcome] Authenticated user detected, navigating to step', progress.currentStepId);
       toast({
         title: "Welcome back!",
-        description: "Resuming where you left off...",
+        description: `Resuming where you left off${name ? `, ${name}` : ''}...`,
       });
       
       // Navigate to their last page
       navigate(`/onboarding/step/${progress.currentStepId}`);
     }
-  }, [progress.participantId, progress.currentStepId, navigate]);
+  }, [isAuthenticated, participantId, name, progress.currentStepId, navigate, isLoading, progress.participantId, progress.participantName, updateProgress]);
 
-  const handleStart = () => {
-    if (!participantId.trim()) {
+  const handleStart = async () => {
+    if (!code.trim()) {
       toast({
-        title: "Participant Number Required",
-        description: "Please enter your participant number to continue.",
+        title: "Participant Code Required",
+        description: "Please enter your participant code to continue.",
         variant: "destructive",
       });
       return;
     }
 
-    // Store participant ID in both session storage and localStorage
-    sessionStorage.setItem("participantId", participantId);
-    updateProgress({ 
-      participantId, 
-      currentStepId: 1 
-    });
-    
-    toast({
-      title: "Welcome!",
-      description: `Participant ${participantId} - Let's get started!`,
-    });
+    setIsClaiming(true);
 
-    navigate("/onboarding/step/1");
+    try {
+      const result = await claimParticipantCode(code.trim());
+
+      if (result.success && result.participantId && result.name && result.apiKeyMasked) {
+        // Store participant data
+        setParticipant(result.participantId, result.name, result.apiKeyMasked);
+        
+        // Update progress
+        updateProgress({ 
+          participantId: result.participantId,
+          currentStepId: 1 
+        });
+        
+        toast({
+          title: "Welcome!",
+          description: `Welcome, ${result.name}! Let's get started!`,
+        });
+
+        navigate("/onboarding/step/1");
+      } else {
+        // Handle error
+        const errorMessage = result.error || "We can't find that code. Please check your code or ask a facilitator.";
+        toast({
+          title: "Invalid Code",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        setCode(""); // Clear input on error
+      }
+    } catch (error) {
+      console.error("Claim error:", error);
+      toast({
+        title: "Error",
+        description: "Connection error. Please check your internet and try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsClaiming(false);
+    }
   };
 
   return (
@@ -90,38 +147,37 @@ const Welcome = () => {
               <Sparkles className="absolute bottom-2 right-20 h-5 w-5 text-yellow-300 animate-sparkle animation-delay-400" />
             </div>
             <p className="mb-12 text-lg text-muted-foreground">
-              Get ready for an interactive hands-on experience. Enter your participant number to begin your onboarding journey.
+              Get ready for an interactive hands-on experience. Enter your participant code to begin your onboarding journey.
             </p>
 
             {/* Form */}
             <div className="mx-auto max-w-md space-y-6">
               <div className="space-y-2 text-left">
-                <Label htmlFor="participantId" className="text-base font-medium">
-                  Participant Number
+                <Label htmlFor="code" className="text-base font-medium">
+                  Participant Code
                 </Label>
                 <Input
-                  id="participantId"
+                  id="code"
                   type="text"
-                  placeholder="e.g., WS2025-001"
-                  value={participantId}
-                  onChange={(e) => setParticipantId(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleStart()}
+                  placeholder="Enter your code"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && !isClaiming && handleStart()}
                   className="h-12 text-base"
                   autoFocus
+                  disabled={isClaiming}
                 />
-                <p className="text-sm text-muted-foreground">
-                  Your unique ID was provided in your welcome email
-                </p>
               </div>
 
               <Button
                 onClick={handleStart}
                 size="lg"
                 className="w-full h-12 text-base font-semibold gap-2 group relative overflow-hidden"
+                disabled={isClaiming}
               >
                 <span className="relative z-10 flex items-center gap-2">
-                  Start Onboarding
-                  <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                  {isClaiming ? "Verifying..." : "Start Onboarding"}
+                  {!isClaiming && <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />}
                 </span>
                 <Sparkles className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/70 animate-pulse" />
               </Button>
