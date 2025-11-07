@@ -232,22 +232,57 @@ export default function Insights() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <div className="text-center p-4 bg-blue-50 rounded-lg">
-                      <h3 className="font-semibold text-lg">428,576+</h3>
-                      <p className="text-sm text-muted-foreground">Property Sales</p>
+                  <div className="space-y-6">
+                    {/* Purpose Statement */}
+                    <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg border">
+                      <div className="flex items-start gap-3">
+                        <Lightbulb className="h-6 w-6 text-blue-600 mt-1" />
+                        <div>
+                          <h3 className="font-semibold text-lg mb-2">Why We're Showing You This Data</h3>
+                          <p className="text-muted-foreground text-sm leading-relaxed">
+                            We're providing this comprehensive overview to help you understand what's available in our property dataset 
+                            and inspire you with ideas for valuable insights you could extract. This isn't just raw data—it's a goldmine 
+                            of market intelligence waiting to be explored. Whether you're a real estate professional, investor, researcher, 
+                            or data enthusiast, this data can power everything from market analysis to predictive modeling.
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-center p-4 bg-green-50 rounded-lg">
-                      <h3 className="font-semibold text-lg">2021-2024</h3>
-                      <p className="text-sm text-muted-foreground">Time Period</p>
+
+                    {/* Key Numbers */}
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <div className="text-center p-4 bg-blue-50 rounded-lg">
+                        <h3 className="font-semibold text-lg">428,576+</h3>
+                        <p className="text-sm text-muted-foreground">Property Sales</p>
+                      </div>
+                      <div className="text-center p-4 bg-green-50 rounded-lg">
+                        <h3 className="font-semibold text-lg">2021-2024</h3>
+                        <p className="text-sm text-muted-foreground">Time Period</p>
+                      </div>
+                      <div className="text-center p-4 bg-purple-50 rounded-lg">
+                        <h3 className="font-semibold text-lg">All States</h3>
+                        <p className="text-sm text-muted-foreground">Geographic Coverage</p>
+                      </div>
                     </div>
-                    <div className="text-center p-4 bg-purple-50 rounded-lg">
-                      <h3 className="font-semibold text-lg">All States</h3>
-                      <p className="text-sm text-muted-foreground">Geographic Coverage</p>
+
+                    {/* Value Proposition */}
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                      <div className="flex items-start gap-3">
+                        <TrendingUp className="h-5 w-5 text-yellow-600 mt-1" />
+                        <div>
+                          <h4 className="font-semibold mb-2">Unlock Market Intelligence</h4>
+                          <p className="text-sm text-muted-foreground">
+                            This dataset enables you to identify market trends, benchmark performance, discover investment opportunities, 
+                            validate pricing strategies, and build predictive models. Each data point represents a real transaction, 
+                            giving you authentic market signals rather than theoretical assumptions.
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
+=======
 
               {/* Data Themes */}
               <div className="grid md:grid-cols-2 gap-6">
