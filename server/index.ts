@@ -4,6 +4,7 @@ import cors from 'cors';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
+import { query, testConnection } from './database.js';
 
 // Load environment variables from .env.local (for local dev) or .env
 dotenv.config({ path: '.env.local' });
@@ -342,6 +343,346 @@ app.post('/api/logout', async (req, res) => {
   } catch (error) {
     console.error('Logout error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// Middleware to check authentication for protected routes
+const requireAuth = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  try {
+    const cookieHeader = req.headers.cookie || '';
+    const cookieMatch = cookieHeader.match(/participant_session=([^;]+)/);
+    const cookie = cookieMatch ? cookieMatch[1] : null;
+
+    if (!cookie) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const payload = verifyCookie(cookie);
+    if (!payload) {
+      return res.status(401).json({ error: 'Invalid session' });
+    }
+
+    // Add participant info to request for use in handlers
+    (req as any).participant = payload;
+    next();
+  } catch (error) {
+    console.error('Auth middleware error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// Database insights endpoints
+
+// Get suburb insights
+app.get('/api/insights/suburbs', requireAuth, async (req, res) => {
+  try {
+    const { state, limit = 20 } = req.query;
+    
+    let queryText = `
+      SELECT 
+        suburb,
+        ROUND(AVG(price_search_sold)::numeric, 0) as avg_price,
+        ROUND(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY price_search_sold)::numeric, 0) as median_price,
+        COUNT(*) as total_sales
+      FROM property_sales 
+      WHERE price_search_sold > 0
+    `;
+    
+    const params: any[] = [];
+    if (state) {
+      queryText += ` AND state = $${params.length + 1}`;
+      params.push(state);
+    }
+    
+    queryText += `
+      GROUP BY suburb 
+      HAVING COUNT(*) >= 5
+      ORDER BY total_sales DESC 
+      LIMIT $${params.length + 1}
+    `;
+    params.push(parseInt(limit as string));
+
+    const result = await query(queryText, params);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Suburb insights error:', error);
+    res.status(500).json({ error: 'Failed to fetch suburb insights' });
+  }
+});
+
+// Get property type insights
+app.get('/api/insights/property-types', requireAuth, async (req, res) => {
+  try {
+    const { state } = req.query;
+    
+    let queryText = `
+      WITH total_sales AS (
+        SELECT COUNT(*) as total_count 
+        FROM property_sales 
+        WHERE price_search_sold > 0
+    `;
+    
+    const params: any[] = [];
+    if (state) {
+      queryText += ` AND state = $${params.length + 1}`;
+      params.push(state);
+    }
+    
+    queryText += `
+      )
+      SELECT 
+        property_type,
+        ROUND(AVG(price_search_sold)::numeric, 0) as avg_price,
+        COUNT(*) as total_sales,
+        ROUND((COUNT(*)::float / total_sales.total_count * 100)::numeric, 1) as market_share_pct
+      FROM property_sales, total_sales
+      WHERE price_search_sold > 0
+    `;
+    
+    if (state) {
+      queryText += ` AND state = $${params.length}`;
+    }
+    
+    queryText += `
+      GROUP BY property_type, total_sales.total_count
+      ORDER BY total_sales DESC
+    `;
+
+    const result = await query(queryText, params);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Property type insights error:', error);
+    res.status(500).json({ error: 'Failed to fetch property type insights' });
+  }
+});
+
+// Get price trends over time
+app.get('/api/insights/price-trends', requireAuth, async (req, res) => {
+  try {
+    const { state, property_type, months = 12 } = req.query;
+    
+    let queryText = `
+      WITH recent_data AS (
+        SELECT 
+          TO_CHAR(active_month, 'YYYY-MM') as month,
+          ROUND(AVG(price_search_sold)::numeric, 0) as avg_price,
+          COUNT(*) as total_sales,
+          active_month
+        FROM property_sales 
+        WHERE price_search_sold > 0
+    `;
+    
+    const params: any[] = [];
+    if (state) {
+      queryText += ` AND state = $${params.length + 1}`;
+      params.push(state);
+    }
+    
+    if (property_type) {
+      queryText += ` AND property_type = $${params.length + 1}`;
+      params.push(property_type);
+    }
+    
+    queryText += `
+        GROUP BY TO_CHAR(active_month, 'YYYY-MM'), active_month
+        HAVING COUNT(*) >= 10
+      )
+      SELECT month, avg_price, total_sales
+      FROM recent_data
+      ORDER BY month DESC
+      LIMIT $${params.length + 1}
+    `;
+    params.push(parseInt(months as string));
+
+    const result = await query(queryText, params);
+    console.log('Price trends query result:', result.rows.length, 'months found');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Price trends error:', error);
+    res.status(500).json({ error: 'Failed to fetch price trends' });
+  }
+});
+
+// Get sale type insights
+app.get('/api/insights/sale-types', requireAuth, async (req, res) => {
+  try {
+    const { state } = req.query;
+    
+    let queryText = `
+      SELECT 
+        sale_type,
+        ROUND(AVG(price_search_sold)::numeric, 0) as avg_price,
+        COUNT(*) as total_sales,
+        ROUND(AVG((price_search_sold - price_search)::float / price_search * 100)::numeric, 2) as avg_premium_pct
+      FROM property_sales 
+      WHERE price_search_sold > 0 AND price_search > 0
+    `;
+    
+    const params: any[] = [];
+    if (state) {
+      queryText += ` AND state = $${params.length + 1}`;
+      params.push(state);
+    }
+    
+    queryText += `
+      GROUP BY sale_type
+      ORDER BY total_sales DESC
+    `;
+
+    const result = await query(queryText, params);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Sale type insights error:', error);
+    res.status(500).json({ error: 'Failed to fetch sale type insights' });
+  }
+});
+
+// Get market statistics
+app.get('/api/insights/market-stats', requireAuth, async (req, res) => {
+  try {
+    const { state } = req.query;
+    
+    let queryText = `
+      SELECT 
+        COUNT(*) as total_sales,
+        ROUND(AVG(price_search_sold)::numeric, 0) as avg_price,
+        ROUND(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY price_search_sold)::numeric, 0) as median_price,
+        COUNT(DISTINCT suburb) as total_suburbs,
+        MIN(price_search_sold) as min_price,
+        MAX(price_search_sold) as max_price,
+        MODE() WITHIN GROUP (ORDER BY TO_CHAR(active_month, 'YYYY-MM')) as most_active_month
+      FROM property_sales 
+      WHERE price_search_sold > 0
+    `;
+    
+    const params: any[] = [];
+    if (state) {
+      queryText += ` AND state = $${params.length + 1}`;
+      params.push(state);
+    }
+
+    const result = await query(queryText, params);
+    const stats = result.rows[0];
+    
+    res.json({
+      total_sales: parseInt(stats.total_sales),
+      avg_price: parseInt(stats.avg_price),
+      median_price: parseInt(stats.median_price),
+      total_suburbs: parseInt(stats.total_suburbs),
+      price_range: {
+        min: parseInt(stats.min_price),
+        max: parseInt(stats.max_price)
+      },
+      most_active_month: stats.most_active_month
+    });
+  } catch (error) {
+    console.error('Market stats error:', error);
+    res.status(500).json({ error: 'Failed to fetch market stats' });
+  }
+});
+
+// Search properties with filters
+app.get('/api/properties/search', requireAuth, async (req, res) => {
+  try {
+    const {
+      state,
+      suburb,
+      property_type,
+      min_price,
+      max_price,
+      bedrooms,
+      bathrooms,
+      sale_type,
+      year,
+      limit = 50,
+      offset = 0
+    } = req.query;
+
+    let queryText = `
+      SELECT *
+      FROM property_sales 
+      WHERE price_search_sold > 0
+    `;
+    
+    const params: any[] = [];
+    
+    if (state) {
+      queryText += ` AND state = $${params.length + 1}`;
+      params.push(state);
+    }
+    
+    if (suburb) {
+      queryText += ` AND suburb ILIKE $${params.length + 1}`;
+      params.push(`%${suburb}%`);
+    }
+    
+    if (property_type) {
+      queryText += ` AND property_type = $${params.length + 1}`;
+      params.push(property_type);
+    }
+    
+    if (min_price) {
+      queryText += ` AND price_search_sold >= $${params.length + 1}`;
+      params.push(parseInt(min_price as string));
+    }
+    
+    if (max_price) {
+      queryText += ` AND price_search_sold <= $${params.length + 1}`;
+      params.push(parseInt(max_price as string));
+    }
+    
+    if (bedrooms) {
+      queryText += ` AND bedrooms = $${params.length + 1}`;
+      params.push(parseInt(bedrooms as string));
+    }
+    
+    if (bathrooms) {
+      queryText += ` AND bathrooms = $${params.length + 1}`;
+      params.push(parseInt(bathrooms as string));
+    }
+    
+    if (sale_type) {
+      queryText += ` AND sale_type = $${params.length + 1}`;
+      params.push(sale_type);
+    }
+    
+    if (year) {
+      queryText += ` AND financial_year = $${params.length + 1}`;
+      params.push(parseInt(year as string));
+    }
+
+    // Get total count for pagination
+    const countQuery = queryText.replace('SELECT *', 'SELECT COUNT(*)');
+    const countResult = await query(countQuery, params);
+    const total = parseInt(countResult.rows[0].count);
+
+    // Add pagination
+    queryText += ` ORDER BY active_month DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    params.push(parseInt(limit as string));
+    params.push(parseInt(offset as string));
+
+    const result = await query(queryText, params);
+    
+    res.json({
+      data: result.rows,
+      total,
+      limit: parseInt(limit as string),
+      offset: parseInt(offset as string)
+    });
+  } catch (error) {
+    console.error('Property search error:', error);
+    res.status(500).json({ error: 'Failed to search properties' });
+  }
+});
+
+// Test database connection endpoint
+app.get('/api/database/test', requireAuth, async (req, res) => {
+  try {
+    const isConnected = await testConnection();
+    res.json({ connected: isConnected });
+  } catch (error) {
+    console.error('Database test error:', error);
+    res.status(500).json({ error: 'Database connection failed' });
   }
 });
 

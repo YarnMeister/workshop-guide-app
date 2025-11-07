@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Welcome from "./pages/Welcome";
 import OnboardingStep from "./pages/OnboardingStep";
 import Dashboard from "./pages/Dashboard";
+import Insights from "./pages/Insights";
 import NotFound from "./pages/NotFound";
 import ErrorBoundary, { ErrorFallback } from "./components/ErrorBoundary";
 
@@ -22,6 +23,7 @@ const App = () => (
             <Route path="/" element={<Welcome />} />
             <Route path="/onboarding/step/:stepId" element={<OnboardingStep />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/insights" element={<Insights />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
