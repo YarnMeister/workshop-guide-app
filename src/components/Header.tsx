@@ -1,3 +1,5 @@
+import { useParticipant } from '@/hooks/useParticipant';
+
 export const Header = () => {
   const { name } = useParticipant();
   
