@@ -37,7 +37,7 @@ const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7c7c', '#8dd1e1'];
 export default function Insights() {
   const { isAuthenticated, isLoading: authLoading } = useParticipant();
   const [activeTab, setActiveTab] = useState('overview');
-  const [selectedState, setSelectedState] = useState<string>('');
+  const [selectedState, setSelectedState] = useState<string>('all');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,12 +52,12 @@ export default function Insights() {
   // Search filters
   const [searchFilters, setSearchFilters] = useState({
     suburb: '',
-    property_type: '',
+    property_type: 'all',
     min_price: '',
     max_price: '',
     bedrooms: '',
     bathrooms: '',
-    sale_type: '',
+    sale_type: 'all',
     year: ''
   });
 
@@ -68,6 +68,7 @@ export default function Insights() {
     setError(null);
     
     try {
+      const stateFilter = state === 'all' ? undefined : state;
       const [
         stats,
         suburbs,
@@ -75,11 +76,11 @@ export default function Insights() {
         trends,
         saleTypes
       ] = await Promise.all([
-        getMarketStats(state),
-        getSuburbInsights(state, 20),
-        getPropertyTypeInsights(state),
-        getPriceTrends(state, undefined, 12),
-        getSaleTypeInsights(state)
+        getMarketStats(stateFilter),
+        getSuburbInsights(stateFilter, 20),
+        getPropertyTypeInsights(stateFilter),
+        getPriceTrends(stateFilter, undefined, 12),
+        getSaleTypeInsights(stateFilter)
       ]);
 
       setMarketStats(stats);
@@ -101,8 +102,10 @@ export default function Insights() {
     setLoading(true);
     try {
       const filters = {
-        ...searchFilters,
-        state: selectedState || undefined,
+        suburb: searchFilters.suburb || undefined,
+        property_type: searchFilters.property_type === 'all' ? undefined : searchFilters.property_type,
+        sale_type: searchFilters.sale_type === 'all' ? undefined : searchFilters.sale_type,
+        state: selectedState === 'all' ? undefined : selectedState,
         min_price: searchFilters.min_price ? parseInt(searchFilters.min_price) : undefined,
         max_price: searchFilters.max_price ? parseInt(searchFilters.max_price) : undefined,
         bedrooms: searchFilters.bedrooms ? parseInt(searchFilters.bedrooms) : undefined,
@@ -175,7 +178,7 @@ export default function Insights() {
               <SelectValue placeholder="All States" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All States</SelectItem>
+              <SelectItem value="all">All States</SelectItem>
               <SelectItem value="NSW">NSW</SelectItem>
               <SelectItem value="VIC">VIC</SelectItem>
               <SelectItem value="QLD">QLD</SelectItem>
@@ -423,7 +426,7 @@ export default function Insights() {
                       <SelectValue placeholder="Property Type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Types</SelectItem>
+                      <SelectItem value="all">All Types</SelectItem>
                       <SelectItem value="house">House</SelectItem>
                       <SelectItem value="unit">Unit</SelectItem>
                       <SelectItem value="townhouse">Townhouse</SelectItem>
@@ -437,7 +440,7 @@ export default function Insights() {
                       <SelectValue placeholder="Sale Type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Sale Types</SelectItem>
+                      <SelectItem value="all">All Sale Types</SelectItem>
                       <SelectItem value="Private">Private</SelectItem>
                       <SelectItem value="Auction">Auction</SelectItem>
                     </SelectContent>
