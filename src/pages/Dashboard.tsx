@@ -1,6 +1,6 @@
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Home } from "lucide-react";
+import { CheckCircle2, Home, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useParticipant } from "@/hooks/useParticipant";
 
@@ -50,10 +50,16 @@ const Dashboard = () => {
             </ul>
           </div>
 
-          <Button onClick={() => navigate("/")} variant="outline" className="gap-2">
-            <Home className="h-4 w-4" />
-            Return to Welcome
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button onClick={() => navigate("/insights")} className="gap-2">
+              <BarChart3 className="h-4 w-4" />
+              View Property Insights
+            </Button>
+            <Button onClick={() => navigate("/")} variant="outline" className="gap-2">
+              <Home className="h-4 w-4" />
+              Return to Welcome
+            </Button>
+          </div>
         </div>
       </main>
     </div>
