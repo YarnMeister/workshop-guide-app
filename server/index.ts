@@ -462,13 +462,14 @@ app.get('/api/insights/price-trends', requireAuth, async (req, res) => {
     const { state, property_type, months = 12 } = req.query;
     
     let queryText = `
-      SELECT 
-        TO_CHAR(active_month, 'YYYY-MM') as month,
-        ROUND(AVG(price_search_sold)::numeric, 0) as avg_price,
-        COUNT(*) as total_sales
-      FROM property_sales 
-      WHERE price_search_sold > 0 
-        AND active_month >= NOW() - INTERVAL '${parseInt(months as string)} months'
+      WITH recent_data AS (
+        SELECT 
+          TO_CHAR(active_month, 'YYYY-MM') as month,
+          ROUND(AVG(price_search_sold)::numeric, 0) as avg_price,
+          COUNT(*) as total_sales,
+          active_month
+        FROM property_sales 
+        WHERE price_search_sold > 0
     `;
     
     const params: any[] = [];
@@ -483,11 +484,18 @@ app.get('/api/insights/price-trends', requireAuth, async (req, res) => {
     }
     
     queryText += `
-      GROUP BY TO_CHAR(active_month, 'YYYY-MM')
+        GROUP BY TO_CHAR(active_month, 'YYYY-MM'), active_month
+        HAVING COUNT(*) >= 10
+      )
+      SELECT month, avg_price, total_sales
+      FROM recent_data
       ORDER BY month DESC
+      LIMIT $${params.length + 1}
     `;
+    params.push(parseInt(months as string));
 
     const result = await query(queryText, params);
+    console.log('Price trends query result:', result.rows.length, 'months found');
     res.json(result.rows);
   } catch (error) {
     console.error('Price trends error:', error);

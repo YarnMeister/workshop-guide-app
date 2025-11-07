@@ -732,23 +732,60 @@ export default function Insights() {
             <Card>
               <CardHeader>
                 <CardTitle>Price Trends Over Time</CardTitle>
-                <CardDescription>Average sale prices by month</CardDescription>
+                <CardDescription>Average sale prices by month over the last 12 months</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={400}>
-                  <LineChart data={priceTrends.reverse()}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis tickFormatter={(value) => formatPrice(value)} />
-                    <Tooltip 
-                      formatter={(value, name) => [
-                        name === 'avg_price' ? formatPrice(value as number) : formatNumber(value as number),
-                        name === 'avg_price' ? 'Average Price' : 'Total Sales'
-                      ]}
-                    />
-                    <Line type="monotone" dataKey="avg_price" stroke="#8884d8" strokeWidth={2} />
-                  </LineChart>
-                </ResponsiveContainer>
+                {loading ? (
+                  <div className="flex items-center justify-center h-96">
+                    <Loader2 className="w-8 h-8 animate-spin" />
+                  </div>
+                ) : priceTrends.length === 0 ? (
+                  <div className="flex items-center justify-center h-96">
+                    <div className="text-center">
+                      <AlertCircle className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                      <p className="text-muted-foreground">No price trend data available</p>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="mb-4">
+                      <p className="text-sm text-muted-foreground">
+                        Showing {priceTrends.length} months of data • Average: {priceTrends.length > 0 ? formatPrice(priceTrends.reduce((sum, item) => sum + item.avg_price, 0) / priceTrends.length) : '$0'}
+                      </p>
+                    </div>
+                    <ResponsiveContainer width="100%" height={400}>
+                      <LineChart data={[...priceTrends].reverse()}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis 
+                          dataKey="month" 
+                          tick={{ fontSize: 12 }}
+                          angle={-45}
+                          textAnchor="end"
+                          height={80}
+                        />
+                        <YAxis 
+                          tickFormatter={(value) => formatPrice(value)} 
+                          tick={{ fontSize: 12 }}
+                        />
+                        <Tooltip 
+                          formatter={(value, name) => [
+                            name === 'avg_price' ? formatPrice(value as number) : formatNumber(value as number),
+                            name === 'avg_price' ? 'Average Price' : 'Total Sales'
+                          ]}
+                          labelFormatter={(label) => `Month: ${label}`}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="avg_price" 
+                          stroke="#8884d8" 
+                          strokeWidth={3}
+                          dot={{ fill: '#8884d8', strokeWidth: 2, r: 4 }}
+                          activeDot={{ r: 6, stroke: '#8884d8', strokeWidth: 2 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
