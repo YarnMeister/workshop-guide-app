@@ -155,7 +155,7 @@ const Congrats = () => {
               </div>
               <div className="mb-4 flex items-start justify-between gap-4">
                 <p className="flex-1 text-sm text-muted-foreground">
-                  Share your experience and connect with the community on social media.
+                  Share your public URL on LinkedIn or if you prefer, here is a Certificate of Completion that you can post to let people know you're a software engineer now.
                 </p>
                 <Button
                   variant="outline"
