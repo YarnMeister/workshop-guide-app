@@ -7,6 +7,7 @@ export interface Participant {
   code: string;
   name: string;
   apiKey: string;
+  certId: number;
 }
 
 /**
@@ -27,14 +28,14 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 export async function getParticipantByCode(code: string): Promise<Participant | null> {
   try {
     const result = await query(
-      'SELECT code, name, api_key as "apiKey" FROM participants WHERE code = $1 AND is_active = true',
+      'SELECT code, name, api_key as "apiKey", cert_id as "certId" FROM participants WHERE code = $1 AND is_active = true',
       [code]
     );
-    
+
     if (result.rows.length === 0) {
       return null;
     }
-    
+
     return result.rows[0] as Participant;
   } catch (error) {
     console.error('Failed to fetch participant by code:', error);
@@ -57,15 +58,16 @@ export async function getAllParticipants(): Promise<Record<string, Participant>>
   
   try {
     const result = await query(
-      'SELECT code, name, api_key as "apiKey" FROM participants WHERE is_active = true ORDER BY name'
+      'SELECT code, name, api_key as "apiKey", cert_id as "certId" FROM participants WHERE is_active = true ORDER BY name'
     );
-    
+
     const participants: Record<string, Participant> = {};
     for (const row of result.rows) {
       participants[row.code] = {
         code: row.code,
         name: row.name,
         apiKey: row.apiKey,
+        certId: row.certId,
       };
     }
     

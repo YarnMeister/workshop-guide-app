@@ -295,7 +295,7 @@ app.post('/api/claim', async (req, res) => {
     }
 
     // Try database first, fallback to environment variable
-    let participant: { name: string; apiKey: string } | null = null;
+    let participant: { name: string; apiKey: string; certId?: number } | null = null;
 
     if (USE_DATABASE_PARTICIPANTS) {
       participant = await getParticipantByCode(code.trim());
@@ -320,6 +320,7 @@ app.post('/api/claim', async (req, res) => {
       code: code.trim(),
       name: participant.name,
       participantId: code.trim(),
+      certId: participant.certId,
     };
 
     const cookie = createCookie(cookiePayload);
@@ -331,6 +332,7 @@ app.post('/api/claim', async (req, res) => {
       participantId: code.trim(),
       name: participant.name,
       apiKeyMasked: maskedKey,
+      certId: participant.certId,
     });
   } catch (error) {
     console.error('Claim error:', error);
@@ -361,6 +363,7 @@ app.get('/api/session', async (req, res) => {
       authenticated: true,
       participantId: payload.participantId,
       name: payload.name,
+      certId: payload.certId,
     });
   } catch (error) {
     console.error('Session error:', error);

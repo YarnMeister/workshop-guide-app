@@ -15,6 +15,13 @@
       "when": 1762578262621,
       "tag": "0001_worthless_the_spike",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1762579425414,
+      "tag": "0002_right_bishop",
+      "breakpoints": true
     }
   ]
 }

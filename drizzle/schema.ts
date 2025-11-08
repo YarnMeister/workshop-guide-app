@@ -67,6 +67,7 @@ export const participants = pgTable('participants', {
   code: varchar('code', { length: 50 }).notNull().unique(),
   name: varchar('name', { length: 255 }).notNull(),
   apiKey: varchar('api_key', { length: 255 }).notNull(),
+  certId: integer('cert_id').notNull().unique(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
   isActive: boolean('is_active').default(true).notNull(),
@@ -75,4 +76,6 @@ export const participants = pgTable('participants', {
   codeIdx: index('idx_participants_code').on(table.code),
   // Index for filtering active participants
   activeIdx: index('idx_participants_active').on(table.isActive),
+  // Index for certificate ID lookups
+  certIdIdx: index('idx_participants_cert_id').on(table.certId),
 }));
