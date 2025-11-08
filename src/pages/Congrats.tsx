@@ -106,32 +106,31 @@ const Congrats = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Vanta.js animated background - full page */}
+      <div
+        ref={vantaContainerRef}
+        className="fixed inset-0 vanta-loading-bg"
+        style={{ zIndex: 0 }}
+      />
+
+      {/* Header */}
       <Header />
 
-      {/* Vanta.js animated background - 25% of viewport height */}
-      <div className="relative w-full" style={{ height: '25vh' }}>
-        <div
-          ref={vantaContainerRef}
-          className="absolute inset-0 vanta-loading-bg"
-          style={{ zIndex: 0 }}
-        />
-        {/* Congratulations text - bottom aligned with padding */}
-        <div className="relative z-10 h-full flex items-end justify-center pb-4">
-          <h1 className="text-6xl font-bold text-white">
+      {/* Main content */}
+      <main className="relative z-10 min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center px-6 py-16">
+        <div className="w-full max-w-4xl space-y-12 animate-fade-in">
+          {/* Congratulations heading */}
+          <h1 className="text-6xl font-bold text-white text-center">
             Congratulations, you made it!
           </h1>
-        </div>
-      </div>
 
-      <main className="container mx-auto px-6 py-16">
-        <div className="mx-auto max-w-4xl animate-fade-in">
-          {/* Three panels */}
+          {/* Three panels with glassmorphism */}
           <div className="space-y-6">
             {/* Panel 1: Keep playing at home */}
-            <div className="rounded-lg border bg-card p-6">
+            <div className="rounded-2xl border border-white/20 bg-white/80 backdrop-blur-md p-6 shadow-2xl">
               <div className="mb-3 flex items-center gap-3">
-                <h2 className="font-semibold text-lg">Keep playing at home</h2>
+                <h2 className="font-semibold text-lg text-foreground">Keep playing at home</h2>
               </div>
               <div className="mb-4 flex items-start justify-between gap-4">
                 <p className="flex-1 text-sm text-muted-foreground">
@@ -141,7 +140,7 @@ const Congrats = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => handleOpenModal("Keep playing at home")}
-                  className="shrink-0"
+                  className="shrink-0 bg-white/90"
                 >
                   See more
                 </Button>
@@ -149,9 +148,9 @@ const Congrats = () => {
             </div>
 
             {/* Panel 2: Make some noise online */}
-            <div className="rounded-lg border bg-card p-6">
+            <div className="rounded-2xl border border-white/20 bg-white/80 backdrop-blur-md p-6 shadow-2xl">
               <div className="mb-3 flex items-center gap-3">
-                <h2 className="font-semibold text-lg">Make some noise online</h2>
+                <h2 className="font-semibold text-lg text-foreground">Make some noise online</h2>
               </div>
               <div className="mb-4 flex items-start justify-between gap-4">
                 <p className="flex-1 text-sm text-muted-foreground">
@@ -161,7 +160,7 @@ const Congrats = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => handleOpenModal("Make some noise online")}
-                  className="shrink-0"
+                  className="shrink-0 bg-white/90"
                 >
                   See more
                 </Button>
@@ -169,9 +168,9 @@ const Congrats = () => {
             </div>
 
             {/* Panel 3: Give us a call */}
-            <div className="rounded-lg border bg-card p-6">
+            <div className="rounded-2xl border border-white/20 bg-white/80 backdrop-blur-md p-6 shadow-2xl">
               <div className="mb-3 flex items-center gap-3">
-                <h2 className="font-semibold text-lg">Give us a call</h2>
+                <h2 className="font-semibold text-lg text-foreground">Give us a call</h2>
               </div>
               <div className="mb-4 flex items-start justify-between gap-4">
                 <p className="flex-1 text-sm text-muted-foreground">
@@ -181,7 +180,7 @@ const Congrats = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => handleOpenModal("Give us a call")}
-                  className="shrink-0"
+                  className="shrink-0 bg-white/90"
                 >
                   See more
                 </Button>
