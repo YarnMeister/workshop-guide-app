@@ -5,6 +5,7 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { query, testConnection } from './database.js';
+import { getParticipantByCode, getAllParticipants, clearParticipantsCache, isDatabaseReady } from './participants.js';
 
 // Load environment variables from .env.local (for local dev) or .env
 dotenv.config({ path: '.env.local' });
@@ -119,9 +120,17 @@ const COOKIE_SECRET = process.env.COOKIE_SECRET || '';
 const COOKIE_NAME = 'participant_session';
 const COOKIE_MAX_AGE = 28800; // 8 hours in seconds
 
-// Participant data cache
+// Feature flag: Use database for participants (with fallback to env var)
+const USE_DATABASE_PARTICIPANTS = process.env.USE_DATABASE_PARTICIPANTS !== 'false'; // Default: true
+
+// Legacy participant data cache (for fallback only)
 let participantsCache: Record<string, { name: string; apiKey: string }> | null = null;
 
+/**
+ * LEGACY: Load participants from PARTICIPANTS_JSON environment variable
+ * This is kept as a fallback mechanism during migration
+ * @deprecated Use getParticipantByCode() or getAllParticipants() from participants.ts instead
+ */
 function loadParticipants(): Record<string, { name: string; apiKey: string }> {
   if (participantsCache) {
     return participantsCache;
@@ -280,17 +289,28 @@ app.post('/api/claim', async (req, res) => {
       return res.status(500).json({ success: false, error: 'Server configuration error' });
     }
 
-    if (!process.env.PARTICIPANTS_JSON) {
-      return res.status(500).json({ success: false, error: 'Server configuration error' });
-    }
-
     const { code } = req.body;
     if (!code || typeof code !== 'string') {
       return res.status(400).json({ success: false, error: 'Invalid code' });
     }
 
-    const participants = loadParticipants();
-    const participant = participants[code.trim()];
+    // Try database first, fallback to environment variable
+    let participant: { name: string; apiKey: string } | null = null;
+
+    if (USE_DATABASE_PARTICIPANTS) {
+      participant = await getParticipantByCode(code.trim());
+
+      // If database is empty, try fallback
+      if (!participant && !(await isDatabaseReady())) {
+        console.warn('⚠️  Database not ready, falling back to PARTICIPANTS_JSON');
+        const participants = loadParticipants();
+        participant = participants[code.trim()] || null;
+      }
+    } else {
+      // Fallback mode: use environment variable
+      const participants = loadParticipants();
+      participant = participants[code.trim()] || null;
+    }
 
     if (!participant) {
       return res.status(404).json({ success: false, error: 'Invalid code' });
@@ -354,10 +374,6 @@ app.post('/api/reveal-key', async (req, res) => {
       return res.status(500).json({ success: false, error: 'Server configuration error' });
     }
 
-    if (!process.env.PARTICIPANTS_JSON) {
-      return res.status(500).json({ success: false, error: 'Server configuration error' });
-    }
-
     const cookieHeader = req.headers.cookie || '';
     const cookieMatch = cookieHeader.match(/participant_session=([^;]+)/);
     const cookie = cookieMatch ? cookieMatch[1] : null;
@@ -371,8 +387,23 @@ app.post('/api/reveal-key', async (req, res) => {
       return res.status(401).json({ success: false, error: 'Session expired' });
     }
 
-    const participants = loadParticipants();
-    const participant = participants[payload.code];
+    // Try database first, fallback to environment variable
+    let participant: { name: string; apiKey: string } | null = null;
+
+    if (USE_DATABASE_PARTICIPANTS) {
+      participant = await getParticipantByCode(payload.code);
+
+      // If database is empty, try fallback
+      if (!participant && !(await isDatabaseReady())) {
+        console.warn('⚠️  Database not ready, falling back to PARTICIPANTS_JSON');
+        const participants = loadParticipants();
+        participant = participants[payload.code] || null;
+      }
+    } else {
+      // Fallback mode: use environment variable
+      const participants = loadParticipants();
+      participant = participants[payload.code] || null;
+    }
 
     if (!participant) {
       return res.status(404).json({ success: false, error: 'Participant not found' });
@@ -392,12 +423,16 @@ app.post('/api/reveal-key', async (req, res) => {
 });
 
 // Health check
-app.get('/api/health', (req, res) => {
-  res.status(200).json({ 
+app.get('/api/health', async (req, res) => {
+  const dbReady = await isDatabaseReady();
+
+  res.status(200).json({
     status: 'ok',
     env: {
       hasCookieSecret: !!COOKIE_SECRET,
       hasParticipantsJson: !!process.env.PARTICIPANTS_JSON,
+      useDatabaseParticipants: USE_DATABASE_PARTICIPANTS,
+      databaseReady: dbReady,
     }
   });
 });
@@ -773,7 +808,8 @@ app.get('/api/database/test', requireAuth, async (req, res) => {
 app.post('/api/cache/clear', requireAuth, async (req, res) => {
   try {
     clearCache();
-    res.json({ success: true, message: 'Cache cleared successfully' });
+    clearParticipantsCache();
+    res.json({ success: true, message: 'All caches cleared successfully' });
   } catch (error) {
     console.error('Cache clear error:', error);
     res.status(500).json({ error: 'Failed to clear cache' });

@@ -1,4 +1,4 @@
-import { pgTable, integer, date, varchar, boolean, index, char } from 'drizzle-orm/pg-core';
+import { pgTable, integer, date, varchar, boolean, index, char, serial, timestamp } from 'drizzle-orm/pg-core';
 
 /**
  * Property Sales Table
@@ -52,3 +52,27 @@ export const propertySales = pgTable('property_sales', {
   statePriceIdx: index('property_sales_state_price_idx').on(table.state, table.priceSearchSold),
 }));
 
+/**
+ * Participants Table
+ *
+ * Stores workshop participant credentials and metadata.
+ * Replaces the PARTICIPANTS_JSON environment variable for better:
+ * - Extensibility (can add fields like usage tracking, email, etc.)
+ * - Management (admin dashboard capabilities)
+ * - Security (proper database access controls)
+ * - Auditability (created_at, updated_at timestamps)
+ */
+export const participants = pgTable('participants', {
+  id: serial('id').primaryKey(),
+  code: varchar('code', { length: 50 }).notNull().unique(),
+  name: varchar('name', { length: 255 }).notNull(),
+  apiKey: varchar('api_key', { length: 255 }).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
+}, (table) => ({
+  // Index for fast lookups by code (primary authentication method)
+  codeIdx: index('idx_participants_code').on(table.code),
+  // Index for filtering active participants
+  activeIdx: index('idx_participants_active').on(table.isActive),
+}));

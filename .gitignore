@@ -20,6 +20,12 @@ dist-ssr
 # Vercel
 .vercel
 
+# Participant seeding scripts (contain sensitive data handling)
+scripts/seed-participants.ts
+scripts/seed-participants.js
+scripts/export-participants.sql
+scripts/export-participants.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
