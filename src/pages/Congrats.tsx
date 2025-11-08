@@ -224,7 +224,7 @@ const Congrats = () => {
               </div>
             ) : modalTitle === "Keep playing at home" ? (
               <div className="space-y-4">
-                <ul className="space-y-3 text-sm text-muted-foreground">
+                <ul className="list-disc list-inside space-y-3 text-sm text-muted-foreground">
                   <li className="leading-relaxed">
                     Your participant codes will continue to work until midnight Sunday, 16th November 2025 so you can refer to session notes
                   </li>
