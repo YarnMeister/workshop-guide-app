@@ -222,6 +222,28 @@ const Congrats = () => {
                   />
                 </div>
               </div>
+            ) : modalTitle === "Give us a call" ? (
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  If you're interested in partnering with REA, we'd love to collaborate.
+                  Whether it is to pilot an integration, co-design API capabilities or test real-world use cases,
+                  share your ideas with us and let's create value for customers and the industry.
+                </p>
+                <div className="space-y-3 pt-2">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">Chase McNee - Partnerships Manager - APIs and Integrations</p>
+                    <p className="text-sm text-muted-foreground">
+                      Email: <a href="mailto:chase.mcnee@rea-group.com" className="text-primary hover:underline">chase.mcnee@rea-group.com</a>
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">Erik Tveitnes - API Lead</p>
+                    <p className="text-sm text-muted-foreground">
+                      Email: <a href="mailto:erik.tveitnes@rea-group.com" className="text-primary hover:underline">erik.tveitnes@rea-group.com</a>
+                    </p>
+                  </div>
+                </div>
+              </div>
             ) : (
               <p className="text-sm text-muted-foreground">
                 Content for "{modalTitle}" will be added here.
