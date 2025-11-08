@@ -207,8 +207,8 @@ const Congrats = () => {
             })()}
             {modalTitle === "Make some noise online" && certId ? (
               <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  Share your workshop completion certificate on social media!
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Share your public URL on LinkedIn or if you prefer, here is a Certificate of Completion that you can post to let people know you're a software engineer now.
                 </p>
                 <div className="rounded-lg border overflow-hidden">
                   <img
