@@ -235,7 +235,7 @@ const Welcome = () => {
                 className="h-16 w-auto"
               />
               <img
-                src="/Proptechlogo.png"
+                src="/proptechlogo.png"
                 alt="PropTech"
                 className="h-16 w-auto"
               />
