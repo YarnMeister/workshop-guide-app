@@ -228,7 +228,7 @@ function maskApiKey(key: string): string {
   return key.substring(0, 8) + '*'.repeat(Math.max(8, key.length - 8));
 }
 
-function createCookie(payload: { code: string; name: string; participantId: string }): string {
+function createCookie(payload: { code: string; name: string; participantId: string; certId?: number }): string {
   if (!COOKIE_SECRET) {
     throw new Error('COOKIE_SECRET not configured');
   }
@@ -254,7 +254,7 @@ function createCookie(payload: { code: string; name: string; participantId: stri
   return cookieOptions.join('; ');
 }
 
-function verifyCookie(cookieValue: string): { code: string; name: string; participantId: string } | null {
+function verifyCookie(cookieValue: string): { code: string; name: string; participantId: string; certId?: number } | null {
   if (!COOKIE_SECRET) {
     return null;
   }

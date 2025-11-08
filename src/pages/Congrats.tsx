@@ -29,6 +29,13 @@ const Congrats = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
 
+  // Debug logging
+  useEffect(() => {
+    console.log('[Congrats] certId:', certId);
+    console.log('[Congrats] participantId:', participantId);
+    console.log('[Congrats] name:', name);
+  }, [certId, participantId, name]);
+
   // Initialize Vanta.js effect
   useEffect(() => {
     if (!vantaContainerRef.current || vantaRef.current) return;
@@ -80,6 +87,8 @@ const Congrats = () => {
   }, []);
 
   const handleOpenModal = (title: string) => {
+    console.log('[Congrats] Opening modal:', title);
+    console.log('[Congrats] certId at modal open:', certId);
     setModalTitle(title);
     setModalOpen(true);
   };
@@ -177,6 +186,13 @@ const Congrats = () => {
             <DialogTitle>{modalTitle}</DialogTitle>
           </DialogHeader>
           <div className="py-4">
+            {(() => {
+              console.log('[Congrats Modal] Rendering content');
+              console.log('[Congrats Modal] modalTitle:', modalTitle);
+              console.log('[Congrats Modal] certId:', certId);
+              console.log('[Congrats Modal] Condition check:', modalTitle === "Make some noise online" && certId);
+              return null;
+            })()}
             {modalTitle === "Make some noise online" && certId ? (
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">
