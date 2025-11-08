@@ -178,3 +178,8 @@ All colors MUST be HSL.
 .delay-150 {
   animation-delay: 150ms;
 }
+
+/* Vanta.js background gradient (shows while loading) */
+.vanta-loading-bg {
+  background: linear-gradient(135deg, #d92525 0%, #ff6b6b 50%, #ffa5a5 100%);
+}

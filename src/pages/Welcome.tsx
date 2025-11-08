@@ -1,14 +1,21 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Header } from "@/components/Header";
-import { ArrowRight, Users, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useWorkshopProgress } from "@/hooks/useWorkshopProgress";
 import { useParticipant } from "@/hooks/useParticipant";
 import { claimParticipantCode } from "@/services/participant";
+
+// Declare VANTA global type
+declare global {
+  interface Window {
+    VANTA: any;
+  }
+}
 
 const Welcome = () => {
   const [code, setCode] = useState("");
@@ -16,6 +23,58 @@ const Welcome = () => {
   const navigate = useNavigate();
   const { progress, updateProgress } = useWorkshopProgress();
   const { isAuthenticated, isLoading, participantId, name, setParticipant } = useParticipant();
+  const vantaRef = useRef<any>(null);
+  const vantaContainerRef = useRef<HTMLDivElement>(null);
+
+  // Initialize Vanta.js effect
+  useEffect(() => {
+    if (!vantaContainerRef.current || vantaRef.current) return;
+
+    // Wait for VANTA to be available
+    const initVanta = () => {
+      if (window.VANTA && vantaContainerRef.current) {
+        vantaRef.current = window.VANTA.WAVES({
+          el: vantaContainerRef.current,
+          mouseControls: true,
+          touchControls: true,
+          gyroControls: false,
+          minHeight: 200.00,
+          minWidth: 200.00,
+          scale: 1.00,
+          scaleMobile: 1.00,
+          color: 0xd92525,
+          shininess: 98.00,
+          waveHeight: 31.00,
+          waveSpeed: 0.40,
+          zoom: 1.17
+        });
+      }
+    };
+
+    // Try to initialize immediately, or wait for scripts to load
+    if (window.VANTA) {
+      initVanta();
+    } else {
+      // Poll for VANTA availability
+      const checkInterval = setInterval(() => {
+        if (window.VANTA) {
+          initVanta();
+          clearInterval(checkInterval);
+        }
+      }, 100);
+
+      // Cleanup interval after 5 seconds
+      setTimeout(() => clearInterval(checkInterval), 5000);
+    }
+
+    // Cleanup function
+    return () => {
+      if (vantaRef.current) {
+        vantaRef.current.destroy();
+        vantaRef.current = null;
+      }
+    };
+  }, []);
 
   // Check for existing progress on mount
   useEffect(() => {
@@ -113,83 +172,73 @@ const Welcome = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Vanta.js animated background */}
+      <div
+        ref={vantaContainerRef}
+        className="fixed inset-0 vanta-loading-bg"
+        style={{ zIndex: 0 }}
+      />
+
+      {/* Header */}
       <Header />
-      
-      {/* Floating sparkles background */}
-      <div className="absolute inset-0 pointer-events-none">
-        <Sparkles className="absolute top-20 left-10 h-6 w-6 text-yellow-400/30 animate-sparkle" />
-        <Sparkles className="absolute top-40 right-20 h-8 w-8 text-yellow-500/20 animate-sparkle animation-delay-200" />
-        <Sparkles className="absolute bottom-20 left-1/4 h-5 w-5 text-yellow-300/25 animate-sparkle animation-delay-400" />
-        <Sparkles className="absolute top-1/2 right-10 h-7 w-7 text-yellow-400/20 animate-twinkle" />
-        <Sparkles className="absolute bottom-40 right-1/3 h-6 w-6 text-yellow-500/30 animate-twinkle delay-150" />
-        <Sparkles className="absolute top-1/3 left-20 h-4 w-4 text-yellow-300/40 animate-sparkle" />
-      </div>
-      
-      <main className="container mx-auto px-6 py-16 relative z-10">
-        <div className="mx-auto max-w-2xl">
-          <div className="animate-fade-in text-center">
-            {/* Icon */}
-            <div className="relative mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10">
-              <Users className="h-10 w-10 text-primary" />
-              {/* Sparkle decorations */}
-              <Sparkles className="absolute -top-2 -right-2 h-5 w-5 text-yellow-500 animate-pulse" />
-              <Sparkles className="absolute -bottom-1 -left-2 h-4 w-4 text-yellow-400 animate-pulse delay-150" />
-            </div>
 
-            {/* Heading with sparkles */}
-            <div className="relative">
-              <h1 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
-                Welcome to the Workshop
-              </h1>
-              <Sparkles className="absolute top-0 right-10 h-6 w-6 text-yellow-500 animate-sparkle" />
-              <Sparkles className="absolute -top-2 left-8 h-4 w-4 text-yellow-400 animate-sparkle animation-delay-200" />
-              <Sparkles className="absolute bottom-2 right-20 h-5 w-5 text-yellow-300 animate-sparkle animation-delay-400" />
-            </div>
-            <p className="mb-12 text-lg text-muted-foreground">
-              Get ready for an interactive hands-on experience. Enter your participant code to begin your onboarding journey.
-            </p>
+      {/* Main content - hero section at bottom-left */}
+      <main className="relative z-10 min-h-[calc(100vh-4rem)] flex items-end pl-24 pb-24 pt-12 pr-12">
+        <div className="w-full max-w-2xl space-y-8 animate-fade-in">
+          {/* Form card positioned above heading */}
+          <div className="w-full max-w-md">
+            {/* Glassmorphism form card */}
+            <div className="rounded-2xl border border-white/20 bg-white/80 backdrop-blur-md p-8 shadow-2xl">
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="code" className="text-base font-medium text-foreground">
+                    Participant Code
+                  </Label>
+                  <Input
+                    id="code"
+                    type="text"
+                    placeholder="Enter your code"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && !isClaiming && handleStart()}
+                    className="h-12 text-base bg-white/90"
+                    autoFocus
+                    disabled={isClaiming}
+                  />
+                </div>
 
-            {/* Form */}
-            <div className="mx-auto max-w-md space-y-6">
-              <div className="space-y-2 text-left">
-                <Label htmlFor="code" className="text-base font-medium">
-                  Participant Code
-                </Label>
-                <Input
-                  id="code"
-                  type="text"
-                  placeholder="Enter your code"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && !isClaiming && handleStart()}
-                  className="h-12 text-base"
-                  autoFocus
+                <Button
+                  onClick={handleStart}
+                  size="lg"
+                  className="w-full h-12 text-base font-semibold gap-2 group"
                   disabled={isClaiming}
-                />
-              </div>
-
-              <Button
-                onClick={handleStart}
-                size="lg"
-                className="w-full h-12 text-base font-semibold gap-2 group relative overflow-hidden"
-                disabled={isClaiming}
-              >
-                <span className="relative z-10 flex items-center gap-2">
-                  {isClaiming ? "Verifying..." : "Start Onboarding"}
+                >
+                  {isClaiming ? "Verifying..." : "Get Started"}
                   {!isClaiming && <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />}
-                </span>
-                <Sparkles className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/70 animate-pulse" />
-              </Button>
+                </Button>
+              </div>
             </div>
+          </div>
 
-            {/* Additional info */}
-            <div className="mt-16 rounded-lg border bg-muted/30 p-6 relative">
-              <Sparkles className="absolute -top-2 -right-2 h-4 w-4 text-yellow-400 animate-twinkle" />
-              <h2 className="mb-2 font-semibold">What to expect</h2>
-              <p className="text-sm text-muted-foreground">
-                You'll complete 4 simple steps to set up your environment, connect your accounts, and start your first task. The entire process takes about 10-15 minutes.
-              </p>
+          {/* Hero section with heading and logos */}
+          <div>
+            <h1 className="text-6xl font-bold text-white mb-8">
+              Prototyping with AI
+            </h1>
+
+            {/* Logos horizontally aligned */}
+            <div className="flex items-center gap-8">
+              <img
+                src="/rea-group-logo-white.png"
+                alt="REA Group"
+                className="h-16 w-auto"
+              />
+              <img
+                src="/Proptechlogo.png"
+                alt="PropTech"
+                className="h-16 w-auto"
+              />
             </div>
           </div>
         </div>
