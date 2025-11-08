@@ -4,6 +4,7 @@ import { useWorkshopProgress } from "@/hooks/useWorkshopProgress";
 import { useParticipant } from "@/hooks/useParticipant";
 import { logout } from "@/services/participant";
 import { toast } from "@/hooks/use-toast";
+import { clearProgress } from "@/utils/storage";
 
 export interface Step {
   id: number;
@@ -32,21 +33,22 @@ export const Breadcrumb = ({ steps, currentStep }: BreadcrumbProps) => {
         console.error('[Breadcrumb] Error clearing session:', error);
       }
       
-      // Clear localStorage progress
-      resetProgress();
+      // Clear ALL localStorage keys - do this directly to ensure it happens
+      // We don't need to update React state since we're reloading anyway
+      clearProgress();
+      console.log('[Breadcrumb] localStorage cleared, reloading...');
       
-      // Clear participant state
-      clearParticipant();
+      // Verify localStorage is empty before reloading
+      const remainingKeys = Object.keys(localStorage);
+      if (remainingKeys.length > 0) {
+        console.warn('[Breadcrumb] Warning: Some localStorage keys remain:', remainingKeys);
+        // Force clear again
+        remainingKeys.forEach(key => localStorage.removeItem(key));
+      }
       
-      toast({
-        title: "Progress cleared",
-        description: "All progress has been reset. Returning to welcome page...",
-      });
-      
-      // Force a hard reload to clear all state and ensure fresh start
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 500);
+      // Force a hard reload immediately - this will reset all React state
+      // Use replace instead of href to avoid adding to browser history
+      window.location.replace('/');
     }
   };
 

@@ -3,6 +3,7 @@ interface ClaimResponse {
   participantId?: string;
   name?: string;
   apiKeyMasked?: string;
+  certId?: number;
   error?: string;
 }
 
@@ -10,6 +11,7 @@ interface SessionResponse {
   authenticated: boolean;
   participantId?: string;
   name?: string;
+  certId?: number;
   error?: string;
 }
 

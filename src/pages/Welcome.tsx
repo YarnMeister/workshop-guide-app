@@ -108,10 +108,6 @@ const Welcome = () => {
     // Only navigate if we're still on the welcome page and loading is complete
     if (isAuthenticated && participantId && progress.currentStepId && !isLoading) {
       console.log('[Welcome] Authenticated user detected, navigating to step', progress.currentStepId);
-      toast({
-        title: "Welcome back!",
-        description: `Resuming where you left off${name ? `, ${name}` : ''}...`,
-      });
       
       // Navigate to their last page
       navigate(`/onboarding/step/${progress.currentStepId}`);
@@ -135,17 +131,13 @@ const Welcome = () => {
 
       if (result.success && result.participantId && result.name && result.apiKeyMasked) {
         // Store participant data
-        setParticipant(result.participantId, result.name, result.apiKeyMasked);
-        
+        setParticipant(result.participantId, result.name, result.apiKeyMasked, result.certId);
+
         // Update progress
-        updateProgress({ 
+        updateProgress({
           participantId: result.participantId,
-          currentStepId: 1 
-        });
-        
-        toast({
-          title: "Welcome!",
-          description: `Welcome, ${result.name}! Let's get started!`,
+          currentStepId: 1,
+          certId: result.certId
         });
 
         navigate("/onboarding/step/1");

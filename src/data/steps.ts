@@ -837,7 +837,7 @@ Any future merge to main (via AI assisted prompts) in GitHub will trigger a fres
     heading: "Extend Your App",
     content: "Take your app to the next level by adding more sophisticated features. You'll likely have time to add only one of these so choose wisely. Go on... be a real PM",
     ctaText: "Complete",
-    ctaAction: "/dashboard",
+    ctaAction: "/congrats",
     detailedContent: {
       sections: [
         {

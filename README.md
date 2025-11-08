@@ -31,7 +31,7 @@ The workshop guide consists of 8 onboarding steps plus Welcome and Dashboard pag
 7. **Make Your First Commit** (`/onboarding/step/6`) - Git workflow with Void Editor
 8. **Extend Your App** (`/onboarding/step/7`) - Placeholder for advanced features
 9. **Launch to the Web** (`/onboarding/step/8`) - Deploy to Vercel
-10. **Dashboard** (`/dashboard`) - Completion confirmation and next steps
+10. **Congrats** (`/congrats`) - Completion confirmation and next steps (shown after completing "Extend Your App")
 
 ## Technical Stack
 
@@ -137,7 +137,7 @@ workshop-guide-app/
 │   ├── pages/               # Route pages
 │   │   ├── Welcome.tsx      # Landing page with code entry
 │   │   ├── OnboardingStep.tsx # Main step page (handles all 8 steps)
-│   │   ├── Dashboard.tsx    # Completion page
+│   │   ├── Congrats.tsx    # Completion/congratulations page
 │   │   └── NotFound.tsx     # 404 page
 │   ├── hooks/               # Custom React hooks
 │   │   ├── useParticipant.ts    # Participant state & session

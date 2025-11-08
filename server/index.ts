@@ -382,37 +382,57 @@ app.post('/api/reveal-key', async (req, res) => {
     const cookie = cookieMatch ? cookieMatch[1] : null;
 
     if (!cookie) {
+      console.log('[reveal-key] No session cookie found');
       return res.status(401).json({ success: false, error: 'Session expired' });
     }
 
     const payload = verifyCookie(cookie);
     if (!payload) {
+      console.log('[reveal-key] Invalid or expired session cookie');
       return res.status(401).json({ success: false, error: 'Session expired' });
     }
+
+    console.log(`[reveal-key] Looking up participant with code: ${payload.code}`);
+    console.log(`[reveal-key] USE_DATABASE_PARTICIPANTS: ${USE_DATABASE_PARTICIPANTS}`);
 
     // Try database first, fallback to environment variable
     let participant: { name: string; apiKey: string } | null = null;
 
     if (USE_DATABASE_PARTICIPANTS) {
+      console.log('[reveal-key] Querying database for participant...');
       participant = await getParticipantByCode(payload.code);
 
-      // If database is empty, try fallback
-      if (!participant && !(await isDatabaseReady())) {
-        console.warn('⚠️  Database not ready, falling back to PARTICIPANTS_JSON');
-        const participants = loadParticipants();
-        participant = participants[payload.code] || null;
+      if (participant) {
+        console.log(`[reveal-key] ✅ Found participant in database: ${participant.name}`);
+      } else {
+        console.log(`[reveal-key] ⚠️  Participant not found in database, checking if database is ready...`);
+        const dbReady = await isDatabaseReady();
+        if (!dbReady) {
+          console.warn('⚠️  Database not ready, falling back to PARTICIPANTS_JSON');
+          const participants = loadParticipants();
+          participant = participants[payload.code] || null;
+          if (participant) {
+            console.log(`[reveal-key] ✅ Found participant in fallback: ${participant.name}`);
+          }
+        }
       }
     } else {
       // Fallback mode: use environment variable
+      console.log('[reveal-key] Using fallback mode (PARTICIPANTS_JSON)');
       const participants = loadParticipants();
       participant = participants[payload.code] || null;
+      if (participant) {
+        console.log(`[reveal-key] ✅ Found participant in fallback: ${participant.name}`);
+      }
     }
 
     if (!participant) {
+      console.error(`[reveal-key] ❌ Participant not found for code: ${payload.code}`);
       return res.status(404).json({ success: false, error: 'Participant not found' });
     }
 
     const maskedKey = maskApiKey(participant.apiKey);
+    console.log(`[reveal-key] ✅ Returning API key for participant: ${participant.name}`);
 
     res.status(200).json({
       success: true,
@@ -420,7 +440,7 @@ app.post('/api/reveal-key', async (req, res) => {
       apiKeyMasked: maskedKey,
     });
   } catch (error) {
-    console.error('Reveal key error:', error);
+    console.error('[reveal-key] ❌ Error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });

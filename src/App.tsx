@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Welcome from "./pages/Welcome";
 import OnboardingStep from "./pages/OnboardingStep";
-import Dashboard from "./pages/Dashboard";
+import Congrats from "./pages/Congrats";
 import Insights from "./pages/Insights";
 import ExtendOption from "./pages/ExtendOption";
 import NotFound from "./pages/NotFound";
@@ -23,7 +23,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Welcome />} />
             <Route path="/onboarding/step/:stepId" element={<OnboardingStep />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/congrats" element={<Congrats />} />
             <Route path="/insights" element={<Insights />} />
             <Route path="/extend/:optionId" element={<ExtendOption />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -23,7 +23,7 @@ declare global {
  * Displays congratulations message and next steps for participants
  */
 const Congrats = () => {
-  const { participantId, name } = useParticipant();
+  const { participantId, name, certId } = useParticipant();
   const vantaRef = useRef<any>(null);
   const vantaContainerRef = useRef<HTMLDivElement>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -172,14 +172,33 @@ const Congrats = () => {
 
       {/* Modal Dialog */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>{modalTitle}</DialogTitle>
           </DialogHeader>
           <div className="py-4">
-            <p className="text-sm text-muted-foreground">
-              Content for "{modalTitle}" will be added here.
-            </p>
+            {modalTitle === "Make some noise online" && certId ? (
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Share your workshop completion certificate on social media!
+                </p>
+                <div className="rounded-lg border overflow-hidden">
+                  <img
+                    src={`/${certId}.png`}
+                    alt={`Certificate ${certId}`}
+                    className="w-full h-auto"
+                    onError={(e) => {
+                      console.error(`Failed to load certificate image: ${certId}.png`);
+                      e.currentTarget.src = '/placeholder-certificate.png';
+                    }}
+                  />
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Content for "{modalTitle}" will be added here.
+              </p>
+            )}
           </div>
           <DialogFooter>
             <Button onClick={() => setModalOpen(false)}>Done</Button>

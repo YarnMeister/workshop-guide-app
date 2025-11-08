@@ -372,31 +372,32 @@ const OnboardingStep = () => {
           prototypeTemplate: cachedPrompt,
           aiEnhancementError: undefined
         });
-        
-        toast({
-          title: "Using cached prompt",
-          description: "Loading your previously generated prompt",
-        });
       } else {
         // Only call AI if we don't have a cached version
         setIsProcessingAI(true);
         
-        toast({
-          title: "Enhancing with AI...",
-          description: "Creating a well-structured Lovable prompt",
-        });
-        
         try {
           // Create getApiKey function that checks memory first, then calls API
           const getApiKey = async (): Promise<string | null> => {
+            // Check if API key is already in memory
             if (apiKey) {
+              console.log('[OnboardingStep] Using API key from memory');
               return apiKey;
             }
+            
+            // Try to get API key from server (which queries database)
+            console.log('[OnboardingStep] Fetching API key from server...');
             const result = await revealApiKey();
+            
             if (result.success && result.apiKey) {
+              console.log('[OnboardingStep] API key retrieved successfully from database');
               setApiKey(result.apiKey);
               return result.apiKey;
             }
+            
+            // Log the error for debugging
+            console.error('[OnboardingStep] Failed to retrieve API key:', result.error || 'Unknown error');
+            console.error('[OnboardingStep] Reveal key response:', result);
             return null;
           };
 
@@ -411,11 +412,6 @@ const OnboardingStep = () => {
             
             // Cache the result in localStorage with PRD hash as key
             localStorage.setItem(cacheKey, result.content);
-            
-            toast({
-              title: "AI Enhancement Complete",
-              description: "Your prompt has been enhanced and is ready on the next page",
-            });
           } else {
             // Save error - show message but still allow proceeding
             updateProgress({ 

@@ -6,6 +6,7 @@ interface ParticipantState {
   participantId: string | null;
   name: string | null;
   apiKeyMasked: string | null;
+  certId: number | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   apiKey: string | null; // Store revealed key in memory
@@ -21,6 +22,7 @@ export function useParticipant() {
     participantId: progress.participantId,
     name: progress.participantName,
     apiKeyMasked: progress.apiKeyMasked,
+    certId: progress.certId,
     isAuthenticated: !!progress.participantId && !!progress.participantName,
     isLoading: true,
     apiKey: null, // Never persisted, only in memory
@@ -51,10 +53,15 @@ export function useParticipant() {
               participantId: progress.participantId,
               name: progress.participantName,
               apiKeyMasked: progress.apiKeyMasked,
+              certId: session.certId ?? progress.certId,
               isAuthenticated: true,
               isLoading: false,
               apiKey: null,
             });
+            // Update progress with certId from session if available
+            if (session.certId && session.certId !== progress.certId) {
+              updateProgress({ certId: session.certId });
+            }
           } else {
             // Session expired or invalid
             console.log('[useParticipant] Session expired or invalid, clearing data');
@@ -62,6 +69,7 @@ export function useParticipant() {
               participantId: null,
               name: null,
               apiKeyMasked: null,
+              certId: null,
               isAuthenticated: false,
               isLoading: false,
               apiKey: null,
@@ -85,6 +93,7 @@ export function useParticipant() {
               participantId: session.participantId,
               name: session.name,
               apiKeyMasked: null, // Will be set on next claim or reveal
+              certId: session.certId ?? null,
               isAuthenticated: true,
               isLoading: false,
               apiKey: null,
@@ -92,6 +101,7 @@ export function useParticipant() {
             updateProgress({
               participantId: session.participantId,
               participantName: session.name,
+              certId: session.certId,
             });
           } else {
             console.log('[useParticipant] No valid session found');
@@ -99,6 +109,7 @@ export function useParticipant() {
               participantId: null,
               name: null,
               apiKeyMasked: null,
+              certId: null,
               isAuthenticated: false,
               isLoading: false,
               apiKey: null,
@@ -116,12 +127,13 @@ export function useParticipant() {
     restoreSession();
   }, []); // Empty deps - run once on mount only
 
-  const setParticipant = useCallback((participantId: string, name: string, apiKeyMasked: string) => {
-    console.log('[useParticipant] Setting participant:', { participantId, name });
+  const setParticipant = useCallback((participantId: string, name: string, apiKeyMasked: string, certId?: number) => {
+    console.log('[useParticipant] Setting participant:', { participantId, name, certId });
     setState({
       participantId,
       name,
       apiKeyMasked,
+      certId: certId ?? null,
       isAuthenticated: true,
       isLoading: false,
       apiKey: null, // Reset on new participant
@@ -130,6 +142,7 @@ export function useParticipant() {
       participantId,
       participantName: name,
       apiKeyMasked,
+      certId,
     });
   }, [updateProgress]);
 
@@ -139,6 +152,7 @@ export function useParticipant() {
       participantId: null,
       name: null,
       apiKeyMasked: null,
+      certId: null,
       isAuthenticated: false,
       isLoading: false,
       apiKey: null,
@@ -147,6 +161,7 @@ export function useParticipant() {
       participantId: null,
       participantName: null,
       apiKeyMasked: null,
+      certId: null,
     });
   }, [updateProgress]);
 

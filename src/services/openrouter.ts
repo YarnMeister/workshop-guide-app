@@ -14,16 +14,22 @@ export async function enhancePromptWithAI(
   prdContent: string,
   getApiKey: () => Promise<string | null>
 ): Promise<{ success: boolean; content: string; error?: string }> {
-  // Get API key from provided function (which checks memory first)
+  // Get API key from provided function (which checks memory first, then database)
+  console.log('[enhancePromptWithAI] Requesting API key...');
   const apiKey = await getApiKey();
 
   if (!apiKey) {
+    console.error('[enhancePromptWithAI] API key not available');
     return {
       success: false,
       content: '',
-      error: 'API key not available. Please enter your participant code on the Welcome page and try again.'
+      error: 'API key not available. Please make sure you are logged in with a valid participant code. If the issue persists, try logging out and logging back in.'
     };
   }
+  
+  // Log first few characters of API key for debugging (don't log full key for security)
+  console.log('[enhancePromptWithAI] API key obtained, length:', apiKey.length, 'starts with:', apiKey.substring(0, 10) + '...');
+  console.log('[enhancePromptWithAI] Calling OpenRouter API...');
 
   const systemPrompt = `You are an expert at transforming product requirements into clear, actionable prompts for Lovable (an AI-powered web app builder).
 
@@ -122,6 +128,11 @@ Create a comprehensive prompt that will generate a fully functional web applicat
 
     if (!response.ok) {
       const errorData = await response.json();
+      console.error('[enhancePromptWithAI] OpenRouter API error response:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData
+      });
       throw new Error(errorData.error?.message || `HTTP error! status: ${response.status}`);
     }
 
