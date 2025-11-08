@@ -222,6 +222,20 @@ const Congrats = () => {
                   />
                 </div>
               </div>
+            ) : modalTitle === "Keep playing at home" ? (
+              <div className="space-y-4">
+                <ul className="space-y-3 text-sm text-muted-foreground">
+                  <li className="leading-relaxed">
+                    Your participant codes will continue to work until midnight Sunday, 16th November 2025 so you can refer to session notes
+                  </li>
+                  <li className="leading-relaxed">
+                    Your Void IDE AI code assistant will continue to work for the same period or until the credits on the platform are spent
+                  </li>
+                  <li className="leading-relaxed">
+                    You can swap the API key in Void IDE settings to any OpenAI compatible key to continue using Void at your own cost (you can ask Claude or ChatGPT for help to do this)
+                  </li>
+                </ul>
+              </div>
             ) : modalTitle === "Give us a call" ? (
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground leading-relaxed">
