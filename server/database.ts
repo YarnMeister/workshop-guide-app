@@ -17,10 +17,12 @@ export function getPool(): pg.Pool {
       ssl: {
         rejectUnauthorized: false
       },
-      // Connection pool settings
-      max: 20,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
+      // Connection pool settings optimized for serverless (Vercel)
+      max: 10,  // Reduced for serverless - Vercel runs multiple instances
+      min: 0,   // Allow pool to scale to zero when idle
+      idleTimeoutMillis: 10000,  // Faster cleanup for serverless (10s)
+      connectionTimeoutMillis: 3000,  // Slightly longer timeout for reliability
+      allowExitOnIdle: true,  // Important: allows process to exit when idle
     });
 
     pool.on('error', (err) => {
@@ -33,13 +35,22 @@ export function getPool(): pg.Pool {
 
 /**
  * Execute a query with parameters
+ * Includes performance monitoring for slow queries
  */
 export async function query(text: string, params?: any[]): Promise<pg.QueryResult> {
+  const start = Date.now();
   const pool = getPool();
   const client = await pool.connect();
-  
+
   try {
     const result = await client.query(text, params);
+    const duration = Date.now() - start;
+
+    // Log slow queries (>1 second)
+    if (duration > 1000) {
+      console.warn(`⚠️  Slow query (${duration}ms):`, text.substring(0, 100) + '...');
+    }
+
     return result;
   } finally {
     client.release();

@@ -50,6 +50,8 @@ The workshop guide consists of 8 onboarding steps plus Welcome and Dashboard pag
 - **Framework**: Express.js (unified across local and production)
 - **Database**: Neon Postgres (serverless PostgreSQL)
 - **Database Client**: pg (node-postgres) with connection pooling
+- **ORM**: Drizzle ORM with type-safe schema definitions
+- **Migrations**: Drizzle Kit with automated migration generation and safety checks
 - **Session Management**: Cookie-based with HMAC signing (HttpOnly, 8-hour expiration)
 - **External APIs**: OpenRouter API (Claude 3.5 Sonnet for AI enhancement)
 
@@ -150,10 +152,18 @@ workshop-guide-app/
 │   │   └── prdFormatter.ts  # PRD formatting for AI
 │   └── App.tsx              # Root component with routing
 ├── server/                  # Express server (local dev)
-│   └── index.ts             # API routes & session management
+│   ├── index.ts             # API routes & session management
+│   └── database.ts          # Database connection & query helpers
 ├── api/                     # Vercel serverless functions
 │   └── index.ts             # Entry point for production
+├── drizzle/                 # Database schema & migrations
+│   ├── schema.ts            # TypeScript schema definitions
+│   └── migrations/          # Generated SQL migration files
+├── scripts/                 # Build & migration scripts
+│   ├── lint-migrations.cjs  # Migration safety checks
+│   └── prebuild-migrations.cjs # Auto-run migrations on deploy
 ├── public/                  # Static assets (images, favicon)
+├── drizzle.config.ts        # Drizzle ORM configuration
 └── vercel.json              # Vercel deployment configuration
 ```
 
@@ -206,6 +216,167 @@ workshop-guide-app/
   - Model: `anthropic/claude-3.5-sonnet`
   - Called when transitioning from Step 2 to Step 3
 
+## Database Management
+
+### Schema & Migrations
+
+The app uses **Drizzle ORM** for type-safe database schema definitions and automated migrations:
+
+#### Schema Definition
+
+Database schema is defined in TypeScript (`drizzle/schema.ts`):
+
+```typescript
+export const propertySales = pgTable('property_sales', {
+  financialYear: integer('financial_year'),
+  activeMonth: date('active_month'),
+  state: char('state', { length: 3 }),
+  suburb: varchar('suburb'),
+  priceSearchSold: integer('price_search_sold'),
+  // ... other columns
+}, (table) => ({
+  // Performance indexes for 400k+ rows
+  stateIdx: index('property_sales_state_idx').on(table.state),
+  suburbIdx: index('property_sales_suburb_idx').on(table.suburb),
+  // ... composite indexes for common query patterns
+}));
+```
+
+**Benefits:**
+- Type-safe database queries
+- Automatic TypeScript types from schema
+- Version-controlled schema changes
+- Performance indexes defined in code
+
+#### Migration Commands
+
+```bash
+# Generate migration from schema changes
+npm run db:generate
+
+# Check migration status
+npm run db:status
+
+# Apply migrations to database
+npm run db:migrate
+
+# Lint migrations for safety
+npm run db:lint:migrations
+```
+
+#### Migration Workflow
+
+1. **Make Schema Changes**: Edit `drizzle/schema.ts`
+2. **Generate Migration**: Run `npm run db:generate`
+   - Creates SQL file in `drizzle/migrations/`
+   - Generates metadata and snapshots
+3. **Review Migration**: Check generated SQL for correctness
+4. **Lint Migration**: Run `npm run db:lint:migrations`
+   - Blocks destructive operations (DROP, TRUNCATE, DELETE)
+   - Validates migration structure
+5. **Apply Locally**: Run `npm run db:migrate`
+   - Tests migration on local/dev database
+6. **Commit Changes**: Commit schema + migration files to Git
+7. **Deploy**: Push to main → Vercel auto-runs migrations in production
+
+#### Migration Safety
+
+The migration linter (`scripts/lint-migrations.cjs`) prevents common mistakes:
+
+- ❌ **Blocks destructive operations** without explicit approval
+- ❌ **Prevents manual transactions** (Drizzle handles this)
+- ❌ **Detects empty migrations**
+- ⚠️ **Warns about TODO/FIXME comments**
+
+To allow destructive operations, add comment to migration:
+```sql
+-- allow-destructive
+DROP TABLE old_table;
+```
+
+#### Automatic Migrations on Deploy
+
+Migrations run automatically during Vercel production builds:
+
+1. **Prebuild Hook**: `npm run prebuild` → `scripts/prebuild-migrations.cjs`
+2. **Lint Migrations**: Validates all migration files
+3. **Apply Migrations**: Runs pending migrations against production DB
+4. **Build App**: Proceeds with Vite build if migrations succeed
+
+**Environment Detection:**
+- **Production**: Runs migrations automatically
+- **Preview/Dev**: Skips migrations (run manually)
+
+#### Performance Optimizations
+
+The current schema includes **9 performance indexes** on the `property_sales` table (428k+ rows):
+
+**Single-column indexes:**
+- `state` - State filtering
+- `suburb` - Suburb searches and GROUP BY
+- `property_type` - Property type analysis
+- `active_month` - Time-series queries
+- `price_search_sold` - Price aggregations and sorting
+
+**Composite indexes:**
+- `(state, suburb)` - State + suburb filtering
+- `(state, property_type)` - State + type analysis
+- `(state, active_month)` - State + time-series
+- `(state, price_search_sold)` - State + price queries
+
+**Expected Performance:**
+- Without indexes: 2-10 seconds per aggregation
+- With indexes: 50-500ms per aggregation
+- With caching: 1-10ms for cached results
+
+### Query Caching
+
+The API implements **in-memory caching** for read-heavy endpoints:
+
+```typescript
+// Cache configuration
+const cache = new Map<string, CacheEntry>();
+
+// Cached endpoints (5-10 minute TTL)
+GET /api/insights/suburbs        // 5 min cache
+GET /api/insights/property-types // 5 min cache
+GET /api/insights/market-stats   // 10 min cache
+```
+
+**Benefits:**
+- Reduces database load for 20 concurrent users
+- Improves response times (1-10ms for cached data)
+- Automatic cache expiration every 5 minutes
+- Manual cache clearing via `POST /api/cache/clear`
+
+### Connection Pooling
+
+Database connections are optimized for **serverless environments**:
+
+```typescript
+// Serverless-optimized pool settings
+max: 10,              // Reduced for serverless (Vercel runs multiple instances)
+min: 0,               // Allow pool to scale to zero when idle
+idleTimeoutMillis: 10000,  // Fast cleanup (10s)
+allowExitOnIdle: true,     // Allows process to exit when idle
+```
+
+**Why these settings:**
+- Vercel runs multiple serverless instances
+- Each instance has its own connection pool
+- Lower `max` prevents connection exhaustion
+- `allowExitOnIdle` enables proper serverless shutdown
+
+### Query Monitoring
+
+Slow queries (>1 second) are automatically logged:
+
+```typescript
+⚠️  Slow query (1234ms): SELECT suburb, AVG(price_search_sold)...
+```
+
+This helps identify performance bottlenecks during development and production.
+
 ## Deployment
 
 ### Vercel Deployment
@@ -220,6 +391,7 @@ The app is configured for Vercel deployment:
    - Function timeout: 10 seconds
 
 2. **Environment Variables** (set in Vercel dashboard):
+   - `DATABASE_URL` - Neon PostgreSQL connection string
    - `COOKIE_SECRET` - HMAC signing secret
    - `PARTICIPANTS_JSON` - Participant data JSON string
    - `ALLOWED_ORIGIN` - CORS origin (optional)

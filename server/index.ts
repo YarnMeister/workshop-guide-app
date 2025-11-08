@@ -39,6 +39,74 @@ if (!process.env.PARTICIPANTS_JSON || process.env.PARTICIPANTS_JSON.length < 10)
 
 const app = express();
 
+// ============================================================================
+// In-Memory Cache for Read-Heavy API Endpoints
+// ============================================================================
+
+interface CacheEntry {
+  data: any;
+  expires: number;
+}
+
+const cache = new Map<string, CacheEntry>();
+
+/**
+ * Get cached data or fetch fresh data if cache miss/expired
+ * @param key - Unique cache key
+ * @param ttlSeconds - Time to live in seconds
+ * @param fetchFn - Function to fetch fresh data on cache miss
+ */
+async function getCached<T>(
+  key: string,
+  ttlSeconds: number,
+  fetchFn: () => Promise<T>
+): Promise<T> {
+  const now = Date.now();
+  const cached = cache.get(key);
+
+  // Return cached data if valid
+  if (cached && cached.expires > now) {
+    return cached.data as T;
+  }
+
+  // Fetch fresh data
+  const data = await fetchFn();
+
+  // Store in cache
+  cache.set(key, {
+    data,
+    expires: now + (ttlSeconds * 1000),
+  });
+
+  return data;
+}
+
+/**
+ * Clear all cached data (useful for testing or manual refresh)
+ */
+function clearCache() {
+  cache.clear();
+  console.log('🗑️  Cache cleared');
+}
+
+// Optional: Clear expired cache entries every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  let cleared = 0;
+
+  for (const [key, entry] of cache.entries()) {
+    if (entry.expires <= now) {
+      cache.delete(key);
+      cleared++;
+    }
+  }
+
+  if (cleared > 0) {
+    console.log(`🧹 Cleared ${cleared} expired cache entries`);
+  }
+}, 5 * 60 * 1000);
+
+// ============================================================================
 // Middleware
 app.use(cors({
   origin: process.env.ALLOWED_ORIGIN || '*',
@@ -373,83 +441,93 @@ const requireAuth = async (req: express.Request, res: express.Response, next: ex
 
 // Database insights endpoints
 
-// Get suburb insights
+// Get suburb insights (cached for 5 minutes)
 app.get('/api/insights/suburbs', requireAuth, async (req, res) => {
   try {
     const { state, limit = 20 } = req.query;
-    
-    let queryText = `
-      SELECT 
-        suburb,
-        ROUND(AVG(price_search_sold)::numeric, 0) as avg_price,
-        ROUND(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY price_search_sold)::numeric, 0) as median_price,
-        COUNT(*) as total_sales
-      FROM property_sales 
-      WHERE price_search_sold > 0
-    `;
-    
-    const params: any[] = [];
-    if (state) {
-      queryText += ` AND state = $${params.length + 1}`;
-      params.push(state);
-    }
-    
-    queryText += `
-      GROUP BY suburb 
-      HAVING COUNT(*) >= 5
-      ORDER BY total_sales DESC 
-      LIMIT $${params.length + 1}
-    `;
-    params.push(parseInt(limit as string));
+    const cacheKey = `suburbs:${state || 'all'}:${limit}`;
 
-    const result = await query(queryText, params);
-    res.json(result.rows);
+    const data = await getCached(cacheKey, 300, async () => {
+      let queryText = `
+        SELECT
+          suburb,
+          ROUND(AVG(price_search_sold)::numeric, 0) as avg_price,
+          ROUND(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY price_search_sold)::numeric, 0) as median_price,
+          COUNT(*) as total_sales
+        FROM property_sales
+        WHERE price_search_sold > 0
+      `;
+
+      const params: any[] = [];
+      if (state) {
+        queryText += ` AND state = $${params.length + 1}`;
+        params.push(state);
+      }
+
+      queryText += `
+        GROUP BY suburb
+        HAVING COUNT(*) >= 5
+        ORDER BY total_sales DESC
+        LIMIT $${params.length + 1}
+      `;
+      params.push(parseInt(limit as string));
+
+      const result = await query(queryText, params);
+      return result.rows;
+    });
+
+    res.json(data);
   } catch (error) {
     console.error('Suburb insights error:', error);
     res.status(500).json({ error: 'Failed to fetch suburb insights' });
   }
 });
 
-// Get property type insights
+// Get property type insights (cached for 5 minutes)
 app.get('/api/insights/property-types', requireAuth, async (req, res) => {
   try {
     const { state } = req.query;
-    
-    let queryText = `
-      WITH total_sales AS (
-        SELECT COUNT(*) as total_count 
-        FROM property_sales 
-        WHERE price_search_sold > 0
-    `;
-    
-    const params: any[] = [];
-    if (state) {
-      queryText += ` AND state = $${params.length + 1}`;
-      params.push(state);
-    }
-    
-    queryText += `
-      )
-      SELECT 
-        property_type,
-        ROUND(AVG(price_search_sold)::numeric, 0) as avg_price,
-        COUNT(*) as total_sales,
-        ROUND((COUNT(*)::float / total_sales.total_count * 100)::numeric, 1) as market_share_pct
-      FROM property_sales, total_sales
-      WHERE price_search_sold > 0
-    `;
-    
-    if (state) {
-      queryText += ` AND state = $${params.length}`;
-    }
-    
-    queryText += `
-      GROUP BY property_type, total_sales.total_count
-      ORDER BY total_sales DESC
-    `;
+    const cacheKey = `property-types:${state || 'all'}`;
 
-    const result = await query(queryText, params);
-    res.json(result.rows);
+    const data = await getCached(cacheKey, 300, async () => {
+      let queryText = `
+        WITH total_sales AS (
+          SELECT COUNT(*) as total_count
+          FROM property_sales
+          WHERE price_search_sold > 0
+      `;
+
+      const params: any[] = [];
+      if (state) {
+        queryText += ` AND state = $${params.length + 1}`;
+        params.push(state);
+      }
+
+      queryText += `
+        )
+        SELECT
+          property_type,
+          ROUND(AVG(price_search_sold)::numeric, 0) as avg_price,
+          COUNT(*) as total_sales,
+          ROUND((COUNT(*)::float / total_sales.total_count * 100)::numeric, 1) as market_share_pct
+        FROM property_sales, total_sales
+        WHERE price_search_sold > 0
+      `;
+
+      if (state) {
+        queryText += ` AND state = $${params.length}`;
+      }
+
+      queryText += `
+        GROUP BY property_type, total_sales.total_count
+        ORDER BY total_sales DESC
+      `;
+
+      const result = await query(queryText, params);
+      return result.rows;
+    });
+
+    res.json(data);
   } catch (error) {
     console.error('Property type insights error:', error);
     res.status(500).json({ error: 'Failed to fetch property type insights' });
@@ -537,44 +615,49 @@ app.get('/api/insights/sale-types', requireAuth, async (req, res) => {
   }
 });
 
-// Get market statistics
+// Get market statistics (cached for 10 minutes - rarely changes)
 app.get('/api/insights/market-stats', requireAuth, async (req, res) => {
   try {
     const { state } = req.query;
-    
-    let queryText = `
-      SELECT 
-        COUNT(*) as total_sales,
-        ROUND(AVG(price_search_sold)::numeric, 0) as avg_price,
-        ROUND(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY price_search_sold)::numeric, 0) as median_price,
-        COUNT(DISTINCT suburb) as total_suburbs,
-        MIN(price_search_sold) as min_price,
-        MAX(price_search_sold) as max_price,
-        MODE() WITHIN GROUP (ORDER BY TO_CHAR(active_month, 'YYYY-MM')) as most_active_month
-      FROM property_sales 
-      WHERE price_search_sold > 0
-    `;
-    
-    const params: any[] = [];
-    if (state) {
-      queryText += ` AND state = $${params.length + 1}`;
-      params.push(state);
-    }
+    const cacheKey = `market-stats:${state || 'all'}`;
 
-    const result = await query(queryText, params);
-    const stats = result.rows[0];
-    
-    res.json({
-      total_sales: parseInt(stats.total_sales),
-      avg_price: parseInt(stats.avg_price),
-      median_price: parseInt(stats.median_price),
-      total_suburbs: parseInt(stats.total_suburbs),
-      price_range: {
-        min: parseInt(stats.min_price),
-        max: parseInt(stats.max_price)
-      },
-      most_active_month: stats.most_active_month
+    const data = await getCached(cacheKey, 600, async () => {
+      let queryText = `
+        SELECT
+          COUNT(*) as total_sales,
+          ROUND(AVG(price_search_sold)::numeric, 0) as avg_price,
+          ROUND(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY price_search_sold)::numeric, 0) as median_price,
+          COUNT(DISTINCT suburb) as total_suburbs,
+          MIN(price_search_sold) as min_price,
+          MAX(price_search_sold) as max_price,
+          MODE() WITHIN GROUP (ORDER BY TO_CHAR(active_month, 'YYYY-MM')) as most_active_month
+        FROM property_sales
+        WHERE price_search_sold > 0
+      `;
+
+      const params: any[] = [];
+      if (state) {
+        queryText += ` AND state = $${params.length + 1}`;
+        params.push(state);
+      }
+
+      const result = await query(queryText, params);
+      const stats = result.rows[0];
+
+      return {
+        total_sales: parseInt(stats.total_sales),
+        avg_price: parseInt(stats.avg_price),
+        median_price: parseInt(stats.median_price),
+        total_suburbs: parseInt(stats.total_suburbs),
+        price_range: {
+          min: parseInt(stats.min_price),
+          max: parseInt(stats.max_price)
+        },
+        most_active_month: stats.most_active_month
+      };
     });
+
+    res.json(data);
   } catch (error) {
     console.error('Market stats error:', error);
     res.status(500).json({ error: 'Failed to fetch market stats' });
@@ -683,6 +766,17 @@ app.get('/api/database/test', requireAuth, async (req, res) => {
   } catch (error) {
     console.error('Database test error:', error);
     res.status(500).json({ error: 'Database connection failed' });
+  }
+});
+
+// Clear cache endpoint (useful for testing)
+app.post('/api/cache/clear', requireAuth, async (req, res) => {
+  try {
+    clearCache();
+    res.json({ success: true, message: 'Cache cleared successfully' });
+  } catch (error) {
+    console.error('Cache clear error:', error);
+    res.status(500).json({ error: 'Failed to clear cache' });
   }
 });
 
