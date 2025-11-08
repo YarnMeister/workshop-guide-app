@@ -95,9 +95,9 @@ const Congrats = () => {
           className="absolute inset-0 vanta-loading-bg"
           style={{ zIndex: 0 }}
         />
-        {/* Congratulations text - center aligned */}
-        <div className="relative z-10 h-full flex items-center justify-center">
-          <h1 className="text-4xl font-bold text-white">
+        {/* Congratulations text - bottom aligned with padding */}
+        <div className="relative z-10 h-full flex items-end justify-center pb-4">
+          <h1 className="text-6xl font-bold text-white">
             Congratulations, you made it!
           </h1>
         </div>
