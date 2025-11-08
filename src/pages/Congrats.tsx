@@ -175,7 +175,7 @@ const Congrats = () => {
               </div>
               <div className="mb-4 flex items-start justify-between gap-4">
                 <p className="flex-1 text-sm text-muted-foreground">
-                  Have questions or feedback? We'd love to hear from you.
+                  Have questions, ideas or feedback? We'd love to hear from you.
                 </p>
                 <Button
                   variant="outline"
@@ -254,6 +254,17 @@ const Congrats = () => {
                     <p className="text-sm font-medium">Erik Tveitnes - API Lead</p>
                     <p className="text-sm text-muted-foreground">
                       Email: <a href="mailto:erik.tveitnes@rea-group.com" className="text-primary hover:underline">erik.tveitnes@rea-group.com</a>
+                    </p>
+                  </div>
+                </div>
+                <div className="pt-4 border-t">
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+                    If you have any follow up questions or feedback, let us know
+                  </p>
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">Jan Erasmus - Senior Product Manager, Customer Data</p>
+                    <p className="text-sm text-muted-foreground">
+                      Email: <a href="mailto:jan.erasmus@rea-group.com" className="text-primary hover:underline">jan.erasmus@rea-group.com</a>
                     </p>
                   </div>
                 </div>
