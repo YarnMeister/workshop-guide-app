@@ -128,9 +128,12 @@ const Welcome = () => {
 
     try {
       const result = await claimParticipantCode(code.trim());
+      console.log('[Welcome] Claim result:', result);
+      console.log('[Welcome] certId from claim:', result.certId);
 
       if (result.success && result.participantId && result.name && result.apiKeyMasked) {
         // Store participant data
+        console.log('[Welcome] Setting participant with certId:', result.certId);
         setParticipant(result.participantId, result.name, result.apiKeyMasked, result.certId);
 
         // Update progress

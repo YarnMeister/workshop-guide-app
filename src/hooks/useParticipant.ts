@@ -17,16 +17,31 @@ let sessionCheckInProgress = false;
 
 export function useParticipant() {
   const { progress, updateProgress } = useWorkshopProgress();
-  
+
   const [state, setState] = useState<ParticipantState>({
-    participantId: progress.participantId,
-    name: progress.participantName,
-    apiKeyMasked: progress.apiKeyMasked,
-    certId: progress.certId,
-    isAuthenticated: !!progress.participantId && !!progress.participantName,
+    participantId: null,
+    name: null,
+    apiKeyMasked: null,
+    certId: null,
+    isAuthenticated: false,
     isLoading: true,
     apiKey: null, // Never persisted, only in memory
   });
+
+  // Sync state with progress changes
+  useEffect(() => {
+    console.log('[useParticipant] Progress changed:', progress);
+    if (progress.participantId && progress.participantName) {
+      setState(prev => ({
+        ...prev,
+        participantId: progress.participantId,
+        name: progress.participantName,
+        apiKeyMasked: progress.apiKeyMasked,
+        certId: progress.certId,
+        isAuthenticated: true,
+      }));
+    }
+  }, [progress.participantId, progress.participantName, progress.apiKeyMasked, progress.certId]);
 
   // Check session on mount only
   useEffect(() => {
@@ -46,20 +61,25 @@ export function useParticipant() {
           console.log('[useParticipant] Found localStorage data, checking session...');
           const session = await checkSession();
           console.log('[useParticipant] Session check result:', session);
+          console.log('[useParticipant] Session certId:', session.certId);
+          console.log('[useParticipant] Progress certId:', progress.certId);
           if (session.authenticated && session.participantId === progress.participantId) {
             // Session is valid, use existing data
             console.log('[useParticipant] Session valid, restoring from localStorage');
+            const finalCertId = session.certId ?? progress.certId;
+            console.log('[useParticipant] Final certId to use:', finalCertId);
             setState({
               participantId: progress.participantId,
               name: progress.participantName,
               apiKeyMasked: progress.apiKeyMasked,
-              certId: session.certId ?? progress.certId,
+              certId: finalCertId,
               isAuthenticated: true,
               isLoading: false,
               apiKey: null,
             });
             // Update progress with certId from session if available
             if (session.certId && session.certId !== progress.certId) {
+              console.log('[useParticipant] Updating progress with certId from session:', session.certId);
               updateProgress({ certId: session.certId });
             }
           } else {
