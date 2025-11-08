@@ -1,0 +1,24 @@
+{
+  "name": "workshop-api-client-example",
+  "version": "1.0.0",
+  "description": "Example Node.js client for Workshop Guide App API",
+  "type": "module",
+  "main": "workshop-api-client.js",
+  "scripts": {
+    "start": "node workshop-api-client.js",
+    "test": "node workshop-api-client.js"
+  },
+  "keywords": [
+    "workshop",
+    "api",
+    "client",
+    "example"
+  ],
+  "author": "Workshop Guide App",
+  "license": "MIT",
+  "dependencies": {
+    "node-fetch": "^3.3.2",
+    "dotenv": "^16.3.1"
+  }
+}
+

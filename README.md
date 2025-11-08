@@ -191,23 +191,52 @@ workshop-guide-app/
 
 ## API Endpoints
 
+### Authentication
+
+The API supports **two authentication methods**:
+
+1. **Cookie-based (Web App)**: Session cookies for browser-based access
+2. **API Key (External Clients)**: Bearer token authentication for scripts and external applications
+
+**For external API access**, see [EXTERNAL_API_ACCESS.md](./EXTERNAL_API_ACCESS.md) for comprehensive documentation including:
+- Authentication setup
+- Available endpoints
+- Rate limiting (100 requests/minute)
+- Node.js integration examples
+- Error handling
+
 ### Backend Routes (`/api/*`)
+
+#### Authentication Endpoints
 
 - `POST /api/claim` - Claim participant code and create session
   - Body: `{ code: string }`
   - Returns: `{ success: boolean, participantId: string, name: string, apiKeyMasked: string }`
-  
+
 - `GET /api/session` - Check current session status
   - Returns: `{ authenticated: boolean, participantId?: string, name?: string }`
-  
+
 - `POST /api/reveal-key` - Reveal full API key (requires valid session)
   - Returns: `{ success: boolean, apiKey: string, apiKeyMasked: string }`
-  
+
 - `POST /api/logout` - Clear session cookie
   - Returns: `{ success: boolean }`
-  
+
 - `GET /api/health` - Health check endpoint
   - Returns: `{ status: string, env: object }`
+
+#### Data Endpoints (Require Authentication)
+
+All data endpoints support both cookie and API key authentication:
+
+- `GET /api/insights/suburbs` - Get suburb-level price insights
+- `GET /api/insights/property-types` - Get property type insights
+- `GET /api/insights/price-trends` - Get time-series price trends
+- `GET /api/insights/sale-types` - Get sale type insights
+- `GET /api/insights/market-stats` - Get overall market statistics
+- `GET /api/properties/search` - Search properties with filters
+
+**Rate Limiting**: API key authentication is rate limited to 100 requests/minute per participant.
 
 ### External APIs
 
@@ -521,11 +550,14 @@ The app uses a combination of React hooks and localStorage for state management:
 
 ### Security Considerations
 
+- **Dual Authentication**: Supports both cookie-based (web app) and API key-based (external clients) authentication
 - **Session Management**: HMAC-signed cookies prevent tampering
 - **API Key Security**: Full keys never persisted, only displayed on-demand
-- **CORS**: Configurable origin restrictions
+- **Rate Limiting**: API key authentication limited to 100 requests/minute per participant
+- **CORS**: Configurable origin restrictions (supports wildcard for workshop, whitelist for production)
 - **HttpOnly Cookies**: Prevents XSS attacks on session data
 - **Secure Flag**: Enabled in production for HTTPS-only cookies
+- **HTTPS Only**: API keys transmitted securely over HTTPS in production
 
 ## Notable Implementation Details
 

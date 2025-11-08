@@ -5,7 +5,7 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { query, testConnection } from './database.js';
-import { getParticipantByCode, getAllParticipants, clearParticipantsCache, isDatabaseReady } from './participants.js';
+import { getParticipantByCode, getParticipantByApiKey, getAllParticipants, clearParticipantsCache, isDatabaseReady } from './participants.js';
 
 // Load environment variables from .env.local (for local dev) or .env
 dotenv.config({ path: '.env.local' });
@@ -108,10 +108,74 @@ setInterval(() => {
 }, 5 * 60 * 1000);
 
 // ============================================================================
+// Rate Limiting for API Key Authentication
+// ============================================================================
+
+interface RateLimitEntry {
+  count: number;
+  resetAt: number;
+}
+
+const rateLimits = new Map<string, RateLimitEntry>();
+
+/**
+ * Check if a participant has exceeded their rate limit
+ * @param participantId - Unique identifier for the participant
+ * @param maxRequests - Maximum requests allowed per window (default: 100)
+ * @param windowMs - Time window in milliseconds (default: 60000 = 1 minute)
+ * @returns true if within limit, false if exceeded
+ */
+function checkRateLimit(
+  participantId: string,
+  maxRequests: number = 100,
+  windowMs: number = 60000
+): boolean {
+  const now = Date.now();
+  const limit = rateLimits.get(participantId);
+
+  // No existing limit or window expired - create new window
+  if (!limit || limit.resetAt < now) {
+    rateLimits.set(participantId, { count: 1, resetAt: now + windowMs });
+    return true;
+  }
+
+  // Check if limit exceeded
+  if (limit.count >= maxRequests) {
+    return false; // Rate limit exceeded
+  }
+
+  // Increment counter
+  limit.count++;
+  return true;
+}
+
+/**
+ * Clear expired rate limit entries every minute
+ * Prevents memory leaks from inactive participants
+ */
+setInterval(() => {
+  const now = Date.now();
+  let cleared = 0;
+
+  for (const [key, entry] of rateLimits.entries()) {
+    if (entry.resetAt < now) {
+      rateLimits.delete(key);
+      cleared++;
+    }
+  }
+
+  if (cleared > 0) {
+    console.log(`🧹 Cleared ${cleared} expired rate limit entries`);
+  }
+}, 60 * 1000); // Every minute
+
+// ============================================================================
 // Middleware
 app.use(cors({
   origin: process.env.ALLOWED_ORIGIN || '*',
   credentials: true,
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(express.json());
 
@@ -472,25 +536,86 @@ app.post('/api/logout', async (req, res) => {
   }
 });
 
-// Middleware to check authentication for protected routes
+// ============================================================================
+// Authentication Middleware (Dual: Cookie + API Key)
+// ============================================================================
+
+/**
+ * Middleware to check authentication for protected routes
+ * Supports two authentication methods:
+ * 1. Cookie-based (for web app) - existing behavior
+ * 2. API Key-based (for external clients) - new behavior
+ *
+ * API Key format: Authorization: Bearer <api-key>
+ * Rate limiting: 100 requests/minute per participant (API key auth only)
+ */
 const requireAuth = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
   try {
+    // ========================================================================
+    // Method 1: Cookie-based authentication (existing behavior)
+    // ========================================================================
     const cookieHeader = req.headers.cookie || '';
     const cookieMatch = cookieHeader.match(/participant_session=([^;]+)/);
     const cookie = cookieMatch ? cookieMatch[1] : null;
 
-    if (!cookie) {
-      return res.status(401).json({ error: 'Authentication required' });
+    if (cookie) {
+      const payload = verifyCookie(cookie);
+      if (payload) {
+        // Valid cookie - add participant info to request
+        (req as any).participant = payload;
+        (req as any).authMethod = 'cookie';
+        return next();
+      }
     }
 
-    const payload = verifyCookie(cookie);
-    if (!payload) {
-      return res.status(401).json({ error: 'Invalid session' });
+    // ========================================================================
+    // Method 2: API Key-based authentication (new behavior)
+    // ========================================================================
+    const authHeader = req.headers.authorization || '';
+    const bearerMatch = authHeader.match(/^Bearer\s+(.+)$/i);
+    const apiKey = bearerMatch ? bearerMatch[1] : null;
+
+    if (apiKey) {
+      // Validate API key against database
+      const participant = await getParticipantByApiKey(apiKey);
+
+      if (!participant) {
+        return res.status(401).json({
+          error: 'Invalid API key',
+          message: 'The provided API key is not valid or has been deactivated.'
+        });
+      }
+
+      // Check rate limit (100 requests/minute per participant)
+      const withinLimit = checkRateLimit(participant.code, 100, 60000);
+
+      if (!withinLimit) {
+        return res.status(429).json({
+          error: 'Rate limit exceeded',
+          message: 'You have exceeded the rate limit of 100 requests per minute. Please try again later.',
+          retryAfter: 60 // seconds
+        });
+      }
+
+      // Valid API key and within rate limit - add participant info to request
+      (req as any).participant = {
+        code: participant.code,
+        name: participant.name,
+        participantId: participant.code,
+        certId: participant.certId,
+      };
+      (req as any).authMethod = 'api-key';
+      return next();
     }
 
-    // Add participant info to request for use in handlers
-    (req as any).participant = payload;
-    next();
+    // ========================================================================
+    // No valid authentication method found
+    // ========================================================================
+    return res.status(401).json({
+      error: 'Authentication required',
+      message: 'Please provide either a valid session cookie or API key in the Authorization header (Bearer token).'
+    });
+
   } catch (error) {
     console.error('Auth middleware error:', error);
     res.status(500).json({ error: 'Internal server error' });

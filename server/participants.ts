@@ -95,9 +95,34 @@ export function clearParticipantsCache(): void {
 }
 
 /**
+ * Get a single participant by their API key
+ * Used for API key-based authentication (external clients)
+ *
+ * @param apiKey - Participant's API key (e.g., "sk-or-v1-...")
+ * @returns Participant data or null if not found/inactive
+ */
+export async function getParticipantByApiKey(apiKey: string): Promise<Participant | null> {
+  try {
+    const result = await query(
+      'SELECT code, name, api_key as "apiKey", cert_id as "certId" FROM participants WHERE api_key = $1 AND is_active = true',
+      [apiKey]
+    );
+
+    if (result.rows.length === 0) {
+      return null;
+    }
+
+    return result.rows[0] as Participant;
+  } catch (error) {
+    console.error('Failed to fetch participant by API key:', error);
+    return null;
+  }
+}
+
+/**
  * Check if database-based participants are available
  * Falls back to environment variable if database is not ready
- * 
+ *
  * @returns true if database has participants, false otherwise
  */
 export async function isDatabaseReady(): Promise<boolean> {
