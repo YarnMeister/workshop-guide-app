@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Header } from "@/components/Header";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Download } from "lucide-react";
 import { useParticipant } from "@/hooks/useParticipant";
 import { Button } from "@/components/ui/button";
 import {
@@ -91,6 +91,18 @@ const Congrats = () => {
     console.log('[Congrats] certId at modal open:', certId);
     setModalTitle(title);
     setModalOpen(true);
+  };
+
+  const handleDownloadCertificate = () => {
+    if (!certId) return;
+
+    // Create a temporary anchor element to trigger download
+    const link = document.createElement('a');
+    link.href = `/${certId}.png`;
+    link.download = `workshop-certificate-${certId}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -216,7 +228,17 @@ const Congrats = () => {
               </p>
             )}
           </div>
-          <DialogFooter>
+          <DialogFooter className="gap-2">
+            {modalTitle === "Make some noise online" && certId && (
+              <Button
+                onClick={handleDownloadCertificate}
+                variant="outline"
+                className="gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Download Certificate
+              </Button>
+            )}
             <Button onClick={() => setModalOpen(false)}>Done</Button>
           </DialogFooter>
         </DialogContent>
