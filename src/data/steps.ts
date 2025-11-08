@@ -299,14 +299,20 @@ git config --global user.email "jane.doe@email.com"`
         title: "Tips for filling this out",
         content: "Be specific but concise - aim for clarity over length. Use examples when helpful. It's okay to leave sections blank if not applicable. Focus on what you want, not how to build it (that's for the AI to figure out)."
       },
+      inspirationPanel: {
+        title: "Ideas and inspiration",
+        content: "We have some amazingly rich data for you to use in your prototype. Click the button to get inspired",
+        buttonText: "Inspo me",
+        buttonAction: "/insights"
+      },
       prdTemplate: true
     }
   },
   {
     id: 3,
-    title: "Generate the Prototype",
+    title: "Generate Prototype",
     description: "Turn your PRD into a working UI",
-    heading: "Generate the Prototype",
+    heading: "Generate Prototype",
     content: "Review and copy your AI-generated prompt below, then use it in Lovable to create your prototype. The prompt has been optimized specifically for Lovable's AI builder to generate a working prototype with all the features you specified.",
     ctaText: "Next",
     ctaAction: "/onboarding/step/4",
@@ -314,9 +320,13 @@ git config --global user.email "jane.doe@email.com"`
       sections: [
         {
           title: "Review your prompt",
-          description: "Review the auto-generated prompt and fine-tune any details you like before clicking the button to copy your prompt to clipboard, ready for step 2",
+          description: "Review the auto-generated prompt and fine-tune any details you like",
           templateTextbox: true,
           templateContent: ""
+        },
+        {
+          title: "Copy prompt",
+          copyPromptButton: true
         },
         {
           title: "Generate Your Prototype",
@@ -329,7 +339,7 @@ git config --global user.email "jane.doe@email.com"`
             {
               title: "Create Your Project",
               codeBlock: `1. Click "Create New Project" or similar button
-2. Paste your prompt from the clipboard (you copied it in Step 1)
+2. Paste your prompt from the clipboard (you copied it in Step 2)
 3. Let Lovable generate your UI prototype
 4. Make any adjustments or refinements as needed`
             }
@@ -782,37 +792,12 @@ Or describe the problem: "The app is showing an error when I..."
   },
   {
     id: 7,
-    title: "Extend Your App",
-    description: "Add data, logic, and AI-powered features",
-    heading: "Extend Your App",
-    content: "Take your app to the next level by adding more sophisticated features. You'll likely have time to add only one of these so choose wisely. Go on... be a real PM",
-    ctaText: "Next",
-    ctaAction: "/onboarding/step/8",
-    detailedContent: {
-      sections: [
-        {
-          title: "Add an AI Assistant in your app workflow",
-          description: "Coming soon - instructions for adding AI capabilities to your application."
-        },
-        {
-          title: "Add a full Database",
-          description: "Coming soon - instructions for integrating a database into your application."
-        },
-        {
-          title: "Integrate real data using an API",
-          description: "Coming soon - instructions for connecting your app to external APIs."
-        }
-      ]
-    }
-  },
-  {
-    id: 8,
     title: "Launch to the Web",
     description: "Deploy your app live via Vercel",
     heading: "Launch to the Web",
     content: "Follow these steps to connect your GitHub repo and auto-deploy every time you merge to main.",
-    ctaText: "Complete",
-    ctaAction: "/dashboard",
+    ctaText: "Next",
+    ctaAction: "/onboarding/step/8",
     detailedContent: {
       sections: [
         {
@@ -841,6 +826,34 @@ Or describe the problem: "The app is showing an error when I..."
 
 Any future merge to main (via AI assisted prompts) in GitHub will trigger a fresh deployment.`,
           screenshot: "Vercel-5.png"
+        }
+      ]
+    }
+  },
+  {
+    id: 8,
+    title: "Extend Your App",
+    description: "Add data, logic, and AI-powered features",
+    heading: "Extend Your App",
+    content: "Take your app to the next level by adding more sophisticated features. You'll likely have time to add only one of these so choose wisely. Go on... be a real PM",
+    ctaText: "Complete",
+    ctaAction: "/dashboard",
+    detailedContent: {
+      sections: [
+        {
+          title: "Integrate real data using an API",
+          description: "Coming soon - instructions for connecting your app to external APIs.",
+          seeMoreRoute: "/extend/integrate-api"
+        },
+        {
+          title: "Add an AI Assistant in your app workflow",
+          description: "Coming soon - instructions for adding AI capabilities to your application.",
+          seeMoreRoute: "/extend/add-ai-assistant"
+        },
+        {
+          title: "Add a full Database",
+          description: "Coming soon - instructions for integrating a database into your application.",
+          seeMoreRoute: "/extend/add-database"
         }
       ]
     }

@@ -40,6 +40,7 @@ export const PRDForm = ({ answers, onUpdate }: PRDFormProps) => {
     <div className="mb-8 space-y-6">
       {/* PRD Form Accordion */}
       <div className="rounded-lg border bg-card p-6">
+        <h2 className="mb-6 text-2xl font-bold">Define Prototype requirements</h2>
         <Accordion type="multiple" className="w-full">
           {/* Project Overview */}
           <AccordionItem value="project-overview">

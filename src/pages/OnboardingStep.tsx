@@ -31,6 +31,11 @@ const OnboardingStep = () => {
   
   const currentStep = ONBOARDING_STEPS.find(step => step.id === currentStepNumber);
 
+  // Scroll to top when step changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [stepId]);
+
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -450,6 +455,8 @@ const OnboardingStep = () => {
       updateProgress({ completedPages });
     }
     
+    // Scroll to top before navigation
+    window.scrollTo({ top: 0, behavior: 'instant' });
     navigate(currentStep.ctaAction);
   };
 
@@ -485,6 +492,27 @@ const OnboardingStep = () => {
                         <h3 className="mb-2 font-semibold text-base text-blue-900">{currentStep.detailedContent.infoPanel.title}</h3>
                         <p className="text-sm text-blue-700">{renderTextWithLinks(currentStep.detailedContent.infoPanel.content)}</p>
                       </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Inspiration Panel - Show on step 2 after info panel */}
+                {currentStep.detailedContent.inspirationPanel && currentStepNumber === 2 && (
+                  <div className="rounded-lg border bg-card p-6">
+                    <h3 className="mb-3 font-semibold text-base">{currentStep.detailedContent.inspirationPanel.title}</h3>
+                    <div className="flex items-center gap-3">
+                      <p className="flex-1 text-sm text-muted-foreground">{currentStep.detailedContent.inspirationPanel.content}</p>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => {
+                          window.scrollTo({ top: 0, behavior: 'instant' });
+                          navigate(currentStep.detailedContent.inspirationPanel.buttonAction);
+                        }}
+                        className="shrink-0"
+                      >
+                        {currentStep.detailedContent.inspirationPanel.buttonText}
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -541,53 +569,85 @@ const OnboardingStep = () => {
                             <div className="mb-3 flex items-center gap-3">
                               {!isContextPanel && (
                                 <div className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                                  Step {stepNumber}
+                                  {currentStepNumber === 8 ? `Option ${stepNumber}` : `Step ${stepNumber}`}
                                 </div>
                               )}
                               <h2 className="font-semibold text-lg">{section.title}</h2>
                             </div>
                     {section.description && (
-                      <p className="mb-4 text-sm text-muted-foreground">{renderTextWithLinks(section.description)}</p>
+                      <div className="mb-4 flex items-start justify-between gap-4">
+                        <p className="flex-1 text-sm text-muted-foreground">{renderTextWithLinks(section.description)}</p>
+                        {section.seeMoreRoute && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              window.scrollTo({ top: 0, behavior: 'instant' });
+                              navigate(section.seeMoreRoute);
+                            }}
+                            className="shrink-0"
+                          >
+                            See more
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                    {!section.description && section.seeMoreRoute && (
+                      <div className="mb-4 flex justify-end">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            window.scrollTo({ top: 0, behavior: 'instant' });
+                            navigate(section.seeMoreRoute);
+                          }}
+                        >
+                          See more
+                        </Button>
+                      </div>
                     )}
                     {section.templateTextbox && (
                       <div className="mb-4">
-                        <div className="relative">
-                          <Textarea
-                            value={templateText}
-                            onChange={(e) => {
-                              setTemplateText(e.target.value);
-                              if (currentStepNumber === 2) {
-                                updateProgress({ 
-                                  writeSpecsTemplate: e.target.value,
-                                  writeSpecsOriginal: e.target.value 
-                                });
-                              } else if (currentStepNumber === 3) {
-                                updateProgress({ prototypeTemplate: e.target.value });
-                              }
-                            }}
-                            placeholder="Enter your project description here..."
-                            className={`${currentStepNumber === 3 ? 'min-h-[600px]' : 'min-h-[200px]'} resize-none pr-12`}
-                          />
-                          {currentStepNumber === 3 && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => copyToClipboard(templateText)}
-                              className="absolute top-2 right-2"
-                            >
-                              {copiedCommands.has(templateText) ? (
-                                <>
-                                  <Check className="h-4 w-4 mr-2 text-green-600" />
-                                  Copied!
-                                </>
-                              ) : (
-                                <>
-                                  <Copy className="h-4 w-4 mr-2" />
-                                  Copy prompt
-                                </>
-                              )}
-                            </Button>
-                          )}
+                        <Textarea
+                          value={templateText}
+                          onChange={(e) => {
+                            setTemplateText(e.target.value);
+                            if (currentStepNumber === 2) {
+                              updateProgress({ 
+                                writeSpecsTemplate: e.target.value,
+                                writeSpecsOriginal: e.target.value 
+                              });
+                            } else if (currentStepNumber === 3) {
+                              updateProgress({ prototypeTemplate: e.target.value });
+                            }
+                          }}
+                          placeholder="Enter your project description here..."
+                          className={`${currentStepNumber === 3 ? 'min-h-[600px]' : 'min-h-[200px]'} resize-none`}
+                        />
+                      </div>
+                    )}
+                    {section.copyPromptButton && (
+                      <div className="mb-4 p-4">
+                        <div className="flex items-center gap-3">
+                          <p className="flex-1 text-sm text-muted-foreground">Once you are happy with the prompt above, copy the prompt to paste it in the Lovable page below</p>
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => copyToClipboard(templateText)}
+                            className="shrink-0"
+                          >
+                            {copiedCommands.has(templateText) ? (
+                              <>
+                                <Check className="h-4 w-4 mr-2 text-white" />
+                                Copied!
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="h-4 w-4 mr-2" />
+                                Copy prompt
+                              </>
+                            )}
+                          </Button>
                         </div>
                       </div>
                     )}
@@ -869,7 +929,12 @@ const OnboardingStep = () => {
             <div className="flex items-center justify-between">
               <Button
                 variant="outline"
-                onClick={() => currentStepNumber > 1 && navigate(`/onboarding/step/${currentStepNumber - 1}`)}
+                onClick={() => {
+                  if (currentStepNumber > 1) {
+                    window.scrollTo({ top: 0, behavior: 'instant' });
+                    navigate(`/onboarding/step/${currentStepNumber - 1}`);
+                  }
+                }}
                 disabled={currentStepNumber === 1}
               >
                 Previous
