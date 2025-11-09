@@ -80,13 +80,26 @@ curl https://your-app.vercel.app/api/insights/market-stats \
 
 ## Available Endpoints
 
-All endpoints require authentication. All endpoints are **read-only** (GET requests only).
+**All endpoints listed below are read-only (GET requests only) and accessible with API key authentication.**
 
 ### Base URL
 ```
 Production: https://your-app.vercel.app
 Local Dev:  http://localhost:3001
 ```
+
+### Access Restrictions
+
+**API Key Authentication:**
+- ✅ **Allowed:** All GET endpoints listed below (read-only access)
+- ❌ **Denied:** POST/PUT/DELETE endpoints (mutating operations)
+- ❌ **Denied:** Admin endpoints (e.g., `/api/cache/clear`)
+
+**Cookie Authentication (Browser Only):**
+- ✅ **Allowed:** All endpoints including admin operations
+- ✅ **Allowed:** Mutating operations (POST/PUT/DELETE)
+
+**Note:** External API clients using API keys have **read-only access only**. This ensures data integrity and prevents accidental or malicious modifications.
 
 ### Insights Endpoints
 

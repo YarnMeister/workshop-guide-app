@@ -294,10 +294,9 @@ function loadParticipants(): Record<string, { name: string; apiKey: string }> {
     return participantsCache;
   }
 
-  // Log diagnostics for production debugging
-  console.log(`PARTICIPANTS_JSON length: ${participantsJson.length}`);
-  console.log(`PARTICIPANTS_JSON first 50 chars: ${participantsJson.substring(0, 50)}`);
-  console.log(`PARTICIPANTS_JSON last 50 chars: ${participantsJson.substring(Math.max(0, participantsJson.length - 50))}`);
+  // SECURITY: Log diagnostics without exposing API keys
+  console.log(`PARTICIPANTS_JSON length: ${participantsJson.length} characters`);
+  console.log(`PARTICIPANTS_JSON format check: ${participantsJson.trim().startsWith('{') ? 'JSON object' : 'unknown'}`);
 
   try {
     // Check if it's already a parsed object (shouldn't happen, but be safe)
@@ -1035,12 +1034,12 @@ app.get('/api/properties/search', requireAuth, async (req, res) => {
     params.push(validatedOffset);
 
     const result = await query(queryText, params);
-    
+
     res.json({
       data: result.rows,
       total,
-      limit: parseInt(limit as string),
-      offset: parseInt(offset as string)
+      limit: validatedLimit,
+      offset: validatedOffset
     });
   } catch (error) {
     console.error('Property search error:', error);
@@ -1059,8 +1058,45 @@ app.get('/api/database/test', requireAuth, async (req, res) => {
   }
 });
 
-// Clear cache endpoint (useful for testing)
-app.post('/api/cache/clear', requireAuth, async (req, res) => {
+/**
+ * Middleware to require cookie-based authentication only (no API keys)
+ * Used for admin/mutating endpoints that should not be accessible to external API clients
+ */
+const requireCookieAuth = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  try {
+    const cookieHeader = req.headers.cookie || '';
+    const cookieMatch = cookieHeader.match(/participant_session=([^;]+)/);
+    const cookie = cookieMatch ? cookieMatch[1] : null;
+
+    if (!cookie) {
+      return res.status(401).json({
+        error: 'Authentication required',
+        message: 'This endpoint requires browser-based authentication. API key access is not permitted.'
+      });
+    }
+
+    const payload = verifyCookie(cookie);
+    if (!payload) {
+      return res.status(401).json({
+        error: 'Invalid session',
+        message: 'Your session is invalid or has expired. Please log in again.'
+      });
+    }
+
+    // Valid cookie - add participant info to request
+    (req as any).participant = payload;
+    (req as any).authMethod = 'cookie';
+    return next();
+
+  } catch (error) {
+    console.error('[cookie-auth] Middleware error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// Clear cache endpoint (admin only - cookie auth required)
+// SECURITY: API key clients cannot access this endpoint (read-only guarantee)
+app.post('/api/cache/clear', requireCookieAuth, async (req, res) => {
   try {
     clearCache();
     clearParticipantsCache();
