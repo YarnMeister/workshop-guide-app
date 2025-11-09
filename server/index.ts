@@ -314,19 +314,21 @@ function loadParticipants(): Record<string, { name: string; apiKey: string }> {
       jsonString = jsonString.replace(/\\"/g, '"').replace(/\\'/g, "'");
     }
 
-    // Check if the JSON appears truncated (doesn't end with } or }])
+    // SECURITY: Check if the JSON appears truncated (doesn't end with } or }])
+    // Do NOT log the actual content as it contains API keys
     const trimmed = jsonString.trim();
     if (!trimmed.endsWith('}') && !trimmed.endsWith('}]')) {
       console.error('PARTICIPANTS_JSON appears truncated - does not end with }');
-      console.error(`Last 100 chars: ${trimmed.substring(Math.max(0, trimmed.length - 100))}`);
-      
+      console.error(`PARTICIPANTS_JSON length: ${trimmed.length} characters`);
+
       // Try to find where it was truncated (look for incomplete JSON)
       const lastOpeningBrace = trimmed.lastIndexOf('{');
       const lastClosingBrace = trimmed.lastIndexOf('}');
       if (lastOpeningBrace > lastClosingBrace) {
         console.error('PARTICIPANTS_JSON is truncated - unclosed brace detected');
+        console.error(`Last opening brace at position: ${lastOpeningBrace}, last closing brace at: ${lastClosingBrace}`);
       }
-      
+
       participantsCache = {};
       return participantsCache;
     }
@@ -360,11 +362,14 @@ function loadParticipants(): Record<string, { name: string; apiKey: string }> {
     participantsCache = parsed;
     return participantsCache;
   } catch (error) {
-    console.error('Failed to parse PARTICIPANTS_JSON:', error);
+    // SECURITY: Do NOT log PARTICIPANTS_JSON content as it contains API keys
+    console.error('Failed to parse PARTICIPANTS_JSON:', error instanceof Error ? error.message : String(error));
     if (error instanceof SyntaxError) {
-      console.error('JSON parse error. PARTICIPANTS_JSON length:', participantsJson.length);
-      console.error('First 200 chars:', participantsJson.substring(0, 200));
-      console.error('Last 100 chars:', participantsJson.substring(Math.max(0, participantsJson.length - 100)));
+      console.error('JSON parse error detected');
+      console.error('PARTICIPANTS_JSON length:', participantsJson.length, 'characters');
+      console.error('Starts with:', participantsJson.trim().startsWith('{') ? 'object' : participantsJson.trim().startsWith('[') ? 'array' : 'unknown');
+      console.error('Ends with:', participantsJson.trim().endsWith('}') ? 'object' : participantsJson.trim().endsWith(']') ? 'array' : 'unknown');
+      console.error('Please check PARTICIPANTS_JSON environment variable format');
     }
     participantsCache = {};
     return participantsCache;
