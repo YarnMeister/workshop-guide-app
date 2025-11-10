@@ -405,7 +405,7 @@ git config --global user.email "jane.doe@email.com"`
   },
   {
     id: 5,
-    title: "Learn Vibe Coding Flow",
+    title: "Vibe Coding Flow",
     description: "Get familiar with core concept",
     heading: "Learn the Vibe Coding Flow",
     content: "Your guide to safely experimenting with code like a pro. Learn the tools, mindset, and best practices for AI-assisted development.",
