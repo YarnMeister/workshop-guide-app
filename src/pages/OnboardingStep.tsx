@@ -368,9 +368,19 @@ const OnboardingStep = () => {
 
     // Process AI enhancement when moving from Write Specs to Prototype
     if (currentStepNumber === 2) {
+      // Check if user has selected whether they'll use property data
+      if (progress.willUsePropertyData === null || progress.willUsePropertyData === undefined) {
+        toast({
+          title: "Selection Required",
+          description: "Please indicate whether you will use our property data before proceeding.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Format PRD answers for AI processing
       const prdFormatted = formatPRDForAI(progress.prdAnswers);
-      
+
       // Check if there's any content to process
       if (!prdFormatted.trim() || prdFormatted === "# Mini PRD\n\n") {
         toast({
@@ -544,7 +554,39 @@ const OnboardingStep = () => {
                     }}
                   />
                 )}
-                
+
+                {/* Property Data Usage Panel for step 2 */}
+                {currentStepNumber === 2 && (
+                  <div className="rounded-lg border bg-card p-6">
+                    <h3 className="mb-3 font-semibold text-base">Will you use our data?</h3>
+                    <p className="mb-4 text-sm text-muted-foreground">
+                      To help us optimise your app, indicate if you plan to build a prototype using our property data. This will influence what you see on the next page
+                    </p>
+                    <div className="flex gap-4">
+                      <button
+                        onClick={() => updateProgress({ willUsePropertyData: true })}
+                        className={`flex-1 rounded-lg border-2 p-4 text-center transition-all ${
+                          progress.willUsePropertyData === true
+                            ? 'border-primary bg-primary/10 font-semibold'
+                            : 'border-muted hover:border-primary/50'
+                        }`}
+                      >
+                        Yes
+                      </button>
+                      <button
+                        onClick={() => updateProgress({ willUsePropertyData: false })}
+                        className={`flex-1 rounded-lg border-2 p-4 text-center transition-all ${
+                          progress.willUsePropertyData === false
+                            ? 'border-primary bg-primary/10 font-semibold'
+                            : 'border-muted hover:border-primary/50'
+                        }`}
+                      >
+                        No
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {/* Regular sections (for non-PRD pages) */}
                 {!currentStep.detailedContent.prdTemplate && currentStep.detailedContent.sections && currentStep.detailedContent.sections.map((section, index) => {
                   // Insert info panel for step 5 after first section (Void Editor Overview)

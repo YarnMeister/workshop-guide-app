@@ -61,6 +61,7 @@ export interface WorkshopProgress {
   prdAnswers: PRDAnswers; // Structured PRD answers
   prototypeTemplate: string;
   aiEnhancementError?: string; // Store any AI error for display
+  willUsePropertyData?: boolean | null; // Whether user will use property data in their app
 }
 
 // Default PRD answers
