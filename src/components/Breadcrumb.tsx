@@ -5,7 +5,7 @@ import { useParticipant } from "@/hooks/useParticipant";
 import { logout } from "@/services/participant";
 import { toast } from "@/hooks/use-toast";
 import { clearProgress } from "@/utils/storage";
-import { canAccessStep, isPreWorkshopOnly } from "@/utils/featureFlags";
+import { canAccessStep, isPreWorkshopOnly, hasFullAccess } from "@/utils/featureFlags";
 
 export interface Step {
   id: number;
