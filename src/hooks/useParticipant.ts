@@ -36,15 +36,19 @@ export function useParticipant() {
     console.log('[useParticipant] Progress changed:', progress);
     if (progress.participantId && progress.participantName) {
       console.log('[useParticipant] Updating state from progress, role:', progress.role);
-      setState(prev => ({
-        ...prev,
-        participantId: progress.participantId,
-        name: progress.participantName,
-        apiKeyMasked: progress.apiKeyMasked,
-        certId: progress.certId,
-        role: progress.role || null,
-        isAuthenticated: true,
-      }));
+      setState(prev => {
+        const newState = {
+          ...prev,
+          participantId: progress.participantId,
+          name: progress.participantName,
+          apiKeyMasked: progress.apiKeyMasked,
+          certId: progress.certId,
+          role: progress.role || null,
+          isAuthenticated: true,
+        };
+        console.log('[useParticipant] New state after update:', newState);
+        return newState;
+      });
     } else {
       console.log('[useParticipant] Progress has no participant data, skipping state update');
     }
@@ -209,6 +213,8 @@ export function useParticipant() {
   const setApiKey = useCallback((apiKey: string) => {
     setState(prev => ({ ...prev, apiKey }));
   }, []);
+
+  console.log('[useParticipant] Returning state with role:', state.role);
 
   return {
     ...state,
