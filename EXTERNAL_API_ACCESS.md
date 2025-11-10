@@ -221,6 +221,20 @@ GET /api/insights/market-stats
 
 ---
 
+### Pre-built Insight Summary
+
+| Endpoint | Use Case | Key Fields Returned | Notes |
+|----------|----------|---------------------|-------|
+| `/api/insights/suburbs` | Rank suburbs by volume and price | `suburb`, `avg_price`, `median_price`, `total_sales` | Supports `state` and `limit` filters |
+| `/api/insights/property-types` | Compare property classes | `property_type`, `avg_price`, `total_sales`, `market_share_pct` | Optional `state` filter |
+| `/api/insights/price-trends` | Month-by-month price trends | `month`, `avg_price`, `total_sales` | Set `months` (max 60) and `property_type` |
+| `/api/insights/sale-types` | Channel performance | `sale_type`, `avg_price`, `total_sales`, `avg_premium_pct` | Optional `state` filter |
+| `/api/insights/market-stats` | High-level market snapshot | `total_sales`, `avg_price`, `median_price`, `total_suburbs`, `price_range`, `most_active_month` | Cached for 10 minutes |
+
+Use these endpoints when you need quick aggregates for dashboards, AI prototyping, or workshop exercises without handling raw rows yourself.
+
+---
+
 ### Property Search Endpoint
 
 #### Search Properties
@@ -262,6 +276,15 @@ GET /api/properties/search
   "offset": 0
 }
 ```
+
+---
+
+### Raw Data Feed Expectations
+
+- `/api/properties/search` is the **only** endpoint that returns full property records (`SELECT *`), including hashed identifiers (`listing_instance_id_hash`, `agency_id_hash`), channel, grouping fields, and boolean flags.
+- Plan to paginate: responses are capped at 100 rows via the `limit` parameter, so large pulls require looping through successive `offset` values.
+- Aggregate on your side: dimensions such as `channel`, `property_type_group`, `bedrooms_group`, and `is_new_construction` are available only through the raw feed; compute summaries with your own tooling.
+- Apply filters whenever possible to stay within the 100 req/min rate limit and reduce the amount of data you need to process.
 
 ---
 
@@ -347,6 +370,15 @@ The rate limiting uses a **fixed window** approach:
    - Track request count in your application
    - Implement client-side throttling (e.g., max 90 req/min)
    - Log rate limit errors for debugging
+
+---
+
+## Large Export Considerations
+
+- Insight endpoints are intentionally aggregated and **not** suitable for bulk exports.
+- The raw search feed enforces a `limit` of 100 rows per request; script paginated pulls (incrementing `offset`) when you need full-state or multi-year snapshots.
+- Insert short pauses between page requests to avoid hitting rate limits and to keep your job resilient.
+- Stream results to disk or a database instead of holding every row in memory when exporting large datasets.
 
 ---
 
