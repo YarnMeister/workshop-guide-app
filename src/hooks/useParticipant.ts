@@ -127,7 +127,7 @@ export function useParticipant() {
           if (session.authenticated && session.participantId && session.name) {
             // We have a valid session but no localStorage data
             console.log('[useParticipant] Cookie valid, restoring from session');
-            setState({
+            const newState = {
               participantId: session.participantId,
               name: session.name,
               apiKeyMasked: null, // Will be set on next claim or reveal
@@ -136,13 +136,17 @@ export function useParticipant() {
               isAuthenticated: true,
               isLoading: false,
               apiKey: null,
-            });
+            };
+            console.log('[useParticipant] Setting state from session:', newState);
+            setState(newState);
+            console.log('[useParticipant] State set from session, updating progress...');
             updateProgress({
               participantId: session.participantId,
               participantName: session.name,
               certId: session.certId,
               role: session.role,
             });
+            console.log('[useParticipant] Progress updated from session');
           } else {
             console.log('[useParticipant] No valid session found');
             setState({
@@ -170,7 +174,7 @@ export function useParticipant() {
 
   const setParticipant = useCallback((participantId: string, name: string, apiKeyMasked: string, certId?: number, role?: UserRole) => {
     console.log('[useParticipant] Setting participant:', { participantId, name, certId, role });
-    setState({
+    const newState = {
       participantId,
       name,
       apiKeyMasked,
@@ -179,7 +183,10 @@ export function useParticipant() {
       isAuthenticated: true,
       isLoading: false,
       apiKey: null, // Reset on new participant
-    });
+    };
+    console.log('[useParticipant] setParticipant - new state:', newState);
+    setState(newState);
+    console.log('[useParticipant] setParticipant - state set, updating progress...');
     updateProgress({
       participantId,
       participantName: name,
@@ -187,6 +194,7 @@ export function useParticipant() {
       certId,
       role: role || 'participant',
     });
+    console.log('[useParticipant] setParticipant - progress updated');
   }, [updateProgress]);
 
   const clearParticipant = useCallback(() => {
