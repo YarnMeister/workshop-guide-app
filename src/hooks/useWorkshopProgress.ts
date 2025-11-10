@@ -2,13 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { WorkshopProgress, getStoredProgress, saveProgress, clearProgress, defaultProgress } from '@/utils/storage';
 
 export const useWorkshopProgress = () => {
-  const [progress, setProgress] = useState<WorkshopProgress>(defaultProgress);
-
-  // Load progress from localStorage on mount
-  useEffect(() => {
-    const stored = getStoredProgress();
-    setProgress(stored);
-  }, []);
+  // Initialize with stored progress immediately to avoid race conditions
+  const [progress, setProgress] = useState<WorkshopProgress>(() => getStoredProgress());
 
   // Update progress and save to localStorage
   const updateProgress = useCallback((updates: Partial<WorkshopProgress>) => {

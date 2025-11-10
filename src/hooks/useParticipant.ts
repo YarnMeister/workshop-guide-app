@@ -35,6 +35,7 @@ export function useParticipant() {
   useEffect(() => {
     console.log('[useParticipant] Progress changed:', progress);
     if (progress.participantId && progress.participantName) {
+      console.log('[useParticipant] Updating state from progress, role:', progress.role);
       setState(prev => ({
         ...prev,
         participantId: progress.participantId,
@@ -44,6 +45,8 @@ export function useParticipant() {
         role: progress.role || null,
         isAuthenticated: true,
       }));
+    } else {
+      console.log('[useParticipant] Progress has no participant data, skipping state update');
     }
   }, [progress.participantId, progress.participantName, progress.apiKeyMasked, progress.certId, progress.role]);
 
