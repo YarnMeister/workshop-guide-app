@@ -140,7 +140,7 @@ const EXTEND_OPTIONS: Record<string, ExtendOption> = {
         subsections: [
           {
             title: "",
-            description: `You can retrieve the string in Setting -> Environment Variables:`,
+            description: `If you navigated away from that screen, you can get back to your database details to retrieve the string by going to: Setting -> Environment Variables:`,
             screenshot: "vercel-settings.png"
           }
         ]
