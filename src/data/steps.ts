@@ -50,7 +50,14 @@ Windows: Run the installer and follow the prompts`,
           commands: [
             "sk-ar3x-pkxX8c-erCr9-cvD-rr4R"
           ],
-          screenshot: "p1-image-1.png"
+          screenshot: "p1-image-1.png",
+          subsections: [
+            {
+              title: "Choose an assistant",
+              description: "Please ensure only anthropic/claude-sonnet-4 is selected in the Models setting page. This is the most effective model for our purposes.",
+              screenshot: "void-settings.png"
+            }
+          ]
         },
         {
           title: "Install Command Line Tools",
@@ -613,26 +620,88 @@ This updates your local copy with any new changes from GitHub.`
               title: "Why Feature Branches Matter",
               description: `Think of your codebase like a digital workshop:
 
-• The main branch is the finished display shelf
-• A feature branch is your personal workbench where you can edit and test freely
-• Once your changes are complete, you move them from your workbench to the shelf (merge into main)
+The main branch is the finished display shelf
+
+A feature branch is your personal workbench where you can edit and test freely
+
+Once your changes are complete, you move them from your workbench to the shelf (merge into main)
 
 Using feature branches keeps related edits together as one package (for example, "update logo" and "resize logo"). This reduces unnecessary deployments, saving time when deploying to production later.`
             },
             {
               title: "Visual Analogy",
-              codeBlock: `Imagine a team Miro board:
+              description: `Imagine a team Miro board:
 
-• The main wall is the shared board that everyone can see
-• Each participant has a tracing sheet — their own feature branch
-• You can sketch, colour, and revise freely on your sheet
-• When ready, you overlay your tracing sheet onto the main board (merge to main)
+The main wall is the shared board that everyone can see
+
+Each participant has a tracing sheet — their own feature branch
+
+You can sketch, colour, and revise freely on your sheet
+
+When ready, you overlay your tracing sheet onto the main board (merge to main)
 
 This ensures everyone's contributions are combined neatly without overwriting each other's work.`
             },
             {
               title: "What's Actually Happening",
-              codeBlock: `The AI makes a new copy of the code just for you. This copy is completely separate from the main app, so you can experiment freely without breaking anything.`
+              description: `The AI makes a new copy of the code just for you. This copy is completely separate from the main app, so you can experiment freely without breaking anything.`
+            }
+          ]
+        },
+        {
+          title: "Make Code Changes via Prompt",
+          description: "Describe the changes you want in plain English, and let the AI do the coding.",
+          subsections: [
+            {
+              title: "In AI Chat Window",
+              description: `Type your request naturally, describing what you want to change:`,
+              codeBlock: `Examples:
+
+Update the welcome message to say "Welcome to our amazing app!"
+
+Change the header background color to navy blue
+
+Add a new button that says "Get Started" below the hero text`
+            },
+            {
+              title: "What Happens",
+              description: `The AI will:
+
+Understand your request
+
+Find the relevant files
+
+Make the code changes
+
+Show you what it changed`
+            },
+            {
+              title: "Review the Changes",
+              description: `The AI will show you which files were modified. Look for:
+
+File names that were changed
+
+A summary of what was updated
+
+Code snippets showing the changes`
+            },
+            {
+              title: "⚠️ Tip",
+              description: `While you are unlikely to be able to understand any of the above, it is worth paying attention to catch obvious mistakes. AI code assistants often goes off track and it's not hard to spot. Don't hesitate to hit the STOP button and redirecting the assistant back on track.`
+            },
+            {
+              title: "Make Additional Changes",
+              description: `You can continue requesting changes in the same chat:
+
+Actually, make that button green instead of blue
+
+Also add my company logo to the header
+
+The AI will keep making changes to your feature branch until you're ready to test.`
+            },
+            {
+              title: "What's Actually Happening",
+              description: `The AI is editing your code files based on your natural language instructions. All changes are saved to your feature branch automatically.`
             }
           ]
         },
@@ -651,27 +720,27 @@ This ensures everyone's contributions are combined neatly without overwriting ea
               title: "What This Does",
               description: `This command starts your app in development mode, running a local version on your computer that automatically refreshes when you make changes.
 
-You'll see a local address like:
-http://localhost:3000
+You'll see a local address like: http://localhost:3000
 
-Hold Ctrl (or Cmd on Mac) and click the address shown in your Void terminal where you typed "npm run dev" to open it in your browser.`
+Hold Ctrl (or Cmd on Mac) and click the address shown in your Void terminal to open it in your browser.`
             },
             {
               title: "Verify Your Changes",
               description: `Use this preview to:
-• Verify your edits appear correctly
-• Check layouts, text, and images
-• Ask the AI to correct anything that looks off`
+
+Verify your edits appear correctly
+
+Check layouts, text, and images
+
+Ask the AI to correct anything that looks off`
             },
             {
               title: "If Changes Don't Appear",
-              codeBlock: `Press Ctrl + C (or Cmd + C on Mac) in the terminal to stop the app
-
-Then run npm run dev again to restart it`
+              codeBlock: `Press Ctrl + C (or Cmd + C on Mac) in the terminal to stop the app, then run npm run dev again to restart it.`
             },
             {
               title: "What's Actually Happening",
-              codeBlock: `Starts a mini web server on your laptop so you can test locally. The app runs on your computer, not on the internet, so you can experiment safely.`
+              description: `Starts a mini web server on your laptop so you can test locally. The app runs on your computer, not on the internet, so you can experiment safely.`
             }
           ]
         },
@@ -688,13 +757,13 @@ Then run npm run dev again to restart it`
             },
             {
               title: "What Happens",
-              description: `This final command wraps up all your work and uploads it to GitHub. When integrated with Vercel (we'll do this on the next page) it will automatically deploy the latest version of main to a live URL.
+              description: `This final command wraps up all your work and uploads it to GitHub. When integrated with Vercel (we'll do this on the next page), it will automatically deploy the latest version of main to a live URL.
 
 Analogy: This is like packaging your finished feature and placing it on the public display shelf for everyone to see.`
             },
             {
               title: "What's Actually Happening",
-              codeBlock: `Combines your edits into the official project and pushes to GitHub. Your changes are now part of the main app and will be deployed to production.`
+              description: `Combines your edits into the official project and pushes to GitHub. Your changes are now part of the main app and will be deployed to production.`
             }
           ]
         },
