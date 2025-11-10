@@ -30,9 +30,14 @@ const OnboardingStep = () => {
   const { progress, updateProgress, updateTodoStatus } = useWorkshopProgress();
   const { name, apiKeyMasked, apiKey, setApiKey, isAuthenticated, isLoading: participantLoading, participantId, role } = useParticipant();
 
-  console.log('[OnboardingStep] Current role:', role, 'Step:', currentStepNumber);
+  console.log('[OnboardingStep] RENDER - Current role:', role, 'Step:', currentStepNumber);
 
   const currentStep = ONBOARDING_STEPS.find(step => step.id === currentStepNumber);
+
+  // Watch for role changes
+  useEffect(() => {
+    console.log('[OnboardingStep] Role changed to:', role);
+  }, [role]);
 
   // Scroll to top when step changes
   useEffect(() => {
