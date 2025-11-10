@@ -134,17 +134,24 @@ const Welcome = () => {
       if (result.success && result.participantId && result.name && result.apiKeyMasked) {
         // Store participant data
         console.log('[Welcome] Setting participant with certId:', result.certId, 'role:', result.role);
-        setParticipant(result.participantId, result.name, result.apiKeyMasked, result.certId, result.role);
 
-        // Update progress
+        // Update progress FIRST to ensure it's saved to localStorage
         updateProgress({
           participantId: result.participantId,
+          participantName: result.name,
+          apiKeyMasked: result.apiKeyMasked,
           currentStepId: 1,
           certId: result.certId,
           role: result.role || 'participant',
         });
 
-        navigate("/onboarding/step/1");
+        // Then set participant state
+        setParticipant(result.participantId, result.name, result.apiKeyMasked, result.certId, result.role);
+
+        // Use setTimeout to ensure state updates have completed before navigation
+        setTimeout(() => {
+          navigate("/onboarding/step/1");
+        }, 0);
       } else {
         // Handle error
         const errorMessage = result.error || "We can't find that code. Please check your code or ask a facilitator.";
