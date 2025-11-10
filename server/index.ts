@@ -251,7 +251,7 @@ function maskApiKey(key: string): string {
   return key.substring(0, 8) + '*'.repeat(Math.max(8, key.length - 8));
 }
 
-function createCookie(payload: { code: string; name: string; participantId: string; certId?: number }): string {
+function createCookie(payload: { code: string; name: string; participantId: string; certId?: number; role?: 'participant' | 'facilitator' }): string {
   if (!COOKIE_SECRET) {
     throw new Error('COOKIE_SECRET not configured');
   }
@@ -277,7 +277,7 @@ function createCookie(payload: { code: string; name: string; participantId: stri
   return cookieOptions.join('; ');
 }
 
-function verifyCookie(cookieValue: string): { code: string; name: string; participantId: string; certId?: number; role?: string } | null {
+function verifyCookie(cookieValue: string): { code: string; name: string; participantId: string; certId?: number; role?: 'participant' | 'facilitator' } | null {
   if (!COOKIE_SECRET) {
     return null;
   }
@@ -337,18 +337,25 @@ app.post('/api/claim', async (req, res) => {
       role: participant.role || 'participant',
     };
 
+    console.log(`[claim] Creating cookie with payload:`, { ...cookiePayload, code: '***' });
+
     const cookie = createCookie(cookiePayload);
     const maskedKey = maskApiKey(participant.apiKey);
 
     res.setHeader('Set-Cookie', cookie);
-    res.status(200).json({
+
+    const responseData = {
       success: true,
       participantId: code.trim(),
       name: participant.name,
       apiKeyMasked: maskedKey,
       certId: participant.certId,
       role: participant.role || 'participant',
-    });
+    };
+
+    console.log(`[claim] Sending response:`, { ...responseData, participantId: '***', apiKeyMasked: '***' });
+
+    res.status(200).json(responseData);
   } catch (error) {
     console.error('Claim error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
@@ -371,16 +378,23 @@ app.get('/api/session', async (req, res) => {
 
     const payload = verifyCookie(cookie);
     if (!payload) {
+      console.log('[session] Invalid cookie');
       return res.status(200).json({ authenticated: false });
     }
 
-    res.status(200).json({
+    console.log('[session] Cookie payload:', { participantId: payload.participantId, name: payload.name, role: payload.role });
+
+    const responseData = {
       authenticated: true,
       participantId: payload.participantId,
       name: payload.name,
       certId: payload.certId,
       role: payload.role || 'participant',
-    });
+    };
+
+    console.log('[session] Sending response:', { ...responseData, participantId: '***' });
+
+    res.status(200).json(responseData);
   } catch (error) {
     console.error('Session error:', error);
     res.status(200).json({ authenticated: false });
