@@ -29,7 +29,9 @@ const OnboardingStep = () => {
   const [isRevealingKey, setIsRevealingKey] = useState<boolean>(false);
   const { progress, updateProgress, updateTodoStatus } = useWorkshopProgress();
   const { name, apiKeyMasked, apiKey, setApiKey, isAuthenticated, isLoading: participantLoading, participantId, role } = useParticipant();
-  
+
+  console.log('[OnboardingStep] Current role:', role, 'Step:', currentStepNumber);
+
   const currentStep = ONBOARDING_STEPS.find(step => step.id === currentStepNumber);
 
   // Scroll to top when step changes
