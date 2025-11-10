@@ -30,14 +30,7 @@ const OnboardingStep = () => {
   const { progress, updateProgress, updateTodoStatus } = useWorkshopProgress();
   const { name, apiKeyMasked, apiKey, setApiKey, isAuthenticated, isLoading: participantLoading, participantId, role } = useParticipant();
 
-  console.log('[OnboardingStep] RENDER - Current role:', role, 'Step:', currentStepNumber);
-
   const currentStep = ONBOARDING_STEPS.find(step => step.id === currentStepNumber);
-
-  // Watch for role changes
-  useEffect(() => {
-    console.log('[OnboardingStep] Role changed to:', role);
-  }, [role]);
 
   // Scroll to top when step changes
   useEffect(() => {
@@ -240,27 +233,14 @@ const OnboardingStep = () => {
   };
 
   useEffect(() => {
-    console.log('[OnboardingStep] useEffect triggered', { 
-      currentStepNumber, 
-      isAuthenticated, 
-      participantLoading,
-      participantId: participantId || progress.participantId 
-    });
-    
     // Wait for participant loading to complete
     if (participantLoading) {
-      console.log('[OnboardingStep] Participant still loading, skipping check');
       return;
     }
 
     // Check if participant is authenticated - use hook's participantId, not progress.participantId
     // The hook's state is the source of truth
     if (!isAuthenticated || !participantId) {
-      console.log('[OnboardingStep] No authenticated participant, redirecting to welcome', {
-        isAuthenticated,
-        participantId,
-        progressParticipantId: progress.participantId
-      });
       toast({
         title: "Access Denied",
         description: "Please enter your participant code first.",
@@ -272,7 +252,6 @@ const OnboardingStep = () => {
 
     // Check role-based access to this step
     if (!canAccessStep(currentStepNumber, role)) {
-      console.log('[OnboardingStep] Access denied for step', currentStepNumber, 'with role', role);
       toast({
         title: "Access Restricted",
         description: getAccessDeniedMessage(role),
@@ -283,7 +262,6 @@ const OnboardingStep = () => {
     }
 
     // Update current step in progress
-    console.log('[OnboardingStep] Updating current step to', currentStepNumber);
     updateProgress({ currentStepId: currentStepNumber });
   }, [currentStepNumber, navigate, updateProgress, isAuthenticated, participantLoading, participantId, progress.participantId, role]);
 

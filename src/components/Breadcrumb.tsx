@@ -22,12 +22,8 @@ export const Breadcrumb = ({ steps, currentStep }: BreadcrumbProps) => {
   const { resetProgress } = useWorkshopProgress();
   const { clearParticipant, role } = useParticipant();
 
-  console.log('[Breadcrumb] Current role:', role, 'hasFullAccess:', hasFullAccess(role));
-
   // Filter steps based on role
   const visibleSteps = steps.filter(step => canAccessStep(step.id, role));
-
-  console.log('[Breadcrumb] Visible steps:', visibleSteps.map(s => s.id));
 
   const handleClearProgress = async () => {
     if (confirm("Are you sure you want to clear all progress and start over?")) {

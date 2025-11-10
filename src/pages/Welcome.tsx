@@ -78,14 +78,6 @@ const Welcome = () => {
 
   // Check for existing progress on mount
   useEffect(() => {
-    console.log('[Welcome] useEffect triggered', { 
-      isAuthenticated, 
-      participantId, 
-      isLoading, 
-      currentStepId: progress.currentStepId,
-      pathname: window.location.pathname
-    });
-    
     // Don't navigate if we're not on the welcome page
     if (window.location.pathname !== '/') {
       return;
@@ -128,13 +120,8 @@ const Welcome = () => {
 
     try {
       const result = await claimParticipantCode(code.trim());
-      console.log('[Welcome] Claim result:', result);
-      console.log('[Welcome] certId from claim:', result.certId);
 
       if (result.success && result.participantId && result.name && result.apiKeyMasked) {
-        // Store participant data
-        console.log('[Welcome] Setting participant with certId:', result.certId, 'role:', result.role);
-
         // Update progress FIRST to ensure it's saved to localStorage
         updateProgress({
           participantId: result.participantId,
