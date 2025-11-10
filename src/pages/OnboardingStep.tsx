@@ -290,7 +290,8 @@ const OnboardingStep = () => {
         const prdFormatted = formatPRDForAI(progress.prdAnswers);
         if (prdFormatted.trim() && prdFormatted !== "# Mini PRD\n\n") {
           const prdHash = btoa(prdFormatted).slice(0, 50);
-          const cacheKey = `lovablePrompt_${prdHash}`;
+          // Use the same cache key format as in handleCTA to ensure correct prompt is loaded
+          const cacheKey = `lovablePrompt_${prdHash}_${progress.willUsePropertyData ? 'api' : 'standard'}`;
           const cachedPrompt = localStorage.getItem(cacheKey);
           
           if (cachedPrompt) {
@@ -568,26 +569,28 @@ const OnboardingStep = () => {
                       To help us optimise your app, indicate if you plan to build a prototype using our property data. This will influence what you see on the next page
                     </p>
                     <div className="flex gap-4">
-                      <button
+                      <Button
+                        variant="outline"
                         onClick={() => updateProgress({ willUsePropertyData: true })}
-                        className={`flex-1 rounded-lg border-2 p-4 text-center transition-all ${
+                        className={`flex-1 h-auto p-4 text-center transition-all ${
                           progress.willUsePropertyData === true
                             ? 'border-primary bg-primary/10 font-semibold'
-                            : 'border-muted hover:border-primary/50'
+                            : 'hover:border-primary/50'
                         }`}
                       >
                         Yes
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="outline"
                         onClick={() => updateProgress({ willUsePropertyData: false })}
-                        className={`flex-1 rounded-lg border-2 p-4 text-center transition-all ${
+                        className={`flex-1 h-auto p-4 text-center transition-all ${
                           progress.willUsePropertyData === false
                             ? 'border-primary bg-primary/10 font-semibold'
-                            : 'border-muted hover:border-primary/50'
+                            : 'hover:border-primary/50'
                         }`}
                       >
                         No
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 )}
