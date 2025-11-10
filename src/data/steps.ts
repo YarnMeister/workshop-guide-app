@@ -1,8 +1,8 @@
 export const ONBOARDING_STEPS = [
   {
     id: 1,
-    title: "Set Up Your Tools",
-    description: "Prepare your environment for coding",
+    title: "Set Up Tools",
+    description: "Prepare workbench",
     heading: "Set Up Your Tools",
     content: "Before we dive in, let's make sure you have all the necessary tools installed. Tick each step off as you go and review the summary at the bottom of the page before you move on to the next page.",
     ctaText: "Next",
@@ -288,8 +288,8 @@ git config --global user.email "jane.doe@email.com"`
   },
   {
     id: 2,
-    title: "Define the App Vision",
-    description: "Write a mini-PRD the AI can understand",
+    title: "Define App Vision",
+    description: "Write a mini-PRD",
     heading: "Define the App Vision",
     content: "Let's capture your project idea! Fill out the sections below to describe what you're building. You can expand each section as needed, and feel free to skip any that don't apply.",
     ctaText: "Next",
@@ -311,7 +311,7 @@ git config --global user.email "jane.doe@email.com"`
   {
     id: 3,
     title: "Generate Prototype",
-    description: "Turn your PRD into a working UI",
+    description: "Turn PRD into working UI",
     heading: "Generate Prototype",
     content: "Review and copy your AI-generated prompt below, then use it in Lovable to create your prototype. The prompt has been optimized specifically for Lovable's AI builder to generate a working prototype with all the features you specified.",
     ctaText: "Next",
@@ -355,7 +355,7 @@ git config --global user.email "jane.doe@email.com"`
   {
     id: 4,
     title: "Export to GitHub",
-    description: "Move your project into your personal repo",
+    description: "Move project to personal repo",
     heading: "Export to GitHub",
     content: "Time to turn your designs into actual code! We'll export your prototype into clean, production-ready code that you can customize and extend.",
     ctaText: "Next",
@@ -405,8 +405,8 @@ git config --global user.email "jane.doe@email.com"`
   },
   {
     id: 5,
-    title: "Learn the Vibe Coding Flow",
-    description: "Get familiar with core concepts and commands",
+    title: "Learn Vibe Coding Flow",
+    description: "Get familiar with core concept",
     heading: "Learn the Vibe Coding Flow",
     content: "Your guide to safely experimenting with code like a pro. Learn the tools, mindset, and best practices for AI-assisted development.",
     ctaText: "Next",
@@ -519,8 +519,8 @@ git config --global user.email "jane.doe@email.com"`
   },
   {
     id: 6,
-    title: "Make Your First Commit",
-    description: "Run, test, and merge your first code update",
+    title: "Your First Commit",
+    description: "Merge your first code update",
     heading: "Make Your First Commit",
     content: "Follow these step-by-step instructions to make your first code changes and commit them to GitHub.",
     ctaText: "Next",
@@ -793,7 +793,7 @@ Or describe the problem: "The app is showing an error when I..."
   {
     id: 7,
     title: "Launch to the Web",
-    description: "Deploy your app live via Vercel",
+    description: "Deploy app to public URL",
     heading: "Launch to the Web",
     content: "Follow these steps to connect your GitHub repo and auto-deploy every time you merge to main.",
     ctaText: "Next",
@@ -833,7 +833,7 @@ Any future merge to main (via AI assisted prompts) in GitHub will trigger a fres
   {
     id: 8,
     title: "Extend Your App",
-    description: "Add data, logic, and AI-powered features",
+    description: "Add data and AI-power",
     heading: "Extend Your App",
     content: "Take your app to the next level by adding more sophisticated features. You'll likely have time to add only one of these so choose wisely. Go on... be a real PM",
     ctaText: "Complete",
