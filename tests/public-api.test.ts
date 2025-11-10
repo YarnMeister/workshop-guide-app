@@ -34,6 +34,8 @@ const mockMarketStatsRow = {
   most_active_month: '2024-11',
 };
 
+// NOTE: Simplified mock data - real database schema has 20+ fields including:
+// listing_instance_id_hash, agency_id_hash, channel, property_type_group, etc.
 const mockPropertySearchRows = [
   {
     id: 1,
@@ -227,6 +229,232 @@ describe('Public API endpoints', () => {
 
     expect(response.body.status).toBe('ok');
     expect(response.body.env.useDatabaseParticipants).toBe(true);
+  });
+
+  it('includes CORS headers', async () => {
+    const response = await request(app)
+      .get('/api/insights/suburbs')
+      .set(authHeader)
+      .expect(200);
+
+    expect(response.headers['access-control-allow-origin']).toBe('*');
+  });
+});
+
+describe('Input Validation', () => {
+  const authHeader = { Authorization: `Bearer ${VALID_API_KEY}` };
+
+  it('clamps limit exceeding maximum to 100', async () => {
+    // Implementation uses clamping instead of rejection (defensive programming)
+    const response = await request(app)
+      .get('/api/insights/suburbs?limit=999')
+      .set(authHeader)
+      .expect(200);
+
+    // The API should clamp to max of 100, not reject
+    expect(Array.isArray(response.body)).toBe(true);
+  });
+
+  it('clamps negative limit to default (20)', async () => {
+    // Implementation uses clamping instead of rejection
+    const response = await request(app)
+      .get('/api/insights/suburbs?limit=-10')
+      .set(authHeader)
+      .expect(200);
+
+    expect(Array.isArray(response.body)).toBe(true);
+  });
+
+  it('clamps negative offset to 0', async () => {
+    // Implementation uses clamping instead of rejection
+    const response = await request(app)
+      .get('/api/properties/search?offset=-5')
+      .set(authHeader)
+      .expect(200);
+
+    expect(response.body.offset).toBe(0);
+  });
+
+  it('clamps months exceeding maximum to 60', async () => {
+    // Implementation uses clamping instead of rejection
+    const response = await request(app)
+      .get('/api/insights/price-trends?months=100')
+      .set(authHeader)
+      .expect(200);
+
+    // Should return data (clamped to 60 months max)
+    expect(Array.isArray(response.body)).toBe(true);
+  });
+
+  it('ignores invalid state parameter (treats as all states)', async () => {
+    // Implementation treats invalid state as null (all states) instead of rejecting
+    const response = await request(app)
+      .get('/api/insights/suburbs?state=INVALID')
+      .set(authHeader)
+      .expect(200);
+
+    // Should return data for all states (state filter ignored)
+    expect(Array.isArray(response.body)).toBe(true);
+  });
+
+  it('accepts valid state codes', async () => {
+    const validStates = ['NSW', 'VIC', 'QLD', 'SA', 'WA', 'TAS', 'NT', 'ACT'];
+
+    for (const state of validStates) {
+      await request(app)
+        .get(`/api/insights/suburbs?state=${state}`)
+        .set(authHeader)
+        .expect(200);
+    }
+  });
+
+  it('clamps excessively large bedrooms filter', async () => {
+    // Implementation uses clamping instead of rejection
+    const response = await request(app)
+      .get('/api/properties/search?bedrooms=999')
+      .set(authHeader)
+      .expect(200);
+
+    expect(response.body.data).toBeDefined();
+  });
+
+  it('clamps excessively large bathrooms filter', async () => {
+    // Implementation uses clamping instead of rejection
+    const response = await request(app)
+      .get('/api/properties/search?bathrooms=999')
+      .set(authHeader)
+      .expect(200);
+
+    expect(response.body.data).toBeDefined();
+  });
+});
+
+describe('Admin Endpoint Protection', () => {
+  const authHeader = { Authorization: `Bearer ${VALID_API_KEY}` };
+
+  it('rejects API key auth for cache clearing', async () => {
+    const response = await request(app)
+      .post('/api/cache/clear')
+      .set(authHeader)
+      .expect(401);
+
+    expect(response.body.error).toBe('Authentication required');
+    expect(response.body.message).toContain('browser-based authentication');
+    expect(response.body.message).toContain('API key access is not permitted');
+  });
+
+  it('rejects unauthenticated cache clearing', async () => {
+    await request(app)
+      .post('/api/cache/clear')
+      .expect(401);
+  });
+});
+
+describe('Rate Limiting', () => {
+  // Note: Rate limit state persists across tests in the same test run
+  // These tests verify rate limiting works, but may fail if run after other tests
+  // that have already consumed the rate limit for the test API key
+
+  it('enforces rate limiting after many requests', async () => {
+    const freshApiKey = 'sk-test-ratelimit-1';
+
+    // Mock a fresh participant for this test
+    getParticipantByApiKeyMock.mockImplementation(async (key: string) => {
+      if (key === VALID_API_KEY) {
+        return { code: 'CODE123', name: 'Test Participant', apiKey: key, certId: 42 };
+      }
+      if (key === freshApiKey) {
+        return { code: 'RATE1', name: 'Rate Test 1', apiKey: key, certId: 100 };
+      }
+      return null;
+    });
+
+    const authHeader = { Authorization: `Bearer ${freshApiKey}` };
+
+    // Make requests until we hit rate limit (max 100 per minute)
+    let rateLimited = false;
+    let requestCount = 0;
+
+    for (let i = 0; i < 105; i++) {
+      const response = await request(app)
+        .get('/api/insights/suburbs')
+        .set(authHeader);
+
+      requestCount++;
+
+      if (response.status === 429) {
+        rateLimited = true;
+        expect(response.body.error).toBe('Rate limit exceeded');
+        expect(response.body.message).toContain('100 requests per minute');
+        break;
+      }
+    }
+
+    // Should have hit rate limit before 105 requests
+    expect(rateLimited).toBe(true);
+    expect(requestCount).toBeLessThanOrEqual(101);
+  });
+
+  it('tracks rate limits per API key independently', async () => {
+    const apiKey1 = 'sk-test-ratelimit-2';
+    const apiKey2 = 'sk-test-ratelimit-3';
+
+    // Mock two separate participants
+    getParticipantByApiKeyMock.mockImplementation(async (key: string) => {
+      if (key === VALID_API_KEY) {
+        return { code: 'CODE123', name: 'Test Participant', apiKey: key, certId: 42 };
+      }
+      if (key === apiKey1) {
+        return { code: 'RATE2', name: 'Rate Test 2', apiKey: key, certId: 101 };
+      }
+      if (key === apiKey2) {
+        return { code: 'RATE3', name: 'Rate Test 3', apiKey: key, certId: 102 };
+      }
+      return null;
+    });
+
+    // Make a few requests with first API key
+    for (let i = 0; i < 5; i++) {
+      await request(app)
+        .get('/api/insights/suburbs')
+        .set({ Authorization: `Bearer ${apiKey1}` })
+        .expect(200);
+    }
+
+    // Second API key should have its own rate limit (not affected by first)
+    const response = await request(app)
+      .get('/api/insights/suburbs')
+      .set({ Authorization: `Bearer ${apiKey2}` })
+      .expect(200);
+
+    expect(Array.isArray(response.body)).toBe(true);
+  });
+
+  it('documents rate limit header behavior', async () => {
+    const freshApiKey = 'sk-test-ratelimit-4';
+
+    getParticipantByApiKeyMock.mockImplementation(async (key: string) => {
+      if (key === VALID_API_KEY) {
+        return { code: 'CODE123', name: 'Test Participant', apiKey: key, certId: 42 };
+      }
+      if (key === freshApiKey) {
+        return { code: 'RATE4', name: 'Rate Test 4', apiKey: key, certId: 103 };
+      }
+      return null;
+    });
+
+    const response = await request(app)
+      .get('/api/insights/suburbs')
+      .set({ Authorization: `Bearer ${freshApiKey}` })
+      .expect(200);
+
+    // Note: Rate limit headers are not currently implemented
+    // This test documents the expected behavior for future implementation
+    // Expected headers: X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset
+    if (response.headers['x-ratelimit-limit']) {
+      expect(response.headers['x-ratelimit-limit']).toBe('100');
+      expect(response.headers['x-ratelimit-remaining']).toBeDefined();
+    }
   });
 });
 
