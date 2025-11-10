@@ -351,14 +351,19 @@ const OnboardingStep = () => {
       return; // Don't navigate
     }
 
-    // Check if next step is accessible (for facilitators and future unlocks)
-    const nextStepId = currentStepNumber + 1;
-    if (!canAccessStep(nextStepId, role)) {
-      toast({
-        title: getCompletionMessage(role),
-        description: "You're ready for the workshop!",
-      });
-      return; // Don't navigate if next step is not accessible
+    // Check if this is the last step - if so, allow navigation to success page
+    const isLastStep = currentStepNumber === ONBOARDING_STEPS.length;
+
+    // For non-last steps, check if next step is accessible
+    if (!isLastStep) {
+      const nextStepId = currentStepNumber + 1;
+      if (!canAccessStep(nextStepId, role)) {
+        toast({
+          title: getCompletionMessage(role),
+          description: "You're ready for the workshop!",
+        });
+        return; // Don't navigate if next step is not accessible
+      }
     }
 
     // Process AI enhancement when moving from Write Specs to Prototype
