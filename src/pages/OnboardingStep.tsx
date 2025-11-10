@@ -392,9 +392,10 @@ const OnboardingStep = () => {
       }
 
       // Generate a simple hash of the PRD content to use as cache key
+      // Include property data selection in cache key to ensure different prompts are cached separately
       const prdHash = btoa(prdFormatted).slice(0, 50);
-      const cacheKey = `lovablePrompt_${prdHash}`;
-      
+      const cacheKey = `lovablePrompt_${prdHash}_${progress.willUsePropertyData ? 'api' : 'standard'}`;
+
       // Check if we already have a cached prompt for this PRD content
       const cachedPrompt = localStorage.getItem(cacheKey);
       
@@ -433,7 +434,11 @@ const OnboardingStep = () => {
             return null;
           };
 
-          const result = await enhancePromptWithAI(prdFormatted, getApiKey);
+          const result = await enhancePromptWithAI(
+            prdFormatted,
+            getApiKey,
+            progress.willUsePropertyData ?? false
+          );
           
           if (result.success) {
             // Save the enhanced prompt and cache it
