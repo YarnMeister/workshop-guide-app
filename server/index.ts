@@ -5,7 +5,7 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { query, testConnection } from './database.js';
-import { getParticipantByCode, getAllParticipants, clearParticipantsCache, isDatabaseReady } from './participants.js';
+import { getParticipantByCode, getParticipantByApiKey, getAllParticipants, clearParticipantsCache, isDatabaseReady } from './participants.js';
 
 // Load environment variables from .env.local (for local dev) or .env
 dotenv.config({ path: '.env.local' });
@@ -108,12 +108,163 @@ setInterval(() => {
 }, 5 * 60 * 1000);
 
 // ============================================================================
+// Rate Limiting for API Key Authentication
+// ============================================================================
+
+interface RateLimitEntry {
+  count: number;
+  resetAt: number;
+}
+
+const rateLimits = new Map<string, RateLimitEntry>();
+
+/**
+ * Check if a participant has exceeded their rate limit
+ * @param participantId - Unique identifier for the participant
+ * @param maxRequests - Maximum requests allowed per window (default: 100)
+ * @param windowMs - Time window in milliseconds (default: 60000 = 1 minute)
+ * @returns true if within limit, false if exceeded
+ */
+function checkRateLimit(
+  participantId: string,
+  maxRequests: number = 100,
+  windowMs: number = 60000
+): boolean {
+  const now = Date.now();
+  const limit = rateLimits.get(participantId);
+
+  // No existing limit or window expired - create new window
+  if (!limit || limit.resetAt < now) {
+    rateLimits.set(participantId, { count: 1, resetAt: now + windowMs });
+    return true;
+  }
+
+  // Check if limit exceeded
+  if (limit.count >= maxRequests) {
+    return false; // Rate limit exceeded
+  }
+
+  // Increment counter
+  limit.count++;
+  return true;
+}
+
+/**
+ * Clear expired rate limit entries every minute
+ * Prevents memory leaks from inactive participants
+ */
+setInterval(() => {
+  const now = Date.now();
+  let cleared = 0;
+
+  for (const [key, entry] of rateLimits.entries()) {
+    if (entry.resetAt < now) {
+      rateLimits.delete(key);
+      cleared++;
+    }
+  }
+
+  if (cleared > 0) {
+    console.log(`🧹 Cleared ${cleared} expired rate limit entries`);
+  }
+}, 60 * 1000); // Every minute
+
+// ============================================================================
+// Input Validation Helpers
+// ============================================================================
+
+/**
+ * Validate and sanitize limit parameter
+ * @param value - Raw limit value from query params
+ * @param defaultValue - Default value if invalid (default: 20)
+ * @param maxValue - Maximum allowed value (default: 100)
+ * @returns Validated limit value
+ */
+function validateLimit(value: any, defaultValue: number = 20, maxValue: number = 100): number {
+  const parsed = parseInt(value);
+  if (isNaN(parsed) || parsed < 1) {
+    return defaultValue;
+  }
+  return Math.min(parsed, maxValue);
+}
+
+/**
+ * Validate and sanitize state parameter
+ * @param value - Raw state value from query params
+ * @returns Validated state code or null if invalid
+ */
+function validateState(value: any): string | null {
+  if (!value || typeof value !== 'string') {
+    return null;
+  }
+  const upperState = value.toUpperCase().trim();
+  // Australian states: NSW, VIC, QLD, SA, WA, TAS, NT, ACT
+  if (/^(NSW|VIC|QLD|SA|WA|TAS|NT|ACT)$/.test(upperState)) {
+    return upperState;
+  }
+  return null;
+}
+
+/**
+ * Validate and sanitize offset parameter
+ * @param value - Raw offset value from query params
+ * @param defaultValue - Default value if invalid (default: 0)
+ * @returns Validated offset value
+ */
+function validateOffset(value: any, defaultValue: number = 0): number {
+  const parsed = parseInt(value);
+  if (isNaN(parsed) || parsed < 0) {
+    return defaultValue;
+  }
+  return parsed;
+}
+
+/**
+ * Validate and sanitize numeric parameter
+ * @param value - Raw numeric value from query params
+ * @param min - Minimum allowed value
+ * @param max - Maximum allowed value
+ * @returns Validated number or null if invalid
+ */
+function validateNumber(value: any, min?: number, max?: number): number | null {
+  const parsed = parseInt(value);
+  if (isNaN(parsed)) {
+    return null;
+  }
+  if (min !== undefined && parsed < min) {
+    return null;
+  }
+  if (max !== undefined && parsed > max) {
+    return null;
+  }
+  return parsed;
+}
+
+/**
+ * Mask sensitive data for logging (API keys, tokens, etc.)
+ * @param value - Sensitive value to mask
+ * @param visibleChars - Number of characters to show at start (default: 10)
+ * @returns Masked string
+ */
+function maskSensitiveData(value: string, visibleChars: number = 10): string {
+  if (!value || value.length <= visibleChars) {
+    return '***';
+  }
+  return value.substring(0, visibleChars) + '...';
+}
+
+// ============================================================================
 // Middleware
 app.use(cors({
   origin: process.env.ALLOWED_ORIGIN || '*',
   credentials: true,
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
-app.use(express.json());
+
+// Add request size limits to prevent DoS attacks
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 // Environment variables
 const COOKIE_SECRET = process.env.COOKIE_SECRET || '';
@@ -143,10 +294,9 @@ function loadParticipants(): Record<string, { name: string; apiKey: string }> {
     return participantsCache;
   }
 
-  // Log diagnostics for production debugging
-  console.log(`PARTICIPANTS_JSON length: ${participantsJson.length}`);
-  console.log(`PARTICIPANTS_JSON first 50 chars: ${participantsJson.substring(0, 50)}`);
-  console.log(`PARTICIPANTS_JSON last 50 chars: ${participantsJson.substring(Math.max(0, participantsJson.length - 50))}`);
+  // SECURITY: Log diagnostics without exposing API keys
+  console.log(`PARTICIPANTS_JSON length: ${participantsJson.length} characters`);
+  console.log(`PARTICIPANTS_JSON format check: ${participantsJson.trim().startsWith('{') ? 'JSON object' : 'unknown'}`);
 
   try {
     // Check if it's already a parsed object (shouldn't happen, but be safe)
@@ -164,19 +314,21 @@ function loadParticipants(): Record<string, { name: string; apiKey: string }> {
       jsonString = jsonString.replace(/\\"/g, '"').replace(/\\'/g, "'");
     }
 
-    // Check if the JSON appears truncated (doesn't end with } or }])
+    // SECURITY: Check if the JSON appears truncated (doesn't end with } or }])
+    // Do NOT log the actual content as it contains API keys
     const trimmed = jsonString.trim();
     if (!trimmed.endsWith('}') && !trimmed.endsWith('}]')) {
       console.error('PARTICIPANTS_JSON appears truncated - does not end with }');
-      console.error(`Last 100 chars: ${trimmed.substring(Math.max(0, trimmed.length - 100))}`);
-      
+      console.error(`PARTICIPANTS_JSON length: ${trimmed.length} characters`);
+
       // Try to find where it was truncated (look for incomplete JSON)
       const lastOpeningBrace = trimmed.lastIndexOf('{');
       const lastClosingBrace = trimmed.lastIndexOf('}');
       if (lastOpeningBrace > lastClosingBrace) {
         console.error('PARTICIPANTS_JSON is truncated - unclosed brace detected');
+        console.error(`Last opening brace at position: ${lastOpeningBrace}, last closing brace at: ${lastClosingBrace}`);
       }
-      
+
       participantsCache = {};
       return participantsCache;
     }
@@ -210,11 +362,14 @@ function loadParticipants(): Record<string, { name: string; apiKey: string }> {
     participantsCache = parsed;
     return participantsCache;
   } catch (error) {
-    console.error('Failed to parse PARTICIPANTS_JSON:', error);
+    // SECURITY: Do NOT log PARTICIPANTS_JSON content as it contains API keys
+    console.error('Failed to parse PARTICIPANTS_JSON:', error instanceof Error ? error.message : String(error));
     if (error instanceof SyntaxError) {
-      console.error('JSON parse error. PARTICIPANTS_JSON length:', participantsJson.length);
-      console.error('First 200 chars:', participantsJson.substring(0, 200));
-      console.error('Last 100 chars:', participantsJson.substring(Math.max(0, participantsJson.length - 100)));
+      console.error('JSON parse error detected');
+      console.error('PARTICIPANTS_JSON length:', participantsJson.length, 'characters');
+      console.error('Starts with:', participantsJson.trim().startsWith('{') ? 'object' : participantsJson.trim().startsWith('[') ? 'array' : 'unknown');
+      console.error('Ends with:', participantsJson.trim().endsWith('}') ? 'object' : participantsJson.trim().endsWith(']') ? 'array' : 'unknown');
+      console.error('Please check PARTICIPANTS_JSON environment variable format');
     }
     participantsCache = {};
     return participantsCache;
@@ -432,7 +587,8 @@ app.post('/api/reveal-key', async (req, res) => {
     }
 
     const maskedKey = maskApiKey(participant.apiKey);
-    console.log(`[reveal-key] ✅ Returning API key for participant: ${participant.name}`);
+    // SECURITY: Never log the full API key - only log masked version
+    console.log(`[reveal-key] ✅ Returning API key for participant: ${participant.name} (key: ${maskedKey})`);
 
     res.status(200).json({
       success: true,
@@ -440,7 +596,10 @@ app.post('/api/reveal-key', async (req, res) => {
       apiKeyMasked: maskedKey,
     });
   } catch (error) {
-    console.error('[reveal-key] ❌ Error:', error);
+    // SECURITY: Mask any API keys that might be in error messages
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const safeErrorMessage = errorMessage.replace(/sk-or-v1-[a-zA-Z0-9]+/g, '[API_KEY_REDACTED]');
+    console.error('[reveal-key] ❌ Error:', safeErrorMessage);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
@@ -472,27 +631,96 @@ app.post('/api/logout', async (req, res) => {
   }
 });
 
-// Middleware to check authentication for protected routes
+// ============================================================================
+// Authentication Middleware (Dual: Cookie + API Key)
+// ============================================================================
+
+/**
+ * Middleware to check authentication for protected routes
+ * Supports two authentication methods:
+ * 1. Cookie-based (for web app) - existing behavior
+ * 2. API Key-based (for external clients) - new behavior
+ *
+ * API Key format: Authorization: Bearer <api-key>
+ * Rate limiting: 100 requests/minute per participant (API key auth only)
+ */
 const requireAuth = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
   try {
+    // ========================================================================
+    // Method 1: Cookie-based authentication (existing behavior)
+    // ========================================================================
     const cookieHeader = req.headers.cookie || '';
     const cookieMatch = cookieHeader.match(/participant_session=([^;]+)/);
     const cookie = cookieMatch ? cookieMatch[1] : null;
 
-    if (!cookie) {
-      return res.status(401).json({ error: 'Authentication required' });
+    if (cookie) {
+      const payload = verifyCookie(cookie);
+      if (payload) {
+        // Valid cookie - add participant info to request
+        (req as any).participant = payload;
+        (req as any).authMethod = 'cookie';
+        return next();
+      }
     }
 
-    const payload = verifyCookie(cookie);
-    if (!payload) {
-      return res.status(401).json({ error: 'Invalid session' });
+    // ========================================================================
+    // Method 2: API Key-based authentication (new behavior)
+    // ========================================================================
+    const authHeader = req.headers.authorization || '';
+    const bearerMatch = authHeader.match(/^Bearer\s+(.+)$/i);
+    const apiKey = bearerMatch ? bearerMatch[1] : null;
+
+    if (apiKey) {
+      // SECURITY: Mask API key for logging
+      const maskedKey = maskSensitiveData(apiKey, 10);
+
+      // Validate API key against database
+      const participant = await getParticipantByApiKey(apiKey);
+
+      if (!participant) {
+        console.warn(`[auth] Invalid API key attempt: ${maskedKey}`);
+        return res.status(401).json({
+          error: 'Invalid API key',
+          message: 'The provided API key is not valid or has been deactivated.'
+        });
+      }
+
+      // Check rate limit (100 requests/minute per participant)
+      const withinLimit = checkRateLimit(participant.code, 100, 60000);
+
+      if (!withinLimit) {
+        console.warn(`[auth] Rate limit exceeded for participant: ${participant.name} (${participant.code})`);
+        return res.status(429).json({
+          error: 'Rate limit exceeded',
+          message: 'You have exceeded the rate limit of 100 requests per minute. Please try again later.',
+          retryAfter: 60 // seconds
+        });
+      }
+
+      // Valid API key and within rate limit - add participant info to request
+      (req as any).participant = {
+        code: participant.code,
+        name: participant.name,
+        participantId: participant.code,
+        certId: participant.certId,
+      };
+      (req as any).authMethod = 'api-key';
+      return next();
     }
 
-    // Add participant info to request for use in handlers
-    (req as any).participant = payload;
-    next();
+    // ========================================================================
+    // No valid authentication method found
+    // ========================================================================
+    return res.status(401).json({
+      error: 'Authentication required',
+      message: 'Please provide either a valid session cookie or API key in the Authorization header (Bearer token).'
+    });
+
   } catch (error) {
-    console.error('Auth middleware error:', error);
+    // SECURITY: Mask any API keys that might be in error messages
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const safeErrorMessage = errorMessage.replace(/sk-or-v1-[a-zA-Z0-9]+/g, '[API_KEY_REDACTED]');
+    console.error('[auth] Middleware error:', safeErrorMessage);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -502,8 +730,11 @@ const requireAuth = async (req: express.Request, res: express.Response, next: ex
 // Get suburb insights (cached for 5 minutes)
 app.get('/api/insights/suburbs', requireAuth, async (req, res) => {
   try {
-    const { state, limit = 20 } = req.query;
-    const cacheKey = `suburbs:${state || 'all'}:${limit}`;
+    // Validate and sanitize input parameters
+    const validatedState = validateState(req.query.state);
+    const validatedLimit = validateLimit(req.query.limit, 20, 100);
+
+    const cacheKey = `suburbs:${validatedState || 'all'}:${validatedLimit}`;
 
     const data = await getCached(cacheKey, 300, async () => {
       let queryText = `
@@ -517,9 +748,9 @@ app.get('/api/insights/suburbs', requireAuth, async (req, res) => {
       `;
 
       const params: any[] = [];
-      if (state) {
+      if (validatedState) {
         queryText += ` AND state = $${params.length + 1}`;
-        params.push(state);
+        params.push(validatedState);
       }
 
       queryText += `
@@ -528,7 +759,7 @@ app.get('/api/insights/suburbs', requireAuth, async (req, res) => {
         ORDER BY total_sales DESC
         LIMIT $${params.length + 1}
       `;
-      params.push(parseInt(limit as string));
+      params.push(validatedLimit);
 
       const result = await query(queryText, params);
       return result.rows;
@@ -544,8 +775,9 @@ app.get('/api/insights/suburbs', requireAuth, async (req, res) => {
 // Get property type insights (cached for 5 minutes)
 app.get('/api/insights/property-types', requireAuth, async (req, res) => {
   try {
-    const { state } = req.query;
-    const cacheKey = `property-types:${state || 'all'}`;
+    // Validate and sanitize input parameters
+    const validatedState = validateState(req.query.state);
+    const cacheKey = `property-types:${validatedState || 'all'}`;
 
     const data = await getCached(cacheKey, 300, async () => {
       let queryText = `
@@ -556,9 +788,9 @@ app.get('/api/insights/property-types', requireAuth, async (req, res) => {
       `;
 
       const params: any[] = [];
-      if (state) {
+      if (validatedState) {
         queryText += ` AND state = $${params.length + 1}`;
-        params.push(state);
+        params.push(validatedState);
       }
 
       queryText += `
@@ -572,7 +804,7 @@ app.get('/api/insights/property-types', requireAuth, async (req, res) => {
         WHERE price_search_sold > 0
       `;
 
-      if (state) {
+      if (validatedState) {
         queryText += ` AND state = $${params.length}`;
       }
 
@@ -595,30 +827,33 @@ app.get('/api/insights/property-types', requireAuth, async (req, res) => {
 // Get price trends over time
 app.get('/api/insights/price-trends', requireAuth, async (req, res) => {
   try {
-    const { state, property_type, months = 12 } = req.query;
-    
+    // Validate and sanitize input parameters
+    const validatedState = validateState(req.query.state);
+    const validatedMonths = validateLimit(req.query.months, 12, 60); // Max 60 months (5 years)
+
     let queryText = `
       WITH recent_data AS (
-        SELECT 
+        SELECT
           TO_CHAR(active_month, 'YYYY-MM') as month,
           ROUND(AVG(price_search_sold)::numeric, 0) as avg_price,
           COUNT(*) as total_sales,
           active_month
-        FROM property_sales 
+        FROM property_sales
         WHERE price_search_sold > 0
     `;
-    
+
     const params: any[] = [];
-    if (state) {
+    if (validatedState) {
       queryText += ` AND state = $${params.length + 1}`;
-      params.push(state);
+      params.push(validatedState);
     }
-    
-    if (property_type) {
+
+    // Validate property_type (allow any string, but sanitize for SQL injection)
+    if (req.query.property_type && typeof req.query.property_type === 'string') {
       queryText += ` AND property_type = $${params.length + 1}`;
-      params.push(property_type);
+      params.push(req.query.property_type);
     }
-    
+
     queryText += `
         GROUP BY TO_CHAR(active_month, 'YYYY-MM'), active_month
         HAVING COUNT(*) >= 10
@@ -628,7 +863,7 @@ app.get('/api/insights/price-trends', requireAuth, async (req, res) => {
       ORDER BY month DESC
       LIMIT $${params.length + 1}
     `;
-    params.push(parseInt(months as string));
+    params.push(validatedMonths);
 
     const result = await query(queryText, params);
     console.log('Price trends query result:', result.rows.length, 'months found');
@@ -642,24 +877,25 @@ app.get('/api/insights/price-trends', requireAuth, async (req, res) => {
 // Get sale type insights
 app.get('/api/insights/sale-types', requireAuth, async (req, res) => {
   try {
-    const { state } = req.query;
-    
+    // Validate and sanitize input parameters
+    const validatedState = validateState(req.query.state);
+
     let queryText = `
-      SELECT 
+      SELECT
         sale_type,
         ROUND(AVG(price_search_sold)::numeric, 0) as avg_price,
         COUNT(*) as total_sales,
         ROUND(AVG((price_search_sold - price_search)::float / price_search * 100)::numeric, 2) as avg_premium_pct
-      FROM property_sales 
+      FROM property_sales
       WHERE price_search_sold > 0 AND price_search > 0
     `;
-    
+
     const params: any[] = [];
-    if (state) {
+    if (validatedState) {
       queryText += ` AND state = $${params.length + 1}`;
-      params.push(state);
+      params.push(validatedState);
     }
-    
+
     queryText += `
       GROUP BY sale_type
       ORDER BY total_sales DESC
@@ -676,8 +912,9 @@ app.get('/api/insights/sale-types', requireAuth, async (req, res) => {
 // Get market statistics (cached for 10 minutes - rarely changes)
 app.get('/api/insights/market-stats', requireAuth, async (req, res) => {
   try {
-    const { state } = req.query;
-    const cacheKey = `market-stats:${state || 'all'}`;
+    // Validate and sanitize input parameters
+    const validatedState = validateState(req.query.state);
+    const cacheKey = `market-stats:${validatedState || 'all'}`;
 
     const data = await getCached(cacheKey, 600, async () => {
       let queryText = `
@@ -694,9 +931,9 @@ app.get('/api/insights/market-stats', requireAuth, async (req, res) => {
       `;
 
       const params: any[] = [];
-      if (state) {
+      if (validatedState) {
         queryText += ` AND state = $${params.length + 1}`;
-        params.push(state);
+        params.push(validatedState);
       }
 
       const result = await query(queryText, params);
@@ -725,71 +962,70 @@ app.get('/api/insights/market-stats', requireAuth, async (req, res) => {
 // Search properties with filters
 app.get('/api/properties/search', requireAuth, async (req, res) => {
   try {
-    const {
-      state,
-      suburb,
-      property_type,
-      min_price,
-      max_price,
-      bedrooms,
-      bathrooms,
-      sale_type,
-      year,
-      limit = 50,
-      offset = 0
-    } = req.query;
+    // Validate and sanitize input parameters
+    const validatedState = validateState(req.query.state);
+    const validatedLimit = validateLimit(req.query.limit, 50, 100);
+    const validatedOffset = validateOffset(req.query.offset, 0);
+    const validatedMinPrice = validateNumber(req.query.min_price, 0);
+    const validatedMaxPrice = validateNumber(req.query.max_price, 0);
+    const validatedBedrooms = validateNumber(req.query.bedrooms, 0, 20);
+    const validatedBathrooms = validateNumber(req.query.bathrooms, 0, 20);
+    const validatedYear = validateNumber(req.query.year, 2000, 2100);
 
     let queryText = `
       SELECT *
-      FROM property_sales 
+      FROM property_sales
       WHERE price_search_sold > 0
     `;
-    
+
     const params: any[] = [];
-    
-    if (state) {
+
+    if (validatedState) {
       queryText += ` AND state = $${params.length + 1}`;
-      params.push(state);
+      params.push(validatedState);
     }
-    
-    if (suburb) {
+
+    // Validate suburb (allow any string, but sanitize for SQL injection via parameterized query)
+    if (req.query.suburb && typeof req.query.suburb === 'string') {
       queryText += ` AND suburb ILIKE $${params.length + 1}`;
-      params.push(`%${suburb}%`);
+      params.push(`%${req.query.suburb}%`);
     }
-    
-    if (property_type) {
+
+    // Validate property_type (allow any string, but sanitize for SQL injection via parameterized query)
+    if (req.query.property_type && typeof req.query.property_type === 'string') {
       queryText += ` AND property_type = $${params.length + 1}`;
-      params.push(property_type);
+      params.push(req.query.property_type);
     }
-    
-    if (min_price) {
+
+    if (validatedMinPrice !== null) {
       queryText += ` AND price_search_sold >= $${params.length + 1}`;
-      params.push(parseInt(min_price as string));
+      params.push(validatedMinPrice);
     }
-    
-    if (max_price) {
+
+    if (validatedMaxPrice !== null) {
       queryText += ` AND price_search_sold <= $${params.length + 1}`;
-      params.push(parseInt(max_price as string));
+      params.push(validatedMaxPrice);
     }
-    
-    if (bedrooms) {
+
+    if (validatedBedrooms !== null) {
       queryText += ` AND bedrooms = $${params.length + 1}`;
-      params.push(parseInt(bedrooms as string));
+      params.push(validatedBedrooms);
     }
-    
-    if (bathrooms) {
+
+    if (validatedBathrooms !== null) {
       queryText += ` AND bathrooms = $${params.length + 1}`;
-      params.push(parseInt(bathrooms as string));
+      params.push(validatedBathrooms);
     }
-    
-    if (sale_type) {
+
+    // Validate sale_type (allow any string, but sanitize for SQL injection via parameterized query)
+    if (req.query.sale_type && typeof req.query.sale_type === 'string') {
       queryText += ` AND sale_type = $${params.length + 1}`;
-      params.push(sale_type);
+      params.push(req.query.sale_type);
     }
-    
-    if (year) {
+
+    if (validatedYear !== null) {
       queryText += ` AND financial_year = $${params.length + 1}`;
-      params.push(parseInt(year as string));
+      params.push(validatedYear);
     }
 
     // Get total count for pagination
@@ -799,16 +1035,16 @@ app.get('/api/properties/search', requireAuth, async (req, res) => {
 
     // Add pagination
     queryText += ` ORDER BY active_month DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
-    params.push(parseInt(limit as string));
-    params.push(parseInt(offset as string));
+    params.push(validatedLimit);
+    params.push(validatedOffset);
 
     const result = await query(queryText, params);
-    
+
     res.json({
       data: result.rows,
       total,
-      limit: parseInt(limit as string),
-      offset: parseInt(offset as string)
+      limit: validatedLimit,
+      offset: validatedOffset
     });
   } catch (error) {
     console.error('Property search error:', error);
@@ -827,8 +1063,45 @@ app.get('/api/database/test', requireAuth, async (req, res) => {
   }
 });
 
-// Clear cache endpoint (useful for testing)
-app.post('/api/cache/clear', requireAuth, async (req, res) => {
+/**
+ * Middleware to require cookie-based authentication only (no API keys)
+ * Used for admin/mutating endpoints that should not be accessible to external API clients
+ */
+const requireCookieAuth = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  try {
+    const cookieHeader = req.headers.cookie || '';
+    const cookieMatch = cookieHeader.match(/participant_session=([^;]+)/);
+    const cookie = cookieMatch ? cookieMatch[1] : null;
+
+    if (!cookie) {
+      return res.status(401).json({
+        error: 'Authentication required',
+        message: 'This endpoint requires browser-based authentication. API key access is not permitted.'
+      });
+    }
+
+    const payload = verifyCookie(cookie);
+    if (!payload) {
+      return res.status(401).json({
+        error: 'Invalid session',
+        message: 'Your session is invalid or has expired. Please log in again.'
+      });
+    }
+
+    // Valid cookie - add participant info to request
+    (req as any).participant = payload;
+    (req as any).authMethod = 'cookie';
+    return next();
+
+  } catch (error) {
+    console.error('[cookie-auth] Middleware error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// Clear cache endpoint (admin only - cookie auth required)
+// SECURITY: API key clients cannot access this endpoint (read-only guarantee)
+app.post('/api/cache/clear', requireCookieAuth, async (req, res) => {
   try {
     clearCache();
     clearParticipantsCache();
