@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { checkSession } from '@/services/participant';
 import { useWorkshopProgress } from '@/hooks/useWorkshopProgress';
+import type { UserRole } from '@/utils/featureFlags';
 
 interface ParticipantState {
   participantId: string | null;
   name: string | null;
   apiKeyMasked: string | null;
   certId: number | null;
+  role: UserRole | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   apiKey: string | null; // Store revealed key in memory
@@ -23,6 +25,7 @@ export function useParticipant() {
     name: null,
     apiKeyMasked: null,
     certId: null,
+    role: null,
     isAuthenticated: false,
     isLoading: true,
     apiKey: null, // Never persisted, only in memory
@@ -38,10 +41,11 @@ export function useParticipant() {
         name: progress.participantName,
         apiKeyMasked: progress.apiKeyMasked,
         certId: progress.certId,
+        role: progress.role || null,
         isAuthenticated: true,
       }));
     }
-  }, [progress.participantId, progress.participantName, progress.apiKeyMasked, progress.certId]);
+  }, [progress.participantId, progress.participantName, progress.apiKeyMasked, progress.certId, progress.role]);
 
   // Check session on mount only
   useEffect(() => {
@@ -73,14 +77,19 @@ export function useParticipant() {
               name: progress.participantName,
               apiKeyMasked: progress.apiKeyMasked,
               certId: finalCertId,
+              role: session.role || progress.role || 'participant',
               isAuthenticated: true,
               isLoading: false,
               apiKey: null,
             });
-            // Update progress with certId from session if available
+            // Update progress with certId and role from session if available
             if (session.certId && session.certId !== progress.certId) {
               console.log('[useParticipant] Updating progress with certId from session:', session.certId);
               updateProgress({ certId: session.certId });
+            }
+            if (session.role && session.role !== progress.role) {
+              console.log('[useParticipant] Updating progress with role from session:', session.role);
+              updateProgress({ role: session.role });
             }
           } else {
             // Session expired or invalid
@@ -90,6 +99,7 @@ export function useParticipant() {
               name: null,
               apiKeyMasked: null,
               certId: null,
+              role: null,
               isAuthenticated: false,
               isLoading: false,
               apiKey: null,
@@ -99,6 +109,7 @@ export function useParticipant() {
               participantId: null,
               participantName: null,
               apiKeyMasked: null,
+              role: null,
             });
           }
         } else {
@@ -114,6 +125,7 @@ export function useParticipant() {
               name: session.name,
               apiKeyMasked: null, // Will be set on next claim or reveal
               certId: session.certId ?? null,
+              role: session.role || 'participant',
               isAuthenticated: true,
               isLoading: false,
               apiKey: null,
@@ -122,6 +134,7 @@ export function useParticipant() {
               participantId: session.participantId,
               participantName: session.name,
               certId: session.certId,
+              role: session.role,
             });
           } else {
             console.log('[useParticipant] No valid session found');
@@ -130,6 +143,7 @@ export function useParticipant() {
               name: null,
               apiKeyMasked: null,
               certId: null,
+              role: null,
               isAuthenticated: false,
               isLoading: false,
               apiKey: null,
@@ -147,13 +161,14 @@ export function useParticipant() {
     restoreSession();
   }, []); // Empty deps - run once on mount only
 
-  const setParticipant = useCallback((participantId: string, name: string, apiKeyMasked: string, certId?: number) => {
-    console.log('[useParticipant] Setting participant:', { participantId, name, certId });
+  const setParticipant = useCallback((participantId: string, name: string, apiKeyMasked: string, certId?: number, role?: UserRole) => {
+    console.log('[useParticipant] Setting participant:', { participantId, name, certId, role });
     setState({
       participantId,
       name,
       apiKeyMasked,
       certId: certId ?? null,
+      role: role || 'participant',
       isAuthenticated: true,
       isLoading: false,
       apiKey: null, // Reset on new participant
@@ -163,6 +178,7 @@ export function useParticipant() {
       participantName: name,
       apiKeyMasked,
       certId,
+      role: role || 'participant',
     });
   }, [updateProgress]);
 
@@ -173,6 +189,7 @@ export function useParticipant() {
       name: null,
       apiKeyMasked: null,
       certId: null,
+      role: null,
       isAuthenticated: false,
       isLoading: false,
       apiKey: null,
@@ -182,6 +199,7 @@ export function useParticipant() {
       participantName: null,
       apiKeyMasked: null,
       certId: null,
+      role: null,
     });
   }, [updateProgress]);
 

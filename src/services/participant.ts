@@ -4,6 +4,7 @@ interface ClaimResponse {
   name?: string;
   apiKeyMasked?: string;
   certId?: number;
+  role?: 'participant' | 'facilitator';
   error?: string;
 }
 
@@ -12,6 +13,7 @@ interface SessionResponse {
   participantId?: string;
   name?: string;
   certId?: number;
+  role?: 'participant' | 'facilitator';
   error?: string;
 }
 

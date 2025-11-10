@@ -1,10 +1,11 @@
-import { Check, RotateCcw } from "lucide-react";
+import { Check, RotateCcw, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useWorkshopProgress } from "@/hooks/useWorkshopProgress";
 import { useParticipant } from "@/hooks/useParticipant";
 import { logout } from "@/services/participant";
 import { toast } from "@/hooks/use-toast";
 import { clearProgress } from "@/utils/storage";
+import { canAccessStep, isPreWorkshopOnly } from "@/utils/featureFlags";
 
 export interface Step {
   id: number;
@@ -19,7 +20,10 @@ interface BreadcrumbProps {
 
 export const Breadcrumb = ({ steps, currentStep }: BreadcrumbProps) => {
   const { resetProgress } = useWorkshopProgress();
-  const { clearParticipant } = useParticipant();
+  const { clearParticipant, role } = useParticipant();
+
+  // Filter steps based on role
+  const visibleSteps = steps.filter(step => canAccessStep(step.id, role));
 
   const handleClearProgress = async () => {
     if (confirm("Are you sure you want to clear all progress and start over?")) {
@@ -60,7 +64,7 @@ export const Breadcrumb = ({ steps, currentStep }: BreadcrumbProps) => {
             ONBOARDING PROGRESS
           </h2>
           <ol className="relative">
-          {steps.map((step, index) => {
+          {visibleSteps.map((step, index) => {
             const isCompleted = step.id < currentStep;
             const isCurrent = step.id === currentStep;
             const isUpcoming = step.id > currentStep;
@@ -102,7 +106,7 @@ export const Breadcrumb = ({ steps, currentStep }: BreadcrumbProps) => {
                 </div>
 
                 {/* Connecting line - extends from bottom of circle to top of next circle */}
-                {index < steps.length - 1 && (
+                {index < visibleSteps.length - 1 && (
                   <div
                     className={cn(
                       "absolute left-5 top-10 w-0.5 transition-colors",
@@ -115,6 +119,14 @@ export const Breadcrumb = ({ steps, currentStep }: BreadcrumbProps) => {
             );
           })}
           </ol>
+
+          {/* Show "Coming Soon" indicator for participants */}
+          {isPreWorkshopOnly(role) && (
+            <div className="mt-6 text-muted-foreground text-sm p-4 bg-muted/50 rounded-lg">
+              <Info className="h-4 w-4 inline mr-2" />
+              More steps coming soon! Complete the setup to be ready for the workshop.
+            </div>
+          )}
         </div>
         
         {/* Clear progress link at the bottom */}

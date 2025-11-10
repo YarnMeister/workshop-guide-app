@@ -133,14 +133,15 @@ const Welcome = () => {
 
       if (result.success && result.participantId && result.name && result.apiKeyMasked) {
         // Store participant data
-        console.log('[Welcome] Setting participant with certId:', result.certId);
-        setParticipant(result.participantId, result.name, result.apiKeyMasked, result.certId);
+        console.log('[Welcome] Setting participant with certId:', result.certId, 'role:', result.role);
+        setParticipant(result.participantId, result.name, result.apiKeyMasked, result.certId, result.role);
 
         // Update progress
         updateProgress({
           participantId: result.participantId,
           currentStepId: 1,
-          certId: result.certId
+          certId: result.certId,
+          role: result.role || 'participant',
         });
 
         navigate("/onboarding/step/1");

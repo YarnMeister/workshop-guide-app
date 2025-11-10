@@ -15,6 +15,7 @@ import { revealApiKey } from "@/services/participant";
 import { PRDForm } from "@/components/PRDForm";
 import { PRDAnswers } from "@/utils/storage";
 import { formatPRDForAI } from "@/utils/prdFormatter";
+import { canAccessStep, getAccessDeniedMessage, getCompletionMessage, isPreWorkshopOnly } from "@/utils/featureFlags";
 
 const OnboardingStep = () => {
   const { stepId } = useParams();
@@ -27,7 +28,7 @@ const OnboardingStep = () => {
   const [isProcessingAI, setIsProcessingAI] = useState<boolean>(false);
   const [isRevealingKey, setIsRevealingKey] = useState<boolean>(false);
   const { progress, updateProgress, updateTodoStatus } = useWorkshopProgress();
-  const { name, apiKeyMasked, apiKey, setApiKey, isAuthenticated, isLoading: participantLoading, participantId } = useParticipant();
+  const { name, apiKeyMasked, apiKey, setApiKey, isAuthenticated, isLoading: participantLoading, participantId, role } = useParticipant();
   
   const currentStep = ONBOARDING_STEPS.find(step => step.id === currentStepNumber);
 
@@ -262,10 +263,22 @@ const OnboardingStep = () => {
       return;
     }
 
+    // Check role-based access to this step
+    if (!canAccessStep(currentStepNumber, role)) {
+      console.log('[OnboardingStep] Access denied for step', currentStepNumber, 'with role', role);
+      toast({
+        title: "Access Restricted",
+        description: getAccessDeniedMessage(role),
+        variant: "destructive",
+      });
+      navigate("/onboarding/step/1"); // Redirect to Setup Tools
+      return;
+    }
+
     // Update current step in progress
     console.log('[OnboardingStep] Updating current step to', currentStepNumber);
     updateProgress({ currentStepId: currentStepNumber });
-  }, [currentStepNumber, navigate, updateProgress, isAuthenticated, participantLoading, participantId, progress.participantId]);
+  }, [currentStepNumber, navigate, updateProgress, isAuthenticated, participantLoading, participantId, progress.participantId, role]);
 
   // Separate effect for loading saved data
   useEffect(() => {
@@ -343,7 +356,26 @@ const OnboardingStep = () => {
       });
       return;
     }
-    
+
+    // For participants completing Step 1, show completion message and stay on page
+    if (currentStepNumber === 1 && isPreWorkshopOnly(role)) {
+      toast({
+        title: getCompletionMessage(role),
+        description: "You're ready for the workshop!",
+      });
+      return; // Don't navigate
+    }
+
+    // Check if next step is accessible (for facilitators and future unlocks)
+    const nextStepId = currentStepNumber + 1;
+    if (!canAccessStep(nextStepId, role)) {
+      toast({
+        title: getCompletionMessage(role),
+        description: "You're ready for the workshop!",
+      });
+      return; // Don't navigate if next step is not accessible
+    }
+
     // Process AI enhancement when moving from Write Specs to Prototype
     if (currentStepNumber === 2) {
       // Format PRD answers for AI processing

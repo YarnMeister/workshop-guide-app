@@ -61,6 +61,10 @@ export const propertySales = pgTable('property_sales', {
  * - Management (admin dashboard capabilities)
  * - Security (proper database access controls)
  * - Auditability (created_at, updated_at timestamps)
+ *
+ * Role-based access control:
+ * - 'participant': Regular workshop participants (limited to Setup Tools page pre-workshop)
+ * - 'facilitator': Workshop facilitators (full access to all pages for testing)
  */
 export const participants = pgTable('participants', {
   id: serial('id').primaryKey(),
@@ -68,6 +72,7 @@ export const participants = pgTable('participants', {
   name: varchar('name', { length: 255 }).notNull(),
   apiKey: varchar('api_key', { length: 255 }).notNull(),
   certId: integer('cert_id').notNull().unique(),
+  role: varchar('role', { length: 20 }).default('participant').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
   isActive: boolean('is_active').default(true).notNull(),
@@ -78,4 +83,6 @@ export const participants = pgTable('participants', {
   activeIdx: index('idx_participants_active').on(table.isActive),
   // Index for certificate ID lookups
   certIdIdx: index('idx_participants_cert_id').on(table.certId),
+  // Index for role-based queries
+  roleIdx: index('idx_participants_role').on(table.role),
 }));

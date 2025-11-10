@@ -409,7 +409,7 @@ function createCookie(payload: { code: string; name: string; participantId: stri
   return cookieOptions.join('; ');
 }
 
-function verifyCookie(cookieValue: string): { code: string; name: string; participantId: string; certId?: number } | null {
+function verifyCookie(cookieValue: string): { code: string; name: string; participantId: string; certId?: number; role?: string } | null {
   if (!COOKIE_SECRET) {
     return null;
   }
@@ -430,7 +430,7 @@ function verifyCookie(cookieValue: string): { code: string; name: string; partic
       return null;
     }
 
-    return JSON.parse(data) as { code: string; name: string; participantId: string };
+    return JSON.parse(data) as { code: string; name: string; participantId: string; certId?: number; role?: string };
   } catch (error) {
     console.error('Cookie verification error:', error);
     return null;
@@ -450,7 +450,7 @@ app.post('/api/claim', async (req, res) => {
     }
 
     // Try database first, fallback to environment variable
-    let participant: { name: string; apiKey: string; certId?: number } | null = null;
+    let participant: { name: string; apiKey: string; certId?: number; role?: 'participant' | 'facilitator' } | null = null;
 
     if (USE_DATABASE_PARTICIPANTS) {
       participant = await getParticipantByCode(code.trim());
@@ -459,12 +459,18 @@ app.post('/api/claim', async (req, res) => {
       if (!participant && !(await isDatabaseReady())) {
         console.warn('⚠️  Database not ready, falling back to PARTICIPANTS_JSON');
         const participants = loadParticipants();
-        participant = participants[code.trim()] || null;
+        const fallbackParticipant = participants[code.trim()] || null;
+        if (fallbackParticipant) {
+          participant = { ...fallbackParticipant, role: 'participant' as const };
+        }
       }
     } else {
       // Fallback mode: use environment variable
       const participants = loadParticipants();
-      participant = participants[code.trim()] || null;
+      const fallbackParticipant = participants[code.trim()] || null;
+      if (fallbackParticipant) {
+        participant = { ...fallbackParticipant, role: 'participant' as const };
+      }
     }
 
     if (!participant) {
@@ -476,6 +482,7 @@ app.post('/api/claim', async (req, res) => {
       name: participant.name,
       participantId: code.trim(),
       certId: participant.certId,
+      role: participant.role || 'participant',
     };
 
     const cookie = createCookie(cookiePayload);
@@ -488,6 +495,7 @@ app.post('/api/claim', async (req, res) => {
       name: participant.name,
       apiKeyMasked: maskedKey,
       certId: participant.certId,
+      role: participant.role || 'participant',
     });
   } catch (error) {
     console.error('Claim error:', error);
@@ -519,6 +527,7 @@ app.get('/api/session', async (req, res) => {
       participantId: payload.participantId,
       name: payload.name,
       certId: payload.certId,
+      role: payload.role || 'participant',
     });
   } catch (error) {
     console.error('Session error:', error);
@@ -703,6 +712,7 @@ const requireAuth = async (req: express.Request, res: express.Response, next: ex
         name: participant.name,
         participantId: participant.code,
         certId: participant.certId,
+        role: participant.role || 'participant',
       };
       (req as any).authMethod = 'api-key';
       return next();

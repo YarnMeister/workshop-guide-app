@@ -8,6 +8,7 @@ export interface Participant {
   name: string;
   apiKey: string;
   certId: number;
+  role: 'participant' | 'facilitator';
 }
 
 /**
@@ -28,7 +29,7 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 export async function getParticipantByCode(code: string): Promise<Participant | null> {
   try {
     const result = await query(
-      'SELECT code, name, api_key as "apiKey", cert_id as "certId" FROM participants WHERE code = $1 AND is_active = true',
+      'SELECT code, name, api_key as "apiKey", cert_id as "certId", COALESCE(role, \'participant\') as role FROM participants WHERE code = $1 AND is_active = true',
       [code]
     );
 
@@ -58,7 +59,7 @@ export async function getAllParticipants(): Promise<Record<string, Participant>>
   
   try {
     const result = await query(
-      'SELECT code, name, api_key as "apiKey", cert_id as "certId" FROM participants WHERE is_active = true ORDER BY name'
+      'SELECT code, name, api_key as "apiKey", cert_id as "certId", COALESCE(role, \'participant\') as role FROM participants WHERE is_active = true ORDER BY name'
     );
 
     const participants: Record<string, Participant> = {};
@@ -68,6 +69,7 @@ export async function getAllParticipants(): Promise<Record<string, Participant>>
         name: row.name,
         apiKey: row.apiKey,
         certId: row.certId,
+        role: row.role,
       };
     }
     
@@ -104,7 +106,7 @@ export function clearParticipantsCache(): void {
 export async function getParticipantByApiKey(apiKey: string): Promise<Participant | null> {
   try {
     const result = await query(
-      'SELECT code, name, api_key as "apiKey", cert_id as "certId" FROM participants WHERE api_key = $1 AND is_active = true',
+      'SELECT code, name, api_key as "apiKey", cert_id as "certId", COALESCE(role, \'participant\') as role FROM participants WHERE api_key = $1 AND is_active = true',
       [apiKey]
     );
 

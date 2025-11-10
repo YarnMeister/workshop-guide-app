@@ -50,6 +50,7 @@ export interface WorkshopProgress {
   participantName: string | null; // NEW: Participant's name from code lookup
   apiKeyMasked: string | null; // NEW: Masked API key for display (never store full key)
   certId: number | null; // NEW: Certificate ID for participant
+  role?: 'participant' | 'facilitator'; // NEW: Role for access control
   currentStepId: number;
   completedPages: number[];
   setupPageTodos: {
@@ -150,6 +151,9 @@ export const getStoredProgress = (): WorkshopProgress => {
       }
       if (parsed.certId === undefined) {
         parsed.certId = null;
+      }
+      if (parsed.role === undefined) {
+        parsed.role = 'participant';
       }
       return parsed;
     }
