@@ -105,9 +105,6 @@ VITE_OPEN_ROUTER_API_KEY=sk-or-v1-your-key-here
 # Required for participant authentication
 COOKIE_SECRET=your-secret-key-here-min-32-chars
 
-# Participant data (JSON string format)
-PARTICIPANTS_JSON={"CODE1":{"name":"Participant Name","apiKey":"sk-or-v1-..."},"CODE2":{...}}
-
 # Neon Database URL (PostgreSQL connection string)
 DATABASE_URL=postgresql://user:password@host/database?sslmode=require
 
@@ -120,8 +117,8 @@ NODE_ENV=development
 
 **Important Notes:**
 - `COOKIE_SECRET` must be at least 32 characters for security
-- `PARTICIPANTS_JSON` must be a valid JSON string (can contain special characters like `#`)
 - `DATABASE_URL` must be a valid PostgreSQL connection string (Neon provides this)
+- All participant data is stored in the Neon database
 - For production, set these in Vercel environment variables
 
 ### Project Structure
@@ -422,7 +419,7 @@ The app is configured for Vercel deployment:
 2. **Environment Variables** (set in Vercel dashboard):
    - `DATABASE_URL` - Neon PostgreSQL connection string
    - `COOKIE_SECRET` - HMAC signing secret
-   - `PARTICIPANTS_JSON` - Participant data JSON string
+   - `VITE_OPEN_ROUTER_API_KEY` - OpenRouter API key (for AI features)
    - `ALLOWED_ORIGIN` - CORS origin (optional)
    - `NODE_ENV` - Set to `production`
 

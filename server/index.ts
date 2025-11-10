@@ -11,33 +11,6 @@ import { getParticipantByCode, getParticipantByApiKey, getAllParticipants, clear
 dotenv.config({ path: '.env.local' });
 dotenv.config(); // Fallback to .env if .env.local doesn't exist
 
-// Special handling for PARTICIPANTS_JSON because it contains special characters (#) that break dotenv parsing
-// Read it directly from the file to avoid comment parsing issues
-if (!process.env.PARTICIPANTS_JSON || process.env.PARTICIPANTS_JSON.length < 10) {
-  try {
-    const envLocalPath = path.join(process.cwd(), '.env.local');
-    if (fs.existsSync(envLocalPath)) {
-      const envContent = fs.readFileSync(envLocalPath, 'utf-8');
-      // Match PARTICIPANTS_JSON= followed by the JSON value (handle quoted and unquoted)
-      const jsonMatch = envContent.match(/^PARTICIPANTS_JSON=(.+)$/m);
-      if (jsonMatch && jsonMatch[1]) {
-        let jsonValue = jsonMatch[1].trim();
-        // Remove surrounding quotes if present
-        if ((jsonValue.startsWith('"') && jsonValue.endsWith('"')) ||
-            (jsonValue.startsWith("'") && jsonValue.endsWith("'"))) {
-          jsonValue = jsonValue.slice(1, -1);
-          // Unescape escaped quotes
-          jsonValue = jsonValue.replace(/\\"/g, '"').replace(/\\'/g, "'");
-        }
-        process.env.PARTICIPANTS_JSON = jsonValue;
-        console.log(`Loaded PARTICIPANTS_JSON directly from file (${jsonValue.length} chars)`);
-      }
-    }
-  } catch (error) {
-    console.error('Failed to read PARTICIPANTS_JSON from .env.local file:', error);
-  }
-}
-
 const app = express();
 
 // ============================================================================
@@ -271,111 +244,6 @@ const COOKIE_SECRET = process.env.COOKIE_SECRET || '';
 const COOKIE_NAME = 'participant_session';
 const COOKIE_MAX_AGE = 28800; // 8 hours in seconds
 
-// Feature flag: Use database for participants (with fallback to env var)
-const USE_DATABASE_PARTICIPANTS = process.env.USE_DATABASE_PARTICIPANTS !== 'false'; // Default: true
-
-// Legacy participant data cache (for fallback only)
-let participantsCache: Record<string, { name: string; apiKey: string }> | null = null;
-
-/**
- * LEGACY: Load participants from PARTICIPANTS_JSON environment variable
- * This is kept as a fallback mechanism during migration
- * @deprecated Use getParticipantByCode() or getAllParticipants() from participants.ts instead
- */
-function loadParticipants(): Record<string, { name: string; apiKey: string }> {
-  if (participantsCache) {
-    return participantsCache;
-  }
-
-  const participantsJson = process.env.PARTICIPANTS_JSON;
-  if (!participantsJson) {
-    console.error('PARTICIPANTS_JSON environment variable not set');
-    participantsCache = {};
-    return participantsCache;
-  }
-
-  // SECURITY: Log diagnostics without exposing API keys
-  console.log(`PARTICIPANTS_JSON length: ${participantsJson.length} characters`);
-  console.log(`PARTICIPANTS_JSON format check: ${participantsJson.trim().startsWith('{') ? 'JSON object' : 'unknown'}`);
-
-  try {
-    // Check if it's already a parsed object (shouldn't happen, but be safe)
-    if (typeof participantsJson === 'object') {
-      participantsCache = participantsJson as Record<string, { name: string; apiKey: string }>;
-      return participantsCache;
-    }
-
-    // Remove any surrounding quotes if present
-    let jsonString = participantsJson.trim();
-    if ((jsonString.startsWith('"') && jsonString.endsWith('"')) ||
-        (jsonString.startsWith("'") && jsonString.endsWith("'"))) {
-      jsonString = jsonString.slice(1, -1);
-      // Unescape any escaped quotes
-      jsonString = jsonString.replace(/\\"/g, '"').replace(/\\'/g, "'");
-    }
-
-    // SECURITY: Check if the JSON appears truncated (doesn't end with } or }])
-    // Do NOT log the actual content as it contains API keys
-    const trimmed = jsonString.trim();
-    if (!trimmed.endsWith('}') && !trimmed.endsWith('}]')) {
-      console.error('PARTICIPANTS_JSON appears truncated - does not end with }');
-      console.error(`PARTICIPANTS_JSON length: ${trimmed.length} characters`);
-
-      // Try to find where it was truncated (look for incomplete JSON)
-      const lastOpeningBrace = trimmed.lastIndexOf('{');
-      const lastClosingBrace = trimmed.lastIndexOf('}');
-      if (lastOpeningBrace > lastClosingBrace) {
-        console.error('PARTICIPANTS_JSON is truncated - unclosed brace detected');
-        console.error(`Last opening brace at position: ${lastOpeningBrace}, last closing brace at: ${lastClosingBrace}`);
-      }
-
-      participantsCache = {};
-      return participantsCache;
-    }
-
-    // Parse the JSON string
-    const parsed = JSON.parse(jsonString) as Record<string, { name: string; apiKey: string }>;
-    if (typeof parsed !== 'object' || parsed === null) {
-      throw new Error('Invalid PARTICIPANTS_JSON format');
-    }
-
-    // Validate structure
-    for (const [code, participant] of Object.entries(parsed)) {
-      if (!participant || typeof participant !== 'object') {
-        console.error(`Invalid participant data for code: ${code}`);
-        delete parsed[code];
-        continue;
-      }
-      if (!participant.name || typeof participant.name !== 'string') {
-        console.error(`Invalid participant name for code: ${code}`);
-        delete parsed[code];
-        continue;
-      }
-      if (!participant.apiKey || typeof participant.apiKey !== 'string') {
-        console.error(`Invalid participant apiKey for code: ${code}`);
-        delete parsed[code];
-        continue;
-      }
-    }
-
-    console.log(`Loaded ${Object.keys(parsed).length} participants`);
-    participantsCache = parsed;
-    return participantsCache;
-  } catch (error) {
-    // SECURITY: Do NOT log PARTICIPANTS_JSON content as it contains API keys
-    console.error('Failed to parse PARTICIPANTS_JSON:', error instanceof Error ? error.message : String(error));
-    if (error instanceof SyntaxError) {
-      console.error('JSON parse error detected');
-      console.error('PARTICIPANTS_JSON length:', participantsJson.length, 'characters');
-      console.error('Starts with:', participantsJson.trim().startsWith('{') ? 'object' : participantsJson.trim().startsWith('[') ? 'array' : 'unknown');
-      console.error('Ends with:', participantsJson.trim().endsWith('}') ? 'object' : participantsJson.trim().endsWith(']') ? 'array' : 'unknown');
-      console.error('Please check PARTICIPANTS_JSON environment variable format');
-    }
-    participantsCache = {};
-    return participantsCache;
-  }
-}
-
 function maskApiKey(key: string): string {
   if (!key || key.length <= 8) {
     return '**********';
@@ -449,33 +317,17 @@ app.post('/api/claim', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Invalid code' });
     }
 
-    // Try database first, fallback to environment variable
-    let participant: { name: string; apiKey: string; certId?: number; role?: 'participant' | 'facilitator' } | null = null;
+    // Get participant from database
+    console.log(`[claim] Looking up participant code: ${code.trim()}`);
 
-    if (USE_DATABASE_PARTICIPANTS) {
-      participant = await getParticipantByCode(code.trim());
-
-      // If database is empty, try fallback
-      if (!participant && !(await isDatabaseReady())) {
-        console.warn('⚠️  Database not ready, falling back to PARTICIPANTS_JSON');
-        const participants = loadParticipants();
-        const fallbackParticipant = participants[code.trim()] || null;
-        if (fallbackParticipant) {
-          participant = { ...fallbackParticipant, role: 'participant' as const };
-        }
-      }
-    } else {
-      // Fallback mode: use environment variable
-      const participants = loadParticipants();
-      const fallbackParticipant = participants[code.trim()] || null;
-      if (fallbackParticipant) {
-        participant = { ...fallbackParticipant, role: 'participant' as const };
-      }
-    }
+    const participant = await getParticipantByCode(code.trim());
+    console.log(`[claim] Database lookup result:`, participant ? { name: participant.name, role: participant.role } : 'null');
 
     if (!participant) {
       return res.status(404).json({ success: false, error: 'Invalid code' });
     }
+
+    console.log(`[claim] Final participant role: ${participant.role}`);
 
     const cookiePayload = {
       code: code.trim(),
@@ -557,43 +409,17 @@ app.post('/api/reveal-key', async (req, res) => {
     }
 
     console.log(`[reveal-key] Looking up participant with code: ${payload.code}`);
-    console.log(`[reveal-key] USE_DATABASE_PARTICIPANTS: ${USE_DATABASE_PARTICIPANTS}`);
 
-    // Try database first, fallback to environment variable
-    let participant: { name: string; apiKey: string } | null = null;
-
-    if (USE_DATABASE_PARTICIPANTS) {
-      console.log('[reveal-key] Querying database for participant...');
-      participant = await getParticipantByCode(payload.code);
-
-      if (participant) {
-        console.log(`[reveal-key] ✅ Found participant in database: ${participant.name}`);
-      } else {
-        console.log(`[reveal-key] ⚠️  Participant not found in database, checking if database is ready...`);
-        const dbReady = await isDatabaseReady();
-        if (!dbReady) {
-          console.warn('⚠️  Database not ready, falling back to PARTICIPANTS_JSON');
-          const participants = loadParticipants();
-          participant = participants[payload.code] || null;
-          if (participant) {
-            console.log(`[reveal-key] ✅ Found participant in fallback: ${participant.name}`);
-          }
-        }
-      }
-    } else {
-      // Fallback mode: use environment variable
-      console.log('[reveal-key] Using fallback mode (PARTICIPANTS_JSON)');
-      const participants = loadParticipants();
-      participant = participants[payload.code] || null;
-      if (participant) {
-        console.log(`[reveal-key] ✅ Found participant in fallback: ${participant.name}`);
-      }
-    }
+    // Get participant from database
+    console.log('[reveal-key] Querying database for participant...');
+    const participant = await getParticipantByCode(payload.code);
 
     if (!participant) {
       console.error(`[reveal-key] ❌ Participant not found for code: ${payload.code}`);
       return res.status(404).json({ success: false, error: 'Participant not found' });
     }
+
+    console.log(`[reveal-key] ✅ Found participant in database: ${participant.name}`);
 
     const maskedKey = maskApiKey(participant.apiKey);
     // SECURITY: Never log the full API key - only log masked version
@@ -621,8 +447,6 @@ app.get('/api/health', async (req, res) => {
     status: 'ok',
     env: {
       hasCookieSecret: !!COOKIE_SECRET,
-      hasParticipantsJson: !!process.env.PARTICIPANTS_JSON,
-      useDatabaseParticipants: USE_DATABASE_PARTICIPANTS,
       databaseReady: dbReady,
     }
   });
