@@ -540,7 +540,7 @@ export default function Insights() {
                   <>
                     <div className="mb-4">
                       <p className="text-sm text-muted-foreground">
-                        Showing {priceTrends.length} months of data • Average: {priceTrends.length > 0 ? formatPrice(priceTrends.reduce((sum, item) => sum + item.avg_price, 0) / priceTrends.length) : '$0'}
+                        Showing {priceTrends.length} months of data • Median Price: {priceTrends.length > 0 ? formatPrice(priceTrends[Math.floor(priceTrends.length / 2)]?.avg_price || 0) : '$0'}
                       </p>
                     </div>
                     <ResponsiveContainer width="100%" height={400}>
