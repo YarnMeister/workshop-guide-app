@@ -5,7 +5,7 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { query, testConnection } from './database.js';
-import { getParticipantByCode, getParticipantByApiKey, getAllParticipants, clearParticipantsCache, isDatabaseReady } from './participants.js';
+import { getParticipantByCode, getParticipantByApiKey, getAllParticipants, clearParticipantsCache, isDatabaseReady, getParticipantCredentials } from './participants.js';
 
 // Load environment variables from .env.local (for local dev) or .env
 dotenv.config({ path: '.env.local' });
@@ -946,6 +946,75 @@ const requireCookieAuth = async (req: express.Request, res: express.Response, ne
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+/**
+ * Middleware to require facilitator role (cookie auth only)
+ * Used for facilitator-only endpoints
+ */
+const requireFacilitator = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  try {
+    const cookieHeader = req.headers.cookie || '';
+    const cookieMatch = cookieHeader.match(/participant_session=([^;]+)/);
+    const cookie = cookieMatch ? cookieMatch[1] : null;
+
+    if (!cookie) {
+      return res.status(401).json({
+        error: 'Authentication required',
+        message: 'This endpoint requires authentication.'
+      });
+    }
+
+    const payload = verifyCookie(cookie);
+    if (!payload) {
+      return res.status(401).json({
+        error: 'Invalid session',
+        message: 'Your session is invalid or has expired. Please log in again.'
+      });
+    }
+
+    // Check if user is a facilitator
+    if (payload.role !== 'facilitator') {
+      return res.status(403).json({
+        error: 'Forbidden',
+        message: 'This endpoint is only accessible to facilitators.'
+      });
+    }
+
+    // Valid facilitator - add participant info to request
+    (req as any).participant = payload;
+    (req as any).authMethod = 'cookie';
+    return next();
+
+  } catch (error) {
+    console.error('[facilitator-auth] Middleware error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// Get participant credentials endpoint (facilitators only)
+app.get('/api/participant/credentials', requireFacilitator, async (req, res) => {
+  try {
+    const participant = (req as any).participant;
+    if (!participant || !participant.code) {
+      return res.status(400).json({ error: 'Participant code not found' });
+    }
+
+    const credentials = await getParticipantCredentials(participant.code);
+    
+    if (!credentials) {
+      return res.status(404).json({ error: 'Participant not found' });
+    }
+
+    res.status(200).json({
+      success: true,
+      username: credentials.username,
+      password: credentials.password,
+    });
+  } catch (error) {
+    console.error('[credentials] Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 // Clear cache endpoint (admin only - cookie auth required)
 // SECURITY: API key clients cannot access this endpoint (read-only guarantee)

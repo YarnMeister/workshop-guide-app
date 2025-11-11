@@ -122,6 +122,34 @@ export async function getParticipantByApiKey(apiKey: string): Promise<Participan
 }
 
 /**
+ * Get participant credentials (username/password) by code
+ * Only returns credentials for active participants
+ * 
+ * @param code - Participant's unique code (e.g., "9fA#2")
+ * @returns Credentials object with username and password, or null if not found/inactive
+ */
+export async function getParticipantCredentials(code: string): Promise<{ username: string | null; password: string | null } | null> {
+  try {
+    const result = await query(
+      'SELECT username, password FROM participants WHERE code = $1 AND is_active = true',
+      [code]
+    );
+
+    if (result.rows.length === 0) {
+      return null;
+    }
+
+    return {
+      username: result.rows[0].username || null,
+      password: result.rows[0].password || null,
+    };
+  } catch (error) {
+    console.error('Failed to fetch participant credentials:', error);
+    return null;
+  }
+}
+
+/**
  * Check if database-based participants are available
  * Falls back to environment variable if database is not ready
  *
