@@ -308,7 +308,7 @@ git config --global user.email "jane.doe@email.com"`
       },
       inspirationPanel: {
         title: "Ideas and inspiration",
-        content: "We have some amazingly rich data for you to use in your prototype. Click the button to get inspired",
+        content: "Get inspired with rich property data for real estate apps, or explore popular app concepts like household organizers, task managers, and reward systems. Click to see all the possibilities!",
         buttonText: "Inspo me",
         buttonAction: "/inspiration"
       },
