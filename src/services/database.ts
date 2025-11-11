@@ -38,7 +38,7 @@ export interface PropertyTypeInsight {
 
 export interface TimeSeriesInsight {
   month: string;
-  avg_price: number;
+  median_price: number;
   total_sales: number;
   property_type?: string;
 }

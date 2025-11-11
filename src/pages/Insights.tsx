@@ -522,7 +522,7 @@ export default function Insights() {
             <Card>
               <CardHeader>
                 <CardTitle>Price Trends Over Time</CardTitle>
-                <CardDescription>Average sale prices by month over the last 12 months</CardDescription>
+                <CardDescription>Median sale prices by month over the last 12 months</CardDescription>
               </CardHeader>
               <CardContent>
                 {loading ? (
@@ -540,7 +540,14 @@ export default function Insights() {
                   <>
                     <div className="mb-4">
                       <p className="text-sm text-muted-foreground">
-                        Showing {priceTrends.length} months of data • Median Price: {priceTrends.length > 0 ? formatPrice(priceTrends[Math.floor(priceTrends.length / 2)]?.avg_price || 0) : '$0'}
+                        Showing {priceTrends.length} months of data • Median Price: {priceTrends.length > 0 ? (() => {
+                          const sortedPrices = [...priceTrends].map(t => t.median_price).sort((a, b) => a - b);
+                          const mid = Math.floor(sortedPrices.length / 2);
+                          const median = sortedPrices.length % 2 === 0 
+                            ? (sortedPrices[mid - 1] + sortedPrices[mid]) / 2 
+                            : sortedPrices[mid];
+                          return formatPrice(median);
+                        })() : '$0'}
                       </p>
                     </div>
                     <ResponsiveContainer width="100%" height={400}>
@@ -559,14 +566,14 @@ export default function Insights() {
                         />
                         <Tooltip 
                           formatter={(value, name) => [
-                            name === 'avg_price' ? formatPrice(value as number) : formatNumber(value as number),
-                            name === 'avg_price' ? 'Average Price' : 'Total Sales'
+                            name === 'median_price' ? formatPrice(value as number) : formatNumber(value as number),
+                            name === 'median_price' ? 'Median Price' : 'Total Sales'
                           ]}
                           labelFormatter={(label) => `Month: ${label}`}
                         />
                         <Line 
                           type="monotone" 
-                          dataKey="avg_price" 
+                          dataKey="median_price" 
                           stroke="#8884d8" 
                           strokeWidth={3}
                           dot={{ fill: '#8884d8', strokeWidth: 2, r: 4 }}

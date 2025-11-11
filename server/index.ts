@@ -683,7 +683,7 @@ app.get('/api/insights/price-trends', requireAuth, async (req, res) => {
       WITH recent_data AS (
         SELECT
           TO_CHAR(active_month, 'YYYY-MM') as month,
-          ROUND(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY price_search_sold)::numeric, 0)::integer as avg_price,
+          ROUND(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY price_search_sold)::numeric, 0)::integer as median_price,
           COUNT(*) as total_sales,
           active_month
         FROM property_sales
@@ -707,7 +707,7 @@ app.get('/api/insights/price-trends', requireAuth, async (req, res) => {
         GROUP BY TO_CHAR(active_month, 'YYYY-MM'), active_month
         HAVING COUNT(*) >= 10
       )
-      SELECT month, avg_price, total_sales
+      SELECT month, median_price, total_sales
       FROM recent_data
       ORDER BY month DESC
       LIMIT $${params.length + 1}
