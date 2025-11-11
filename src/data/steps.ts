@@ -116,14 +116,16 @@ When done, close and reopen Terminal`,
                     ]
                   },
                   {
-                    title: "Add Git and Node.js to Your PATH (Mac)",
-                    description: `Normally Git and Node.js add themselves to your PATH automatically when installed with Homebrew or from their official installers.
-
-If your terminal can't find them (e.g. running git --version or node --version gives "command not found"), follow these steps:
-
-Option 1 — Quick check (most common fix)
-
-Open a NEW Terminal.
+                    title: "⚠️ Important",
+                    description: `Normally Git and Node.js add themselves to your PATH automatically when installed with Homebrew or from their official installers. If your terminal can't find them (e.g. running git --version or node --version gives "command not found"), follow these steps:`
+                  },
+                  {
+                    title: "Troubleshoot: Add Git and Node.js to Your PATH",
+                    description: `If your terminal can't find Git or Node.js, follow these steps:`
+                  },
+                  {
+                    title: "Option 1 — Quick check (most common fix)",
+                    description: `Open a NEW Terminal.
 
 Run these commands to verify if they're already in your PATH:`,
                     commands: [
@@ -202,25 +204,23 @@ Check the box that says "Automatically install the necessary tools"`
                   },
                   {
                     title: "Verify it worked:",
-                    description: `Open "Command Prompt" (search for "cmd" in Start menu)
-
-Type the commands below one at a time. You should see version numbers for both:`,
+                    description: `Type the commands below one at a time. You should see version numbers for both:`,
                     commands: [
                       "git --version",
                       "npm --version"
                     ]
                   },
                   {
-                    title: "Add Git and Node.js to Your PATH (Windows)",
-                    description: `Normally Git and Node.js add themselves to your PATH automatically when installed from their official installers.
-
-If your Command Prompt can't find them (e.g. running git --version or node --version gives "command not found"), follow these steps:`
+                    title: "⚠️ Important",
+                    description: `Normally Git and Node.js add themselves to your PATH automatically when installed with Homebrew or from their official installers. If your terminal can't find them (e.g. running git --version or node --version gives "command not found"), follow these steps:`
                   },
                   {
-                    title: "Method 1: Using System Settings",
-                    description: `You can add both manually to Windows PATH:
-
-1. Press Windows + R, type: sysdm.cpl → Enter
+                    title: "Troubleshoot: Add Git and Node.js to Your PATH",
+                    description: `If your Command Prompt can't find Git or Node.js, follow these steps:`
+                  },
+                  {
+                    title: "Use System Settings",
+                    description: `1. Press Windows + R, type: sysdm.cpl → Enter
 
 2. Go to Advanced tab → click Environment Variables
 
@@ -910,18 +910,18 @@ Any future merge to main (via AI assisted prompts) in GitHub will trigger a fres
     detailedContent: {
       sections: [
         {
-          title: "Integrate real data using an API",
-          description: "Coming soon - instructions for connecting your app to external APIs.",
+          title: "Integrate property listing data using our API",
+          description: "If your prototype needs our property listing data then you'll want to do this step next",
           seeMoreRoute: "/extend/integrate-api"
         },
         {
           title: "Add an AI Assistant in your app workflow",
-          description: "Coming soon - instructions for adding AI capabilities to your application.",
+          description: "Adding AI magic to your prototype is easy as 1-2-3, come in to see more...",
           seeMoreRoute: "/extend/add-ai-assistant"
         },
         {
-          title: "Add a full Database",
-          description: "Coming soon - instructions for integrating a database into your application.",
+          title: "Add a Database",
+          description: "Watch our short video for getting started with your own permanent storage solution.",
           seeMoreRoute: "/extend/add-database"
         }
       ]

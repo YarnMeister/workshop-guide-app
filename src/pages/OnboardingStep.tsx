@@ -813,26 +813,30 @@ const OnboardingStep = () => {
                         {/* Tab Content */}
                         {section.tabs[activeTab] && section.tabs[activeTab].content.subsections && (
                           <div className="space-y-4">
-                            {section.tabs[activeTab].content.subsections.map((subsection, subIndex) => (
-                              <div key={subIndex} className="border-l-2 border-muted pl-4">
-                                <h3 className="mb-2 font-medium text-sm">{subsection.title}</h3>
-                                {subsection.description && (
-                                  <p className="mb-3 text-sm text-muted-foreground whitespace-pre-line">{renderTextWithLinks(subsection.description)}</p>
-                                )}
-                                {subsection.codeBlock && (
-                                  <div className="overflow-x-auto rounded-md bg-muted p-3 text-sm">
-                                    <div className="whitespace-pre-wrap">{renderTextWithLinks(subsection.codeBlock)}</div>
-                                  </div>
-                                )}
-                                {subsection.commands && (
-                                  <div className="space-y-2">
-                                    {subsection.commands.map((command, cmdIndex) => (
-                                      <CopyableCommand key={cmdIndex} command={command} />
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            ))}
+                            {section.tabs[activeTab].content.subsections.map((subsection, subIndex) => {
+                              const isWarning = subsection.title?.includes('⚠️');
+                              const isTroubleshoot = subsection.title?.startsWith('Troubleshoot:');
+                              return (
+                                <div key={subIndex} className={`border-l-2 pl-4 ${isWarning ? 'border-red-300 bg-red-50 rounded-r-md p-4' : 'border-muted'}`}>
+                                  <h3 className={`mb-2 ${isTroubleshoot ? 'font-semibold text-base' : isWarning ? 'text-red-900 font-medium text-sm' : 'font-medium text-sm'}`}>{subsection.title}</h3>
+                                  {subsection.description && (
+                                    <p className={`mb-3 text-sm whitespace-pre-line ${isWarning ? 'text-red-800' : 'text-muted-foreground'}`}>{renderTextWithLinks(subsection.description)}</p>
+                                  )}
+                                  {subsection.codeBlock && (
+                                    <div className="overflow-x-auto rounded-md bg-muted p-3 text-sm">
+                                      <div className="whitespace-pre-wrap">{renderTextWithLinks(subsection.codeBlock)}</div>
+                                    </div>
+                                  )}
+                                  {subsection.commands && (
+                                    <div className="space-y-2">
+                                      {subsection.commands.map((command, cmdIndex) => (
+                                        <CopyableCommand key={cmdIndex} command={command} />
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
                         )}
                       </div>

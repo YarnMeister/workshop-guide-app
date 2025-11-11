@@ -4,6 +4,8 @@ import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Copy, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useParticipant } from "@/hooks/useParticipant";
+import { revealApiKey } from "@/services/participant";
 
 // Function to render text with clickable links
 const renderTextWithLinks = (text: string) => {
@@ -105,8 +107,270 @@ interface ExtendOption {
 
 const EXTEND_OPTIONS: Record<string, ExtendOption> = {
   "integrate-api": {
-    title: "Integrate real data using an API",
-    content: "Detailed instructions for integrating real data using an API will be added here."
+    title: "Integrate property listing data using our API",
+    heading: "Connect Real Property Data",
+    subsections: [
+      {
+        title: "What You'll Do",
+        description: `1. Add your API key to the environment file
+
+2. Ask your AI assistant to replace mock data with real API calls
+
+3. Test that real property data loads in your app`
+      },
+      {
+        title: "Add Your API Key",
+        subsections: [
+          {
+            title: "1. Find or create Environment Variable File",
+            description: `In your project root, find or create the file \`.env.local\`:`,
+
+            screenshot: "env-local.png"
+          },
+          {
+            title: "",
+            description: `If the file does not exist, right-click in the "whitespace" and select "Add new file" and then name the file: .env.local (it starts with a dot)`
+          },
+          {
+            title: "2. Add Your API Key",
+            description: `Copy and paste the following variable into the .env.local file:`,
+            commands: [
+              'VITE_WORKSHOP_API_KEY='
+            ]
+          },
+          {
+            title: "",
+            description: `Next, copy your personal API key and paste the value after the '=' on the same line as the VITE_WORKSHOP_API_KEY=`
+          },
+          {
+            title: "__API_KEY__",
+            description: ""
+          },
+          {
+            title: "⚠️ Important Notes",
+            description: `- Don't add quotes around the key
+
+- Make sure there are no spaces before or after the \`=\`
+
+- The file should be in the same folder as \`package.json\``
+          },
+          {
+            title: "3. Verify Environment File",
+            description: `Your \`.env.local\` variable should look somthing like this:`,
+            codeBlock: `VITE_WORKSHOP_API_KEY=sk-or-v1-abc123def456...`,
+            subsections: [
+              {
+                title: "",
+                description: `✅ Save the file`
+              }
+            ]
+          },
+          {
+            title: "⚠️ Important Notes",
+            description: `- Don't ever paste your API key in the AI Chat window, this is a serious security breach
+
+- The .env.local file is a secure "wallet" where you can save sensitive data, the system retrieves these values securely without revealing it to the AI assitant.
+
+- Please ensure the .env.local file is SAVED, just because you can see the value on screen does not mean it's saved. Unsaved files will result in a critical connection failure.`
+          }
+        ]
+      },
+      {
+        title: "Update Your Code with AI",
+        subsections: [
+          {
+            title: "2.1 Stop Your Dev Server",
+            description: `If your app is running (\`npm run dev\`), stop it:
+
+- Press \`Ctrl + C\` in the terminal`
+          },
+          {
+            title: "2.2 Paste This Prompt into Your AI Chat",
+            description: `Copy this entire prompt and paste it into your AI coding assistant (Cursor, Windsurf, or Void):`,
+            commands: [
+              `I need to replace the mock property data in my app with real API calls.
+
+API Configuration:
+- Base URL: https://workshop-guide-app.vercel.app
+- Auth: Bearer token from environment variable
+- My API key is stored in .env.local and accessed in code via: import.meta.env.VITE_WORKSHOP_API_KEY
+
+Available Endpoints (all use GET requests):
+1. /api/insights/suburbs?state=VIC&limit=20
+   Returns: Array of { suburb, avg_price, median_price, total_sales }
+
+2. /api/insights/property-types?state=VIC
+   Returns: Array of { property_type, avg_price, median_price, total_sales }
+
+3. /api/insights/price-trends?state=VIC&property_type=House&months=12
+   Returns: Array of { month, avg_price, total_sales }
+
+4. /api/insights/market-stats?state=VIC
+   Returns: { total_sales, avg_price, median_price, total_suburbs, price_range, most_active_month }
+
+5. /api/properties/search?state=VIC&limit=50&offset=0
+   Returns: { data: [...properties], total, limit, offset }
+
+Rate Limit: 100 requests/minute
+All endpoints require: Authorization: Bearer \${import.meta.env.VITE_WORKSHOP_API_KEY}
+
+Tasks:
+1. Find all files using mock/fake property data
+2. Create or update src/services/propertyAPI.ts with fetch functions for each endpoint
+3. Add proper error handling for 401 (bad auth), 429 (rate limit), and 500 (server error)
+4. Update components to use the real API instead of mock data
+5. Add loading states while data fetches
+6. Keep existing UI components and styling unchanged
+
+Start by showing me which files have mock data, then implement the changes.`
+            ]
+          },
+          {
+            title: "2.3 Follow AI Instructions",
+            description: `Your AI assistant will:
+
+1. Identify files with mock data
+
+2. Create/update an API service file
+
+3. Replace mock data calls with real API calls
+
+4. Add error handling and loading states`
+          }
+        ]
+      },
+      {
+        title: "Test Your App",
+        subsections: [
+          {
+            title: "2.1 Restart Dev Server",
+            description: `In your terminal:`,
+            commands: [
+              "npm run dev"
+            ]
+          },
+          {
+            title: "2.2 Check for Errors",
+            description: `- ❌ If you see errors, read them carefully and share with AI assistant`
+          },
+          {
+            title: "2.3 Open in Browser",
+            description: `1. Copy the localhost URL from terminal
+
+2. Paste into your browser
+
+3. Open browser DevTools (F12 or Right-click → Inspect)
+
+4. Go to the **Console** tab`
+          },
+          {
+            title: "2.4 Verify Real Data Loads",
+            description: `Check for these signs:
+
+- ✅ Property data displays (numbers should look realistic)
+
+- ✅ No "mock" or "sample" labels in the data
+
+- ✅ Console shows successful API calls (green text)
+
+- ❌ Console shows red errors → see Troubleshooting below`
+          },
+          {
+            title: "2.5 Test Different Features",
+            description: `Click around your app:
+
+- Try filters (suburb, property type, price range)
+
+- Check different charts/tables
+
+- Verify data updates when you change filters`
+          }
+        ]
+      },
+      {
+        title: "Troubleshooting",
+        subsections: [
+          {
+            title: "Error: \"401 Unauthorized\" or \"Invalid API key\"",
+            description: `**Fix:**
+
+1. Check \`.env.local\` has correct key (no typos, no quotes, no spaces)
+
+2. Restart dev server (\`Ctrl+C\`, then \`npm run dev\`)
+
+**Still broken?** Ask AI assistant:`,
+            commands: [
+              "I'm getting a 401 error. Can you verify the Authorization header is correctly using import.meta.env.VITE_WORKSHOP_API_KEY?"
+            ]
+          },
+          {
+            title: "Error: \"429 Rate Limit Exceeded\"",
+            description: `**Fix:**
+
+1. Wait 60 seconds
+
+2. Refresh the page
+
+3. Consider adding caching (ask AI assistant to implement)
+
+**Ask AI assistant:**`,
+            commands: [
+              "Add response caching to avoid hitting rate limits. Cache API responses for 5 minutes."
+            ]
+          },
+          {
+            title: "Error: \"Network request failed\" or CORS error",
+            description: `**Fix:**
+
+1. Check you're using the correct base URL: \`https://workshop-guide-app.vercel.app\`
+
+2. Verify API key is valid (check Step 1 again)
+
+**Ask AI assistant:**`,
+            commands: [
+              "I'm getting CORS or network errors. Can you verify the fetch requests are using the correct base URL and headers?"
+            ]
+          },
+          {
+            title: "Data Looks Wrong or Empty",
+            description: `**Fix:**
+
+1. Check browser Console for errors
+
+2. Check Network tab in DevTools:
+
+   - Look for requests to \`workshop-guide-app.vercel.app\`
+
+   - Click on a request → Preview tab → see the response
+
+3. Verify endpoint URL matches the API docs
+
+**Ask AI assistant:**`,
+            commands: [
+              "The data looks incorrect. Can you check that we're using the right endpoint and parsing the response correctly?"
+            ]
+          },
+          {
+            title: "Environment Variable Not Loading",
+            description: `**Symptoms:**
+
+- Console shows \`undefined\` for API key
+
+- 401 errors even though key is correct
+
+**Fix:**
+
+1. Verify \`.env.local\` filename (not \`.env.local.txt\`)
+
+2. Verify it's in project root (same folder as \`package.json\`)
+
+3. **Restart dev server** (environment variables only load on startup)
+
+4. Check the variable name starts with \`VITE_\` (required for Vite projects)`
+          }
+        ]
+      }
+    ]
   },
   "add-ai-assistant": {
     title: "Add an AI Assistant in your app workflow",
@@ -171,6 +435,8 @@ const ExtendOption = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [copiedCommands, setCopiedCommands] = useState<Set<string>>(new Set());
+  const [isRevealingKey, setIsRevealingKey] = useState<boolean>(false);
+  const { apiKey, apiKeyMasked, setApiKey } = useParticipant();
   
   const option = optionId ? EXTEND_OPTIONS[optionId as keyof typeof EXTEND_OPTIONS] : null;
 
@@ -226,6 +492,71 @@ const ExtendOption = () => {
     );
   };
 
+  const CopyableApiKey = () => {
+    const handleRevealAndCopyKey = async () => {
+      // If we already have the key in memory, use it
+      if (apiKey) {
+        await copyToClipboard(apiKey);
+        toast({
+          title: "Key copied!",
+          description: "Full API key copied to clipboard",
+        });
+        return;
+      }
+
+      setIsRevealingKey(true);
+      try {
+        const result = await revealApiKey();
+        if (result.success && result.apiKey) {
+          // Store in memory for future use
+          setApiKey(result.apiKey);
+          await copyToClipboard(result.apiKey);
+          toast({
+            title: "Key copied!",
+            description: "Full API key copied to clipboard",
+          });
+        } else {
+          toast({
+            title: "Failed to retrieve key",
+            description: result.error || "Please try again or re-enter your participant code",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error("Reveal key error:", error);
+        toast({
+          title: "Error",
+          description: "Failed to retrieve key. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsRevealingKey(false);
+      }
+    };
+
+    const displayKey = apiKeyMasked || "sk-or-v1*****************************************************************";
+    
+    // Always render the component - it should be visible
+    return (
+      <div className="flex items-center justify-between rounded-md bg-muted p-3 text-sm">
+        <code className="flex-1 font-mono break-all">{displayKey}</code>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleRevealAndCopyKey}
+          disabled={isRevealingKey}
+          className="ml-2 h-8 w-8 p-0 shrink-0"
+        >
+          {isRevealingKey ? (
+            <Copy className="h-4 w-4 animate-pulse" />
+          ) : (
+            <Copy className="h-4 w-4" />
+          )}
+        </Button>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -258,16 +589,40 @@ const ExtendOption = () => {
           <div className="space-y-6">
             {option.subsections.map((subsection, index) => {
               const isWarning = subsection.title?.includes('⚠️');
+              const isApiKeyMarker = subsection.title === "__API_KEY__";
+              // Determine if this is a main step section (indices 1, 2, 3: "Add Your API Key", "Update Your Code with AI", "Test Your App")
+              const isMainStep = (index === 1 || index === 2 || index === 3) && subsection.title && !isWarning && !isApiKeyMarker;
+              const stepNumber = isMainStep ? index : null;
+              
               return (
                 <div key={index} className="rounded-lg border bg-card p-6">
-                  {subsection.title && (
-                    <h2 className={`mb-3 font-semibold text-lg ${isWarning ? 'text-red-900' : ''}`}>
-                      {subsection.title}
-                    </h2>
+                  {subsection.title && !isApiKeyMarker && (
+                    <div className="mb-3 flex items-center gap-3">
+                      {stepNumber && (
+                        <div className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                          Step {stepNumber}
+                        </div>
+                      )}
+                      <h2 className={`font-semibold text-lg ${isWarning ? 'text-red-900' : ''}`}>
+                        {subsection.title}
+                      </h2>
+                    </div>
                   )}
-                  {subsection.description && (
+                  {subsection.description && subsection.description.trim() && (
                     <div className={`mb-4 text-sm whitespace-pre-line ${isWarning ? 'text-red-800 bg-red-50 rounded-md p-4 border-l-2 border-red-300' : 'text-muted-foreground'}`}>
                       {renderTextWithLinks(subsection.description)}
+                    </div>
+                  )}
+                  {isApiKeyMarker && (
+                    <div className="mb-4">
+                      <CopyableApiKey />
+                    </div>
+                  )}
+                  {subsection.commands && subsection.commands.length > 0 && (
+                    <div className="mb-4 space-y-2">
+                      {subsection.commands.map((command, cmdIndex) => (
+                        <CopyableCommand key={cmdIndex} command={command} />
+                      ))}
                     </div>
                   )}
                   {subsection.screenshot && !subsection.subsections && (
@@ -293,17 +648,23 @@ const ExtendOption = () => {
                       <div className="space-y-4">
                       {subsection.subsections.map((subSubsection, subIndex) => {
                         const isSubWarning = subSubsection.title?.includes('⚠️');
+                        const isApiKeyMarker = subSubsection.title === "__API_KEY__";
                         return (
-                          <div key={subIndex} className={`border-l-2 pl-4 ${isSubWarning ? 'border-red-300 bg-red-50 rounded-r-md p-4' : 'border-muted'}`}>
-                            {subSubsection.title && (
+                          <div key={subIndex} className={`border-l-2 pl-4 ${isSubWarning ? 'border-red-300 bg-red-50 rounded-r-md p-4' : isApiKeyMarker ? '' : 'border-muted'}`}>
+                            {subSubsection.title && !isApiKeyMarker && (
                               <h3 className={`mb-2 font-medium text-sm ${isSubWarning ? 'text-red-900' : ''}`}>
                                 {subSubsection.title}
                               </h3>
                             )}
-                            {subSubsection.description && (
+                            {subSubsection.description && subSubsection.description.trim() && (
                               <p className={`mb-3 text-sm whitespace-pre-line ${isSubWarning ? 'text-red-800' : 'text-muted-foreground'}`}>
                                 {renderTextWithLinks(subSubsection.description)}
                               </p>
+                            )}
+                            {isApiKeyMarker && (
+                              <div className="mb-3 mt-3">
+                                <CopyableApiKey />
+                              </div>
                             )}
                             {subSubsection.commands && subSubsection.commands.length > 0 && (
                               <div className="space-y-2">
