@@ -16,7 +16,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
+    "db:migrate": "tsx scripts/apply-migrations.ts",
     "db:status": "drizzle-kit check",
     "db:lint:migrations": "node scripts/lint-migrations.cjs",
     "predb:migrate": "npm run db:lint:migrations"
