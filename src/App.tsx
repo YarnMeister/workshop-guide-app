@@ -8,6 +8,7 @@ import Welcome from "./pages/Welcome";
 import OnboardingStep from "./pages/OnboardingStep";
 import Congrats from "./pages/Congrats";
 import Insights from "./pages/Insights";
+import Inspiration from "./pages/Inspiration";
 import ExtendOption from "./pages/ExtendOption";
 import NotFound from "./pages/NotFound";
 import ErrorBoundary, { ErrorFallback } from "./components/ErrorBoundary";
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/onboarding/step/:stepId" element={<OnboardingStep />} />
             <Route path="/congrats" element={<Congrats />} />
             <Route path="/insights" element={<Insights />} />
+            <Route path="/inspiration" element={<Inspiration />} />
             <Route path="/extend/:optionId" element={<ExtendOption />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

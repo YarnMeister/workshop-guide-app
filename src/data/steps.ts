@@ -310,7 +310,7 @@ git config --global user.email "jane.doe@email.com"`
         title: "Ideas and inspiration",
         content: "We have some amazingly rich data for you to use in your prototype. Click the button to get inspired",
         buttonText: "Inspo me",
-        buttonAction: "/insights"
+        buttonAction: "/inspiration"
       },
       prdTemplate: true
     }
