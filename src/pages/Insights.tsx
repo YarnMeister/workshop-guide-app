@@ -6,14 +6,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import { useParticipant } from '@/hooks/useParticipant';
 import { useNavigate } from 'react-router-dom';
-import { 
-  getSuburbInsights, 
-  getPropertyTypeInsights, 
-  getPriceTrends, 
-  getSaleTypeInsights, 
+import {
+  getSuburbInsights,
+  getPropertyTypeInsights,
+  getPriceTrends,
+  getSaleTypeInsights,
   getMarketStats,
   searchProperties,
   type PriceInsight,
@@ -22,11 +23,11 @@ import {
   type SaleTypeInsight,
   type PropertySalesData
 } from '@/services/database';
-import { 
-  TrendingUp, 
-  Home, 
-  DollarSign, 
-  BarChart3, 
+import {
+  TrendingUp,
+  Home,
+  DollarSign,
+  BarChart3,
   PieChart as PieChartIcon,
   Search,
   Loader2,
@@ -41,7 +42,15 @@ import {
   Users,
   Building,
   Clock,
-  ArrowLeft
+  ArrowLeft,
+  Sparkles,
+  CheckSquare,
+  ShoppingCart,
+  ClipboardList,
+  Star,
+  Award,
+  Heart,
+  Gift
 } from 'lucide-react';
 
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7c7c', '#8dd1e1'];
@@ -49,6 +58,7 @@ const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7c7c', '#8dd1e1'];
 export default function Insights() {
   const { isAuthenticated, isLoading: authLoading } = useParticipant();
   const navigate = useNavigate();
+  const [mainTab, setMainTab] = useState('property-feed');
   const [activeTab, setActiveTab] = useState('suburbs');
   const [selectedState, setSelectedState] = useState<string>('all');
   const [loading, setLoading] = useState(false);
@@ -73,6 +83,128 @@ export default function Insights() {
     sale_type: 'all',
     year: ''
   });
+
+  // Property Feed Features
+  const propertyFeedFeatures = [
+    {
+      icon: <MapPin className="h-5 w-5 text-blue-600" />,
+      title: "Geographic Intelligence",
+      description: "Location-based analytics across 1000+ suburbs",
+      examples: ["State-by-state market analysis", "Suburb performance rankings", "Postcode trend mapping"]
+    },
+    {
+      icon: <DollarSign className="h-5 w-5 text-green-600" />,
+      title: "Financial Analytics",
+      description: "Comprehensive pricing and transaction data",
+      examples: ["Price trend analysis", "Sale type performance", "Premium calculations"]
+    },
+    {
+      icon: <Building className="h-5 w-5 text-orange-600" />,
+      title: "Property Intelligence",
+      description: "Detailed property characteristics and features",
+      examples: ["Property type analysis", "Bedroom/bathroom trends", "Construction preferences"]
+    },
+    {
+      icon: <Calendar className="h-5 w-5 text-purple-600" />,
+      title: "Market Timing",
+      description: "Time-series data and seasonal patterns",
+      examples: ["Monthly price trends", "Seasonal analysis", "Market timing insights"]
+    }
+  ];
+
+  // Other App Ideas
+  const otherIdeas = [
+    {
+      icon: <ShoppingCart className="h-5 w-5 text-blue-600" />,
+      title: "Household Organizer",
+      description: "Smart family management system",
+      features: [
+        "Collaborative shopping lists with real-time sync",
+        "Smart grocery suggestions based on usage patterns",
+        "Recipe integration with automatic ingredient lists",
+        "Pantry tracking with expiry date alerts",
+        "Budget tracking and spending insights"
+      ],
+      use_cases: [
+        "Families managing weekly shopping",
+        "Roommates coordinating household expenses",
+        "Meal planning enthusiasts",
+        "Budget-conscious households"
+      ]
+    },
+    {
+      icon: <ClipboardList className="h-5 w-5 text-green-600" />,
+      title: "Task & To-Do Manager",
+      description: "Intelligent task management for busy lives",
+      features: [
+        "Smart task prioritization with deadline awareness",
+        "Recurring task automation",
+        "Family member task assignment",
+        "Progress tracking with visual timelines",
+        "Integration with calendar apps"
+      ],
+      use_cases: [
+        "Busy professionals managing work-life balance",
+        "Parents coordinating family activities",
+        "Students tracking assignments",
+        "Freelancers managing multiple projects"
+      ]
+    },
+    {
+      icon: <Award className="h-5 w-5 text-yellow-600" />,
+      title: "Kids Reward Charts",
+      description: "Gamified behavior tracking for children",
+      features: [
+        "Customizable reward systems and point values",
+        "Visual progress tracking with fun animations",
+        "Multiple children profiles with individual goals",
+        "Digital and physical reward options",
+        "Parent dashboard with behavior insights"
+      ],
+      use_cases: [
+        "Parents encouraging positive behavior",
+        "Teachers tracking classroom participation",
+        "Childcare centers managing activities",
+        "Families establishing routines"
+      ]
+    },
+    {
+      icon: <Heart className="h-5 w-5 text-red-600" />,
+      title: "Wellness Tracker",
+      description: "Holistic health and wellbeing companion",
+      features: [
+        "Mood tracking with pattern analysis",
+        "Exercise logging with goal setting",
+        "Water intake and nutrition monitoring",
+        "Sleep quality assessment",
+        "Mindfulness reminders and guided sessions"
+      ],
+      use_cases: [
+        "Individuals focusing on mental health",
+        "Fitness enthusiasts tracking progress",
+        "People with health conditions",
+        "Wellness coaches and their clients"
+      ]
+    },
+    {
+      icon: <Gift className="h-5 w-5 text-purple-600" />,
+      title: "Gift & Event Planner",
+      description: "Never forget another special occasion",
+      features: [
+        "Smart gift suggestions based on interests",
+        "Budget planning with price tracking",
+        "Event countdown and reminder system",
+        "Guest list management with RSVP tracking",
+        "Shared planning with family members"
+      ],
+      use_cases: [
+        "Families with multiple birthdays to track",
+        "Event planners organizing celebrations",
+        "Friends coordinating group gifts",
+        "Busy professionals managing social obligations"
+      ]
+    }
+  ];
 
   const loadData = async (state?: string) => {
     if (!isAuthenticated) return;
@@ -192,15 +324,15 @@ export default function Insights() {
           Back
         </Button>
       </div>
-      
-      <div className="flex flex-col space-y-6">
+
+      <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Prototype Data Feed</h1>
-          <p className="mt-4 text-sm leading-relaxed">
-            We're providing this comprehensive overview to help you understand what's available in our property dataset 
-            and inspire you with ideas for valuable insights you could extract. This isn't just raw data—it's a goldmine 
-            of market intelligence waiting to be explored. Whether you're a real estate professional, investor, researcher, 
-            or data enthusiast, this data can power everything from market analysis to predictive modeling.
+          <h1 className="text-3xl font-bold flex items-center gap-2">
+            <Sparkles className="h-8 w-8 text-yellow-500" />
+            Ideas & Inspiration
+          </h1>
+          <p className="mt-4 text-muted-foreground">
+            Get inspired with proven app concepts and real data to power your prototype. Choose your path!
           </p>
         </div>
 
@@ -211,158 +343,177 @@ export default function Insights() {
           </Alert>
         )}
 
-        {/* Static Data Overview Content */}
-        <div className="grid gap-6">
-          {/* Header */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Database className="h-5 w-5" />
-                <CardTitle>Data source: Property Sales Data</CardTitle>
-              </div>
-              <CardDescription className="text-red-600">
-                Comprehensive real estate dataset with 428,576+ property sales records across Australia
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {/* Data Themes */}
-                <div className="grid md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-5 w-5 text-blue-600" />
-                      <CardTitle className="text-lg">Geographic Data</CardTitle>
-                    </div>
-                    <CardDescription>Location-based property information</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span className="font-medium">State</span>
-                        <Badge variant="secondary">NSW, VIC, QLD, WA, SA, TAS, ACT, NT</Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="font-medium">Suburb</span>
-                        <Badge variant="secondary">1000+ suburbs</Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="font-medium">Postcode</span>
-                        <Badge variant="secondary">Numeric codes</Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="font-medium">Combined Key</span>
-                        <Badge variant="secondary">State-Suburb-Postcode</Badge>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+        <Tabs value={mainTab} onValueChange={setMainTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="property-feed">Prototype Property Feed</TabsTrigger>
+            <TabsTrigger value="other-ideas">Other App Ideas</TabsTrigger>
+          </TabsList>
 
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="h-5 w-5 text-green-600" />
-                      <CardTitle className="text-lg">Financial Data</CardTitle>
-                    </div>
-                    <CardDescription>Pricing and transaction information</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span className="font-medium">Listed Price</span>
-                        <Badge variant="secondary">price_search</Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="font-medium">Sold Price</span>
-                        <Badge variant="secondary">price_search_sold</Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="font-medium">Price Premium</span>
-                        <Badge variant="secondary">Calculated difference</Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="font-medium">Financial Year</span>
-                        <Badge variant="secondary">2021-2024</Badge>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center gap-2">
-                      <Building className="h-5 w-5 text-orange-600" />
-                      <CardTitle className="text-lg">Property Attributes</CardTitle>
-                    </div>
-                    <CardDescription>Physical characteristics and features</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span className="font-medium">Property Type</span>
-                        <Badge variant="secondary">House, Unit, Townhouse</Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="font-medium">Bedrooms</span>
-                        <Badge variant="secondary">1-6+ rooms</Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="font-medium">Bathrooms</span>
-                        <Badge variant="secondary">1-5+ rooms</Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="font-medium">Construction</span>
-                        <Badge variant="secondary">New vs Existing</Badge>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-5 w-5 text-purple-600" />
-                      <CardTitle className="text-lg">Transaction Data</CardTitle>
-                    </div>
-                    <CardDescription>Sale process and timing information</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span className="font-medium">Sale Type</span>
-                        <Badge variant="secondary">Private, Auction</Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="font-medium">Active Month</span>
-                        <Badge variant="secondary">Sale completion date</Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="font-medium">Channel</span>
-                        <Badge variant="secondary">Buy channel</Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="font-medium">Agency ID</span>
-                        <Badge variant="secondary">Hashed identifier</Badge>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+          <TabsContent value="property-feed" className="space-y-6">
+            {/* Property Feed Header Card */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <Database className="h-6 w-6 text-blue-600" />
+                  <div>
+                    <CardTitle>Property Data Feed</CardTitle>
+                    <CardDescription>
+                      Rich real estate dataset with 428,576+ property sales records
+                    </CardDescription>
                   </div>
-                </CardContent>
-              </Card>
-
-              {/* Insight Stories */}
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <Lightbulb className="h-5 w-5 text-yellow-600" />
-                    <CardTitle>Insight Stories & Analysis Opportunities</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-6">
+                  {/* Quick stats */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-600">428K+</div>
+                      <div className="text-sm text-muted-foreground">Sales Records</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-600">1000+</div>
+                      <div className="text-sm text-muted-foreground">Suburbs</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-orange-600">8</div>
+                      <div className="text-sm text-muted-foreground">States/Territories</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-purple-600">4+</div>
+                      <div className="text-sm text-muted-foreground">Years of Data</div>
+                    </div>
                   </div>
-                  <CardDescription>
-                    Real-world analysis scenarios using the property data
-                  </CardDescription>
-                </CardHeader>
+
+                  {/* Feature cards with accordions */}
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {propertyFeedFeatures.map((feature, index) => (
+                      <Card key={index} className="border-l-4 border-l-blue-600">
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-3">
+                            {feature.icon}
+                            <div className="flex-1">
+                              <h3 className="font-semibold mb-1">{feature.title}</h3>
+                              <p className="text-sm text-muted-foreground mb-2">{feature.description}</p>
+                              <div className="space-y-1 mb-2">
+                                {feature.examples.map((example, idx) => (
+                                  <Badge key={idx} variant="outline" className="text-xs mr-1 mb-1">
+                                    {example}
+                                  </Badge>
+                                ))}
+                              </div>
+                              <Accordion type="single" collapsible className="w-full">
+                                <AccordionItem value="details" className="border-0">
+                                  <AccordionTrigger className="text-xs py-2 hover:no-underline">
+                                    View detailed attributes
+                                  </AccordionTrigger>
+                                  <AccordionContent>
+                                    <div className="space-y-2 text-xs">
+                                      {index === 0 && (
+                                        <>
+                                          <div className="flex justify-between">
+                                            <span className="font-medium">State</span>
+                                            <Badge variant="secondary" className="text-xs">NSW, VIC, QLD, WA, SA, TAS, ACT, NT</Badge>
+                                          </div>
+                                          <div className="flex justify-between">
+                                            <span className="font-medium">Suburb</span>
+                                            <Badge variant="secondary" className="text-xs">1000+ suburbs</Badge>
+                                          </div>
+                                          <div className="flex justify-between">
+                                            <span className="font-medium">Postcode</span>
+                                            <Badge variant="secondary" className="text-xs">Numeric codes</Badge>
+                                          </div>
+                                          <div className="flex justify-between">
+                                            <span className="font-medium">Combined Key</span>
+                                            <Badge variant="secondary" className="text-xs">State-Suburb-Postcode</Badge>
+                                          </div>
+                                        </>
+                                      )}
+                                      {index === 1 && (
+                                        <>
+                                          <div className="flex justify-between">
+                                            <span className="font-medium">Listed Price</span>
+                                            <Badge variant="secondary" className="text-xs">price_search</Badge>
+                                          </div>
+                                          <div className="flex justify-between">
+                                            <span className="font-medium">Sold Price</span>
+                                            <Badge variant="secondary" className="text-xs">price_search_sold</Badge>
+                                          </div>
+                                          <div className="flex justify-between">
+                                            <span className="font-medium">Price Premium</span>
+                                            <Badge variant="secondary" className="text-xs">Calculated difference</Badge>
+                                          </div>
+                                          <div className="flex justify-between">
+                                            <span className="font-medium">Financial Year</span>
+                                            <Badge variant="secondary" className="text-xs">2021-2024</Badge>
+                                          </div>
+                                        </>
+                                      )}
+                                      {index === 2 && (
+                                        <>
+                                          <div className="flex justify-between">
+                                            <span className="font-medium">Property Type</span>
+                                            <Badge variant="secondary" className="text-xs">House, Unit, Townhouse</Badge>
+                                          </div>
+                                          <div className="flex justify-between">
+                                            <span className="font-medium">Bedrooms</span>
+                                            <Badge variant="secondary" className="text-xs">1-6+ rooms</Badge>
+                                          </div>
+                                          <div className="flex justify-between">
+                                            <span className="font-medium">Bathrooms</span>
+                                            <Badge variant="secondary" className="text-xs">1-5+ rooms</Badge>
+                                          </div>
+                                          <div className="flex justify-between">
+                                            <span className="font-medium">Construction</span>
+                                            <Badge variant="secondary" className="text-xs">New vs Existing</Badge>
+                                          </div>
+                                        </>
+                                      )}
+                                      {index === 3 && (
+                                        <>
+                                          <div className="flex justify-between">
+                                            <span className="font-medium">Sale Type</span>
+                                            <Badge variant="secondary" className="text-xs">Private, Auction</Badge>
+                                          </div>
+                                          <div className="flex justify-between">
+                                            <span className="font-medium">Active Month</span>
+                                            <Badge variant="secondary" className="text-xs">Sale completion date</Badge>
+                                          </div>
+                                          <div className="flex justify-between">
+                                            <span className="font-medium">Channel</span>
+                                            <Badge variant="secondary" className="text-xs">Buy channel</Badge>
+                                          </div>
+                                          <div className="flex justify-between">
+                                            <span className="font-medium">Agency ID</span>
+                                            <Badge variant="secondary" className="text-xs">Hashed identifier</Badge>
+                                          </div>
+                                        </>
+                                      )}
+                                    </div>
+                                  </AccordionContent>
+                                </AccordionItem>
+                              </Accordion>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Panel B: Insight Stories */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="h-5 w-5 text-yellow-600" />
+                  <CardTitle>Insight Stories & Analysis Opportunities</CardTitle>
+                </div>
+                <CardDescription>
+                  Real-world analysis scenarios using the property data
+                </CardDescription>
+              </CardHeader>
                 <CardContent>
                   <div className="grid gap-6">
                     {/* Market Trends Story */}
@@ -447,21 +598,20 @@ export default function Insights() {
                   </div>
                 </CardContent>
               </Card>
-        </div>
 
-        {/* Data Visualisation ideas */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Data Visualisation ideas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="suburbs">Suburbs</TabsTrigger>
-                <TabsTrigger value="types">Property Types</TabsTrigger>
-                <TabsTrigger value="trends">Price Trends</TabsTrigger>
-                <TabsTrigger value="search">Search</TabsTrigger>
-              </TabsList>
+            {/* Panel C: Data Visualisation ideas */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Data Visualisation ideas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                  <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="suburbs">Suburbs</TabsTrigger>
+                    <TabsTrigger value="types">Property Types</TabsTrigger>
+                    <TabsTrigger value="trends">Price Trends</TabsTrigger>
+                    <TabsTrigger value="search">Search</TabsTrigger>
+                  </TabsList>
 
             <TabsContent value="suburbs" className="space-y-6">
             <Card>
@@ -696,9 +846,87 @@ export default function Insights() {
               </CardContent>
             </Card>
           </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="other-ideas" className="space-y-6">
+            {/* Other Ideas Tab */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Lightbulb className="h-6 w-6 text-yellow-600" />
+                  Popular App Categories
+                </CardTitle>
+                <CardDescription>
+                  Proven app concepts that solve real problems for everyday users
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {otherIdeas.map((idea, index) => (
+                    <Card key={index} className="border-l-4 border-l-green-600">
+                      <CardContent className="p-6">
+                        <div className="flex items-start gap-4">
+                          <div className="p-3 rounded-lg bg-gray-50">
+                            {idea.icon}
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="text-xl font-semibold mb-2">{idea.title}</h3>
+                            <p className="text-muted-foreground mb-4">{idea.description}</p>
+
+                            <div className="grid md:grid-cols-2 gap-4">
+                              <div>
+                                <h4 className="font-medium mb-2 text-green-700">Key Features</h4>
+                                <ul className="space-y-1">
+                                  {idea.features.map((feature, idx) => (
+                                    <li key={idx} className="text-sm text-muted-foreground flex items-start gap-2">
+                                      <CheckSquare className="h-3 w-3 text-green-600 mt-1 flex-shrink-0" />
+                                      {feature}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                              <div>
+                                <h4 className="font-medium mb-2 text-blue-700">Perfect For</h4>
+                                <ul className="space-y-1">
+                                  {idea.use_cases.map((use_case, idx) => (
+                                    <li key={idx} className="text-sm text-muted-foreground flex items-start gap-2">
+                                      <Users className="h-3 w-3 text-blue-600 mt-1 flex-shrink-0" />
+                                      {use_case}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* CTA for other ideas */}
+            <Card>
+              <CardContent className="p-6 text-center">
+                <h3 className="text-lg font-semibold mb-2">Ready to Build?</h3>
+                <p className="text-muted-foreground mb-4">
+                  These are just starting points! Mix, match, or create something entirely new.
+                </p>
+                <Button
+                  onClick={() => navigate('/onboarding/step/2')}
+                  size="lg"
+                >
+                  <Lightbulb className="h-4 w-4 mr-2" />
+                  Start Building My App
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
-          </CardContent>
-        </Card>
 
         {/* Back button at bottom */}
         <div className="mt-6">

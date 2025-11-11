@@ -310,7 +310,7 @@ git config --global user.email "jane.doe@email.com"`
         title: "Ideas and inspiration",
         content: "Get inspired with rich property data for real estate apps, or explore popular app concepts like household organizers, task managers, and reward systems. Click to see all the possibilities!",
         buttonText: "Inspo me",
-        buttonAction: "/inspiration"
+        buttonAction: "/insights"
       },
       prdTemplate: true
     }
