@@ -409,38 +409,6 @@ Start by:
         title: "Troubleshooting",
         subsections: [
           {
-            title: "⚠️ Common Pitfalls",
-            description: `**Avoid these common mistakes:**
-
-❌ **Using state=VIC in API calls**
-→ Returns empty results (API has mostly QLD data)
-✅ **Solution:** Omit the state parameter entirely
-
-❌ **Passing string prices directly to charts**
-→ Charts break or display incorrectly
-✅ **Solution:** Parse to numbers: Number(data.avg_price)
-
-❌ **Looking for "id" field in property objects**
-→ Field doesn't exist
-✅ **Solution:** Use listing_instance_id_hash instead
-
-❌ **Using "address" field**
-→ Field doesn't exist
-✅ **Solution:** Use suburb, state, and postcode fields
-
-❌ **Expecting capitalized property types like "House"**
-→ API returns lowercase values
-✅ **Solution:** Use lowercase: "house", "apartment", "townhouse"
-
-❌ **Looking for "sale_date" field**
-→ Field doesn't exist
-✅ **Solution:** Use active_month (ISO string)
-
-❌ **Using "price" field**
-→ Field doesn't exist
-✅ **Solution:** Use price_search (listing) or price_search_sold (actual)`
-          },
-          {
             title: "Error: \"401 Unauthorized\" or \"Invalid API key\"",
             description: `**Fix:**
 
