@@ -874,6 +874,40 @@ const ExtendOption = () => {
                                 {renderTextWithLinks(subSubsection.description)}
                               </p>
                             )}
+                            {subSubsection.templateTextbox && (
+                              <div className="mb-3">
+                                <textarea
+                                  value={templateText}
+                                  onChange={(e) => setTemplateText(e.target.value)}
+                                  className="w-full min-h-[600px] resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                />
+                              </div>
+                            )}
+                            {subSubsection.copyPromptButton && (
+                              <div className="mb-3 p-4">
+                                <div className="flex items-center gap-3">
+                                  <p className="flex-1 text-sm text-muted-foreground">Once you are happy with the prompt above, copy the prompt to paste it in your AI coding assistant</p>
+                                  <Button
+                                    variant="default"
+                                    size="sm"
+                                    onClick={() => copyToClipboard(templateText)}
+                                    className="shrink-0"
+                                  >
+                                    {copiedCommands.has(templateText) ? (
+                                      <>
+                                        <Check className="h-4 w-4 mr-2 text-white" />
+                                        Copied!
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Copy className="h-4 w-4 mr-2" />
+                                        Copy prompt
+                                      </>
+                                    )}
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
                             {isApiKeyMarker && (
                               <div className="mb-3 mt-3">
                                 <CopyableApiKey />
