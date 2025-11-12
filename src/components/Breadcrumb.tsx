@@ -6,6 +6,7 @@ import { logout } from "@/services/participant";
 import { toast } from "@/hooks/use-toast";
 import { clearProgress } from "@/utils/storage";
 import { canAccessStep, isPreWorkshopOnly, hasFullAccess } from "@/utils/featureFlags";
+import { useNavigate } from "react-router-dom";
 
 export interface Step {
   id: number;
@@ -19,11 +20,23 @@ interface BreadcrumbProps {
 }
 
 export const Breadcrumb = ({ steps, currentStep }: BreadcrumbProps) => {
-  const { resetProgress } = useWorkshopProgress();
+  const { resetProgress, progress } = useWorkshopProgress();
   const { clearParticipant, role } = useParticipant();
+  const navigate = useNavigate();
 
   // Filter steps based on role
   const visibleSteps = steps.filter(step => canAccessStep(step.id, role));
+
+  const handleStepClick = (stepId: number) => {
+    // Allow navigation to completed steps or current step
+    const isCompleted = progress.completedPages.includes(stepId);
+    const isCurrent = stepId === currentStep;
+
+    if (isCompleted || isCurrent) {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      navigate(`/onboarding/step/${stepId}`);
+    }
+  };
 
   const handleClearProgress = async () => {
     if (confirm("Are you sure you want to clear all progress and start over?")) {
@@ -65,13 +78,20 @@ export const Breadcrumb = ({ steps, currentStep }: BreadcrumbProps) => {
           </h2>
           <ol className="relative">
           {visibleSteps.map((step, index) => {
-            const isCompleted = step.id < currentStep;
+            const isCompleted = progress.completedPages.includes(step.id);
             const isCurrent = step.id === currentStep;
-            const isUpcoming = step.id > currentStep;
+            const isUpcoming = !isCompleted && !isCurrent;
+            const isClickable = isCompleted || isCurrent;
 
             return (
               <li key={step.id} className="relative animate-slide-in-left mb-5" style={{ animationDelay: `${index * 0.1}s` }}>
-                <div className="flex items-start gap-4">
+                <div
+                  className={cn(
+                    "flex items-start gap-4",
+                    isClickable && "cursor-pointer hover:opacity-80 transition-opacity"
+                  )}
+                  onClick={() => isClickable && handleStepClick(step.id)}
+                >
                   {/* Step indicator */}
                   <div
                     className={cn(
