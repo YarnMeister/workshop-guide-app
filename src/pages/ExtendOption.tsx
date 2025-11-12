@@ -190,81 +190,81 @@ const EXTEND_OPTIONS: Record<string, ExtendOption> = {
             commands: [
               `I need to replace the mock property data in my app with real API calls.
 
----
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-## API Configuration
+## 🔧 API Configuration
 
-- **Base URL:** https://workshop-guide-app.vercel.app
-- **Auth:** Bearer token using \`import.meta.env.VITE_WORKSHOP_API_KEY\` from .env.local
-- **Rate Limit:** 100 requests per minute
+• **Base URL:** https://workshop-guide-app.vercel.app
+• **Auth:** Bearer token using \`import.meta.env.VITE_WORKSHOP_API_KEY\` from .env.local
+• **Rate Limit:** 100 requests per minute
 
----
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ## ⚠️ CRITICAL DATA NOTES
 
-- The API primarily contains **Queensland (QLD)** data
-- Other states may return **empty results**
-- **OMIT the state parameter entirely** to get all available data
-- Many numeric fields (\`avg_price\`, \`median_price\`, \`total_sales\`) are returned as **STRINGS**
-- You **MUST parse them to numbers** before using in charts or calculations
+• The API primarily contains **Queensland (QLD)** data
+• Other states may return **empty results**
+• **OMIT the state parameter entirely** to get all available data
+• Many numeric fields (\`avg_price\`, \`median_price\`, \`total_sales\`) are returned as **STRINGS**
+• You **MUST parse them to numbers** before using in charts or calculations
 
----
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-## Available GET Endpoints
+## 📡 Available GET Endpoints
 
-### 1. Suburb Insights
+### 1️⃣ Suburb Insights
 \`\`\`
 GET /api/insights/suburbs?limit=20
 \`\`\`
-- **Optional params:** state, limit (default: 20)
-- **Returns:** Array of \`{ suburb, avg_price, median_price, total_sales }\`
-- **Note:** avg_price and median_price are strings - parse to numbers
+• **Optional params:** state, limit (default: 20)
+• **Returns:** Array of \`{ suburb, avg_price, median_price, total_sales }\`
+• **Note:** avg_price and median_price are strings - parse to numbers
 
-### 2. Property Type Insights
+### 2️⃣ Property Type Insights
 \`\`\`
 GET /api/insights/property-types
 \`\`\`
-- **Optional params:** state
-- **Returns:** Array of \`{ property_type, avg_price, median_price, total_sales }\`
-- **Note:** property_type values are lowercase (e.g., "house", "apartment")
+• **Optional params:** state
+• **Returns:** Array of \`{ property_type, avg_price, median_price, total_sales }\`
+• **Note:** property_type values are lowercase (e.g., "house", "apartment")
 
-### 3. Price Trends
+### 3️⃣ Price Trends
 \`\`\`
 GET /api/insights/price-trends?property_type=house&months=12
 \`\`\`
-- **Optional params:** state, property_type (default: "house"), months (default: 12)
-- **Returns:** Array of \`{ month, avg_price, total_sales }\`
-- **Note:** month is ISO string, avg_price is string
+• **Optional params:** state, property_type (default: "house"), months (default: 12)
+• **Returns:** Array of \`{ month, avg_price, total_sales }\`
+• **Note:** month is ISO string, avg_price is string
 
-### 4. Market Statistics
+### 4️⃣ Market Statistics
 \`\`\`
 GET /api/insights/market-stats
 \`\`\`
-- **Optional params:** state
-- **Returns:** \`{ total_sales, avg_price, median_price, total_suburbs, price_range: { min, max }, most_active_month }\`
+• **Optional params:** state
+• **Returns:** \`{ total_sales, avg_price, median_price, total_suburbs, price_range: { min, max }, most_active_month }\`
 
-### 5. Property Search
+### 5️⃣ Property Search
 \`\`\`
 GET /api/properties/search?limit=50&offset=0
 \`\`\`
-- **Optional params:** state, suburb, property_type, min_price, max_price, bedrooms, bathrooms, sale_type, year, limit (default: 50), offset (default: 0)
-- **Returns:** \`{ data: [...properties], total, limit, offset }\`
+• **Optional params:** state, suburb, property_type, min_price, max_price, bedrooms, bathrooms, sale_type, year, limit (default: 50), offset (default: 0)
+• **Returns:** \`{ data: [...properties], total, limit, offset }\`
 
 **Property object fields:**
-- \`listing_instance_id_hash\` (unique ID - NOT "id")
-- \`suburb\`, \`state\`, \`postcode\` (NO "address" field)
-- \`property_type\` (lowercase: "house", "apartment", "townhouse")
-- \`price_search\` (listing price), \`price_search_sold\` (actual sold price)
-- \`active_month\` (ISO string - NOT "sale_date")
-- \`bedrooms\`, \`bathrooms\`
-- \`sale_type\` ("Auction", "Private")
-- \`financial_year\`
+• \`listing_instance_id_hash\` (unique ID - NOT "id")
+• \`suburb\`, \`state\`, \`postcode\` (NO "address" field)
+• \`property_type\` (lowercase: "house", "apartment", "townhouse")
+• \`price_search\` (listing price), \`price_search_sold\` (actual sold price)
+• \`active_month\` (ISO string - NOT "sale_date")
+• \`bedrooms\`, \`bathrooms\`
+• \`sale_type\` ("Auction", "Private")
+• \`financial_year\`
 
 **All endpoints require:** \`Authorization: Bearer \${import.meta.env.VITE_WORKSHOP_API_KEY}\`
 
----
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-## TypeScript Type Definitions
+## 📝 TypeScript Type Definitions
 
 \`\`\`typescript
 interface SuburbInsight {
@@ -319,35 +319,42 @@ interface PropertySearchResponse {
 }
 \`\`\`
 
----
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-## Requirements
+## ✅ Requirements
 
-**1. Create src/services/propertyAPI.ts with:**
-   - Typed fetch functions for all 5 endpoints
-   - Proper error handling for:
-     * 401 Unauthorized (invalid API key)
-     * 429 Rate Limit Exceeded (too many requests)
-     * 500 Server Error (backend issues)
-   - Helper function to parse string numbers to actual numbers
+**1️⃣ Create src/services/propertyAPI.ts with:**
 
-**2. Find and update existing components with mock data:**
-   - Identify all files using mock/fake property data
-   - Replace mock data calls with real API calls from propertyAPI.ts
-   - Keep existing UI components and styling unchanged
-   - Maintain existing visualizations (charts, tables, cards)
+• Typed fetch functions for all 5 endpoints
+• Proper error handling for:
+  - 401 Unauthorized (invalid API key)
+  - 429 Rate Limit Exceeded (too many requests)
+  - 500 Server Error (backend issues)
+• Helper function to parse string numbers to actual numbers
 
-**3. Add proper data handling:**
-   - Individual loading states for each API call
-   - User-friendly error messages with dismissible alerts
-   - CRITICAL: Convert all string numeric values to numbers before passing to chart components
-     Example: \`Number(data.avg_price)\` or \`parseFloat(data.avg_price)\`
+**2️⃣ Find and update existing components with mock data:**
 
-**4. Data fetching strategy:**
-   - Start with NO state filter to get all available data (primarily QLD)
-   - Omit state parameter from API calls unless user specifically filters by state
+• Identify all files using mock/fake property data
+• Replace mock data calls with real API calls from propertyAPI.ts
+• Keep existing UI components and styling unchanged
+• Maintain existing visualizations (charts, tables, cards)
 
-**Start by:**
+**3️⃣ Add proper data handling:**
+
+• Individual loading states for each API call
+• User-friendly error messages with dismissible alerts
+• CRITICAL: Convert all string numeric values to numbers before passing to chart components
+  Example: \`Number(data.avg_price)\` or \`parseFloat(data.avg_price)\`
+
+**4️⃣ Data fetching strategy:**
+
+• Start with NO state filter to get all available data (primarily QLD)
+• Omit state parameter from API calls unless user specifically filters by state
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+## 🚀 Start by:
+
 1. Showing me which files have mock data
 2. Creating the API service file with proper TypeScript types
 3. Replacing mock data with real API calls in existing components`
