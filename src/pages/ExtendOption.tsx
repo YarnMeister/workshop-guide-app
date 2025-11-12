@@ -172,32 +172,6 @@ const EXTEND_OPTIONS: Record<string, ExtendOption> = {
 - The .env.local file is a secure "wallet" where you can save sensitive data, the system retrieves these values securely without revealing it to the AI assitant.
 
 - Please ensure the .env.local file is SAVED, just because you can see the value on screen does not mean it's saved. Unsaved files will result in a critical connection failure.`
-          },
-          {
-            title: "4. Example: Fetching and Parsing Data",
-            description: `Here's how to properly fetch and parse API data:`,
-            codeBlock: `// Example: Fetch suburb data
-const response = await fetch(
-  'https://workshop-guide-app.vercel.app/api/insights/suburbs?limit=10',
-  {
-    headers: {
-      'Authorization': \`Bearer \${import.meta.env.VITE_WORKSHOP_API_KEY}\`
-    }
-  }
-);
-
-const suburbs = await response.json();
-
-// ⚠️ CRITICAL: Parse string numbers before using in charts
-const parsedSuburbs = suburbs.map(s => ({
-  ...s,
-  avg_price: Number(s.avg_price),
-  median_price: Number(s.median_price),
-  total_sales: Number(s.total_sales)
-}));
-
-// Now safe to use in charts
-<BarChart data={parsedSuburbs} ... />`
           }
         ]
       },
