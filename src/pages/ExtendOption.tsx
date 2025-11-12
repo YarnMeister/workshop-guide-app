@@ -189,7 +189,7 @@ const EXTEND_OPTIONS: Record<string, ExtendOption> = {
           },
           {
             title: "2.2 Review and Copy the API Integration Prompt",
-            description: `Review the auto-generated prompt below and copy it to paste into your AI coding assistant (Cursor, Windsurf, or Void):`,
+            description: `Review the draft prompt below and copy it to paste into your AI chat window:`,
             templateTextbox: true,
             templateContent: `I need to replace the mock property data in my app with real API calls.
 
@@ -601,7 +601,7 @@ Start by:
           },
           {
             title: "2.2 Review and Copy the AI Integration Prompt",
-            description: `Review the auto-generated prompt below and copy it to paste into your AI coding assistant (Cursor, Windsurf, or Void):`,
+            description: `Review the draft prompt below and copy it to paste into your AI chat window:`,
             templateTextbox: true,
             templateContent: `Update the app to make a call to an AI assistant to: (objective)
 
