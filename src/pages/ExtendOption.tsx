@@ -540,7 +540,7 @@ Start by:
           {
             title: "1. Find or create Environment Variable File",
             description: `In your project root, find or create the file \`.env.local\`:`,
-            screenshot: "env-local.png"
+            screenshot: "env-local-ai.png"
           },
           {
             title: "",
