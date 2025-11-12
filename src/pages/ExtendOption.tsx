@@ -335,7 +335,7 @@ Requirements
 
 Start by:
 
-1. Showing me which files have mock data
+1. Doing a comprehensive review of the code and determine all mock data used in the app
 2. Creating the API service file with proper TypeScript types
 3. Replacing mock data with real API calls in existing components`
           },
