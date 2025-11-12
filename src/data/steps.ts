@@ -61,10 +61,10 @@ Windows: Run the installer and follow the prompts`,
         },
         {
           title: "Install Command Line Tools",
-          description: "Learn how to access Terminal/Command Prompt and install development tools.",
+          description: "Don't know where to find Terminal (Mac) or Command Prompt (Windows)?",
           subsections: [
             {
-              title: "Don't know where to find Terminal (Command Prompt on Windows)?",
+              title: "",
               codeBlock: `Watch these quick videos:
 
 Mac users: How to open Terminal - https://www.youtube.com/watch?v=PT4607L5xho
@@ -124,29 +124,8 @@ When done, close and reopen Terminal`,
                     description: `If your terminal can't find Git or Node.js, follow these steps:`
                   },
                   {
-                    title: "Option 1 — Quick check (most common fix)",
-                    description: `Open a NEW Terminal.
-
-Run these commands to verify if they're already in your PATH:`,
-                    commands: [
-                      "git --version",
-                      "node --version"
-                    ]
-                  },
-                  {
-                    title: "Option 2 — Add them manually",
-                    description: `If both return version numbers — you're good to go 🎉
-
-If not, continue below.
-
-Depending on how you installed Git and Node.js, their binaries might live in one of these directories:
-
-/usr/local/bin
-/opt/homebrew/bin
-
-1. Open your shell config file
-
-Depending on your macOS setup, open one of:`,
+                    title: "1. Open your shell config file",
+                    description: `Depending on your macOS setup, open one of:`,
                     commands: [
                       "open -e ~/.zshrc      # for macOS Catalina and later (default shell)",
                       "open -e ~/.bash_profile   # for older versions"
