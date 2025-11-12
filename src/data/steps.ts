@@ -911,17 +911,17 @@ Any future merge to main (via AI assisted prompts) in GitHub will trigger a fres
       sections: [
         {
           title: "Integrate property listing data using our API",
-          description: "If your prototype needs our property listing data then you'll want to do this step next",
+          description: "If you created your prototype with property listing data then you can pull in live data (instead of mock data) following this step next",
           seeMoreRoute: "/extend/integrate-api"
         },
         {
           title: "Add an AI Assistant in your app workflow",
-          description: "Adding AI magic to your prototype is easy as 1-2-3, come in to see more...",
+          description: "You can easily get ChatGPT to interact with any part of your app to do custom GenAI processing following this step",
           seeMoreRoute: "/extend/add-ai-assistant"
         },
         {
           title: "Add a Database",
-          description: "Watch our short video for getting started with your own permanent storage solution.",
+          description: "ADVANCED FEATURE: You could extend your app to have a login flow and individual user experiences. For this you'll need to provide your AI assistant with access to a full database. Follow this step to learn how",
           seeMoreRoute: "/extend/add-database"
         }
       ]
