@@ -193,15 +193,11 @@ const EXTEND_OPTIONS: Record<string, ExtendOption> = {
             templateTextbox: true,
             templateContent: `I need to replace the mock property data in my app with real API calls.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 API Configuration
 
 • Base URL: https://workshop-guide-app.vercel.app
 • Auth: Bearer token using import.meta.env.VITE_WORKSHOP_API_KEY from .env.local
 • Rate Limit: 100 requests per minute
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ⚠️ CRITICAL DATA NOTES
 
@@ -210,8 +206,6 @@ API Configuration
 • OMIT the state parameter entirely to get all available data
 • Many numeric fields (avg_price, median_price, total_sales) are returned as STRINGS
 • You MUST parse them to numbers before using in charts or calculations
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Available GET Endpoints
 
@@ -259,8 +253,6 @@ Available GET Endpoints
    • financial_year
 
    All endpoints require: Authorization: Bearer \${import.meta.env.VITE_WORKSHOP_API_KEY}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 TypeScript Type Definitions
 
@@ -315,8 +307,6 @@ interface PropertySearchResponse {
   offset: number;
 }
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 Requirements
 
 1. Create src/services/propertyAPI.ts with:
@@ -342,8 +332,6 @@ Requirements
 4. Data fetching strategy:
    • Start with NO state filter to get all available data (primarily QLD)
    • Omit state parameter from API calls unless user specifically filters by state
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Start by:
 
