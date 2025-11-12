@@ -664,7 +664,7 @@ Code snippets showing the changes`
             },
             {
               title: "⚠️ Tip",
-              description: `While you are unlikely to be able to understand any of the above, it is worth paying attention to catch obvious mistakes. AI code assistants often goes off track and it's not hard to spot. Don't hesitate to hit the STOP button and redirecting the assistant back on track.`
+              description: `You are unlikely to understand much of what the AI assistant does, but it's worth paying attention to catch obvious mistakes. AI code assistants often goes off track and it's not hard to spot. Don't hesitate to hit the STOP button and redirecting the assistant with clearer directions.`
             },
             {
               title: "Make Additional Changes",
