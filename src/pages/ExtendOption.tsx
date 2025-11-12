@@ -861,6 +861,23 @@ Start by:
             ]
           }
         ]
+      },
+      {
+        title: "Optional: Add Basic Access Control",
+        description: `You could also try this if you are close to sharing your prototype with others:`,
+        subsections: [
+          {
+            title: "In AI Chat Window",
+            description: `Type this command in the AI chat window in Void Editor:`,
+            commands: [
+              "Add the following user and pass codes in a new table and add basic session validation to ensure only these users with valid codes can access the app:\nUser name, passcode\nUser name, passcode"
+            ]
+          }
+        ]
+      },
+      {
+        title: "",
+        description: `**Note:** This is a lightweight security system to allow a whitelist of users to access your app securely. It's not a full authentication/login flow. This is much more complicated which we won't cover in this workshop.`
       }
     ]
   }
