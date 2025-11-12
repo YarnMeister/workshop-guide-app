@@ -524,7 +524,325 @@ Start by:
   },
   "add-ai-assistant": {
     title: "Add an AI Assistant in your app workflow",
-    content: "Detailed instructions for adding an AI Assistant to your app workflow will be added here."
+    heading: "Add AI Assistant Capability",
+    subsections: [
+      {
+        title: "What You'll Do",
+        description: `1. Add your API key to the environment file
+
+2. Ask your AI assistant to add AI capability in the app
+
+3. Test the updated flow/page with the new AI feature`
+      },
+      {
+        title: "Add Your API Key",
+        subsections: [
+          {
+            title: "1. Find or create Environment Variable File",
+            description: `In your project root, find or create the file \`.env.local\`:`,
+            screenshot: "env-local.png"
+          },
+          {
+            title: "",
+            description: `If the file does not exist, right-click in the "whitespace" and select "Add new file" and then name the file: .env.local (it starts with a dot)`
+          },
+          {
+            title: "2. Add Your API Key",
+            description: `Copy and paste the following variable into the .env.local file:`,
+            commands: [
+              'VITE_OPEN_ROUTER_API_KEY='
+            ]
+          },
+          {
+            title: "",
+            description: `Next, copy your personal API key and paste the value after the '=' on the same line as the VITE_OPEN_ROUTER_API_KEY=`
+          },
+          {
+            title: "",
+            description: `Your OpenRouter API key should start with \`sk-or-v1-\``
+          },
+          {
+            title: "⚠️ Important Notes",
+            description: `- Don't add quotes around the key
+
+- Make sure there are no spaces before or after the \`=\`
+
+- The file should be in the same folder as \`package.json\``
+          },
+          {
+            title: "3. Verify Environment File",
+            description: `Your \`.env.local\` file should look something like this:`,
+            screenshot: "env-local-ai.png",
+            subsections: [
+              {
+                title: "",
+                description: `✅ Save the file`
+              }
+            ]
+          },
+          {
+            title: "⚠️ Important Notes",
+            description: `- Don't ever paste your API key in the AI Chat window, this is a serious security breach
+
+- The .env.local file is a secure "wallet" where you can save sensitive data, the system retrieves these values securely without revealing it to the AI assistant.
+
+- Please ensure the .env.local file is SAVED, just because you can see the value on screen does not mean it's saved. Unsaved files will result in a critical connection failure.`
+          }
+        ]
+      },
+      {
+        title: "Update Your Code with AI",
+        subsections: [
+          {
+            title: "2.1 Stop Your Dev Server",
+            description: `If your app is running (\`npm run dev\`), stop it:
+
+- Press \`Ctrl + C\` in the terminal`
+          },
+          {
+            title: "2.2 Review and Copy the AI Integration Prompt",
+            description: `Review the auto-generated prompt below and copy it to paste into your AI coding assistant (Cursor, Windsurf, or Void):`,
+            templateTextbox: true,
+            templateContent: `Update the app to make a call to an AI assistant to: (objective)
+
+The AI assistant will: (describe how it adds value)
+
+The response should: (describe how the AI output should be used in the app)
+
+API Configuration
+
+• Base URL: https://openrouter.ai/api/v1/chat/completions
+• Auth: Bearer token using import.meta.env.VITE_OPEN_ROUTER_API_KEY from .env.local
+• Model: anthropic/claude-3.5-sonnet
+• Rate Limit: Varies by plan (check OpenRouter dashboard)
+
+TypeScript Type Definitions
+
+interface AIMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
+
+interface AIRequest {
+  model: string;
+  messages: AIMessage[];
+  temperature?: number;
+  max_tokens?: number;
+}
+
+interface AIResponse {
+  id: string;
+  model: string;
+  choices: Array<{
+    message: {
+      role: string;
+      content: string;
+    };
+    finish_reason: string;
+  }>;
+  usage: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  };
+}
+
+Requirements
+
+1. Create src/services/aiService.ts with:
+   • Typed function for calling OpenRouter API
+   • Proper error handling and retry logic
+   • TypeScript interfaces for request/response
+   • Function signature: async callAI(messages: AIMessage[]): Promise<string>
+
+2. Update the relevant component to:
+   • Import and call the AI service when needed
+   • Show loading state while AI processes (spinner or skeleton)
+   • Display AI response appropriately in the UI
+   • Handle errors gracefully with user-friendly messages
+
+3. User experience:
+   • Clear visual indication when AI is processing
+   • Smooth integration into existing workflow
+   • Helpful error messages if AI call fails
+   • Consider adding a retry button for failed requests
+
+4. Security:
+   • Never expose API key in client-side code
+   • Always use import.meta.env.VITE_OPEN_ROUTER_API_KEY
+   • Validate user input before sending to AI
+
+Start by:
+
+1. Doing a comprehensive review of the code and determine where AI capability should be added
+2. Creating the AI service file with proper TypeScript types and error handling
+3. Integrating AI calls into the appropriate component with loading states`
+          },
+          {
+            title: "Copy prompt",
+            copyPromptButton: true
+          },
+          {
+            title: "2.3 Follow AI Instructions",
+            description: `Your AI assistant will:
+
+1. Identify where to add AI capability
+
+2. Create/update an AI service file
+
+3. Integrate AI calls into your component
+
+4. Add loading states and error handling`
+          }
+        ]
+      },
+      {
+        title: "Test Your App",
+        subsections: [
+          {
+            title: "3.1 Restart Dev Server",
+            description: `In your terminal:`,
+            commands: [
+              "npm run dev"
+            ]
+          },
+          {
+            title: "3.2 Check for Errors",
+            description: `- ❌ If you see errors, read them carefully and share with AI assistant`
+          },
+          {
+            title: "3.3 Open in Browser",
+            description: `1. Copy the localhost URL from terminal
+
+2. Paste into your browser
+
+3. Open browser DevTools (F12 or Right-click → Inspect)
+
+4. Go to the **Console** tab`
+          },
+          {
+            title: "3.4 Test the AI Feature",
+            description: `Trigger the AI functionality:
+
+- ✅ Loading indicator appears when AI is processing
+
+- ✅ AI response displays after a few seconds
+
+- ✅ Response is relevant and makes sense
+
+- ❌ Console shows red errors → see Troubleshooting below`
+          },
+          {
+            title: "3.5 Verify AI Responses",
+            description: `Check the quality:
+
+- Try different inputs to test AI behavior
+
+- Verify responses are formatted correctly
+
+- Check that errors are handled gracefully
+
+- Test edge cases (empty input, very long input)`
+          }
+        ]
+      },
+      {
+        title: "Troubleshooting",
+        subsections: [
+          {
+            title: "Error: \"401 Unauthorized\" or \"Invalid API key\"",
+            description: `**Fix:**
+
+1. Check \`.env.local\` has correct key (starts with \`sk-or-v1-\`)
+
+2. No typos, no quotes, no spaces around the \`=\`
+
+3. Restart dev server (\`Ctrl+C\`, then \`npm run dev\`)
+
+**Still broken?** Ask AI assistant:`,
+            commands: [
+              "I'm getting a 401 error. Can you verify the Authorization header is correctly using import.meta.env.VITE_OPEN_ROUTER_API_KEY?"
+            ]
+          },
+          {
+            title: "Error: \"429 Rate Limit Exceeded\"",
+            description: `**Fix:**
+
+1. Wait 60 seconds before trying again
+
+2. Check your OpenRouter dashboard for rate limits
+
+3. Consider upgrading your OpenRouter plan
+
+**Ask AI assistant:**`,
+            commands: [
+              "Add rate limiting protection to prevent hitting API limits. Add a cooldown period between requests."
+            ]
+          },
+          {
+            title: "AI Responses Are Slow",
+            description: `**This is normal!**
+
+- AI processing typically takes 2-10 seconds
+
+- Longer prompts = longer processing time
+
+- Make sure loading indicator is visible to users
+
+**To improve:**`,
+            commands: [
+              "Add a more prominent loading indicator and estimated time message while AI processes."
+            ]
+          },
+          {
+            title: "AI Responses Don't Make Sense",
+            description: `**Fix:**
+
+1. Check the prompt/messages being sent to AI
+
+2. Make sure you're providing enough context
+
+3. Verify the system message is clear
+
+**Ask AI assistant:**`,
+            commands: [
+              "The AI responses aren't relevant. Can you improve the prompt to provide better context and instructions?"
+            ]
+          },
+          {
+            title: "Error: \"Network request failed\" or CORS error",
+            description: `**Fix:**
+
+1. Check you're using the correct base URL: \`https://openrouter.ai/api/v1/chat/completions\`
+
+2. Verify API key is valid (check OpenRouter dashboard)
+
+**Ask AI assistant:**`,
+            commands: [
+              "I'm getting CORS or network errors. Can you verify the fetch requests are using the correct OpenRouter API endpoint and headers?"
+            ]
+          },
+          {
+            title: "Environment Variable Not Loading",
+            description: `**Symptoms:**
+
+- Console shows \`undefined\` for API key
+
+- 401 errors even though key is correct
+
+**Fix:**
+
+1. Verify \`.env.local\` filename (not \`.env.local.txt\`)
+
+2. Verify it's in project root (same folder as \`package.json\`)
+
+3. **Restart dev server** (environment variables only load on startup)
+
+4. Check the variable name is exactly \`VITE_OPEN_ROUTER_API_KEY\` (required for Vite projects)`
+          }
+        ]
+      }
+    ]
   },
   "add-database": {
     title: "Provisioning a Database in Vercel",
