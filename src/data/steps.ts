@@ -134,7 +134,9 @@ When done, close and reopen Terminal`,
                   {
                     title: "2. Add PATH to config file",
                     description: `Add the following line at the bottom of the file that opened. Then save and close the file.`,
-                    codeBlock: `export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"`
+                    commands: [
+                      `export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"`
+                    ]
                   },
                   {
                     title: "3. Reload and confirm setup",
