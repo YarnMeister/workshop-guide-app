@@ -172,6 +172,32 @@ const EXTEND_OPTIONS: Record<string, ExtendOption> = {
 - The .env.local file is a secure "wallet" where you can save sensitive data, the system retrieves these values securely without revealing it to the AI assitant.
 
 - Please ensure the .env.local file is SAVED, just because you can see the value on screen does not mean it's saved. Unsaved files will result in a critical connection failure.`
+          },
+          {
+            title: "4. Example: Fetching and Parsing Data",
+            description: `Here's how to properly fetch and parse API data:`,
+            codeBlock: `// Example: Fetch suburb data
+const response = await fetch(
+  'https://workshop-guide-app.vercel.app/api/insights/suburbs?limit=10',
+  {
+    headers: {
+      'Authorization': \`Bearer \${import.meta.env.VITE_WORKSHOP_API_KEY}\`
+    }
+  }
+);
+
+const suburbs = await response.json();
+
+// ⚠️ CRITICAL: Parse string numbers before using in charts
+const parsedSuburbs = suburbs.map(s => ({
+  ...s,
+  avg_price: Number(s.avg_price),
+  median_price: Number(s.median_price),
+  total_sales: Number(s.total_sales)
+}));
+
+// Now safe to use in charts
+<BarChart data={parsedSuburbs} ... />`
           }
         ]
       },
@@ -192,37 +218,135 @@ const EXTEND_OPTIONS: Record<string, ExtendOption> = {
 
 API Configuration:
 - Base URL: https://workshop-guide-app.vercel.app
-- Auth: Bearer token from environment variable
-- My API key is stored in .env.local and accessed in code via: import.meta.env.VITE_WORKSHOP_API_KEY
+- Auth: Bearer token using import.meta.env.VITE_WORKSHOP_API_KEY from .env.local
+- Rate Limit: 100 requests per minute
 
-Available Endpoints (all use GET requests):
-1. /api/insights/suburbs?state=VIC&limit=20
+⚠️ CRITICAL DATA NOTES:
+- The API primarily contains Queensland (QLD) data
+- Other states may return empty results
+- OMIT the state parameter entirely to get all available data
+- Many numeric fields (avg_price, median_price, total_sales) are returned as STRINGS
+- You MUST parse them to numbers before using in charts or calculations
+
+Available GET Endpoints:
+
+1. /api/insights/suburbs?limit=20
+   Optional params: state, limit (default: 20)
    Returns: Array of { suburb, avg_price, median_price, total_sales }
+   Note: avg_price and median_price are strings - parse to numbers
 
-2. /api/insights/property-types?state=VIC
+2. /api/insights/property-types
+   Optional params: state
    Returns: Array of { property_type, avg_price, median_price, total_sales }
+   Note: property_type values are lowercase (e.g., "house", "apartment")
 
-3. /api/insights/price-trends?state=VIC&property_type=House&months=12
+3. /api/insights/price-trends?property_type=house&months=12
+   Optional params: state, property_type (default: "house"), months (default: 12)
    Returns: Array of { month, avg_price, total_sales }
+   Note: month is ISO string, avg_price is string
 
-4. /api/insights/market-stats?state=VIC
-   Returns: { total_sales, avg_price, median_price, total_suburbs, price_range, most_active_month }
+4. /api/insights/market-stats
+   Optional params: state
+   Returns: { total_sales, avg_price, median_price, total_suburbs, price_range: { min, max }, most_active_month }
 
-5. /api/properties/search?state=VIC&limit=50&offset=0
+5. /api/properties/search?limit=50&offset=0
+   Optional params: state, suburb, property_type, min_price, max_price, bedrooms, bathrooms, sale_type, year, limit (default: 50), offset (default: 0)
    Returns: { data: [...properties], total, limit, offset }
 
-Rate Limit: 100 requests/minute
+   Property object fields:
+   - listing_instance_id_hash (unique ID - NOT "id")
+   - suburb, state, postcode (NO "address" field)
+   - property_type (lowercase: "house", "apartment", "townhouse")
+   - price_search (listing price), price_search_sold (actual sold price)
+   - active_month (ISO string - NOT "sale_date")
+   - bedrooms, bathrooms
+   - sale_type ("Auction", "Private")
+   - financial_year
+
 All endpoints require: Authorization: Bearer \${import.meta.env.VITE_WORKSHOP_API_KEY}
 
-Tasks:
-1. Find all files using mock/fake property data
-2. Create or update src/services/propertyAPI.ts with fetch functions for each endpoint
-3. Add proper error handling for 401 (bad auth), 429 (rate limit), and 500 (server error)
-4. Update components to use the real API instead of mock data
-5. Add loading states while data fetches
-6. Keep existing UI components and styling unchanged
+TypeScript Type Definitions:
 
-Start by showing me which files have mock data, then implement the changes.`
+interface SuburbInsight {
+  suburb: string;
+  avg_price: number;  // Parse from string
+  median_price: number;  // Parse from string
+  total_sales: number;  // Parse from string
+}
+
+interface PropertyTypeInsight {
+  property_type: string;  // Lowercase: "house", "apartment", etc.
+  avg_price: number;  // Parse from string
+  median_price: number;  // Parse from string
+  total_sales: number;  // Parse from string
+}
+
+interface PriceTrend {
+  month: string;  // ISO date string
+  avg_price: number;  // Parse from string
+  total_sales: number;  // Parse from string
+}
+
+interface MarketStats {
+  total_sales: number;
+  avg_price: number;
+  median_price: number;
+  total_suburbs: number;
+  price_range: { min: number; max: number };
+  most_active_month: string;
+}
+
+interface PropertyListing {
+  listing_instance_id_hash: string;  // Unique ID
+  suburb: string;
+  state: string;
+  postcode: string;
+  property_type: 'house' | 'apartment' | 'townhouse';  // Lowercase
+  price_search: number;  // Listing price
+  price_search_sold: number;  // Sold price
+  active_month: string;  // ISO date string
+  bedrooms: number;
+  bathrooms: number;
+  sale_type: 'Auction' | 'Private';
+  financial_year: number;
+}
+
+interface PropertySearchResponse {
+  data: PropertyListing[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+Requirements:
+
+1. Create src/services/propertyAPI.ts with:
+   - Typed fetch functions for all 5 endpoints
+   - Proper error handling for:
+     * 401 Unauthorized (invalid API key)
+     * 429 Rate Limit Exceeded (too many requests)
+     * 500 Server Error (backend issues)
+   - Helper function to parse string numbers to actual numbers
+
+2. Create a NEW page component (e.g., src/pages/PropertyData.tsx) with:
+   - One distinct visualization for each API endpoint:
+     * Market Stats: Cards showing key metrics
+     * Property Types: Pie chart
+     * Price Trends: Line chart
+     * Suburbs: Bar chart (top 10)
+     * Property Listings: Table with pagination
+   - Individual loading states for each API call
+   - User-friendly error messages with dismissible alerts
+   - Back button to return to main dashboard
+
+3. Update routing configuration to include the new page
+
+4. CRITICAL: Convert all string numeric values to numbers before passing to chart components
+   Example: Number(data.avg_price) or parseFloat(data.avg_price)
+
+5. Start with NO state filter to get all available data (primarily QLD)
+
+Start by creating the API service file with proper TypeScript types, then build the visualization page.`
             ]
           },
           {
@@ -290,6 +414,38 @@ Start by showing me which files have mock data, then implement the changes.`
       {
         title: "Troubleshooting",
         subsections: [
+          {
+            title: "⚠️ Common Pitfalls",
+            description: `**Avoid these common mistakes:**
+
+❌ **Using state=VIC in API calls**
+→ Returns empty results (API has mostly QLD data)
+✅ **Solution:** Omit the state parameter entirely
+
+❌ **Passing string prices directly to charts**
+→ Charts break or display incorrectly
+✅ **Solution:** Parse to numbers: Number(data.avg_price)
+
+❌ **Looking for "id" field in property objects**
+→ Field doesn't exist
+✅ **Solution:** Use listing_instance_id_hash instead
+
+❌ **Using "address" field**
+→ Field doesn't exist
+✅ **Solution:** Use suburb, state, and postcode fields
+
+❌ **Expecting capitalized property types like "House"**
+→ API returns lowercase values
+✅ **Solution:** Use lowercase: "house", "apartment", "townhouse"
+
+❌ **Looking for "sale_date" field**
+→ Field doesn't exist
+✅ **Solution:** Use active_month (ISO string)
+
+❌ **Using "price" field**
+→ Field doesn't exist
+✅ **Solution:** Use price_search (listing) or price_search_sold (actual)`
+          },
           {
             title: "Error: \"401 Unauthorized\" or \"Invalid API key\"",
             description: `**Fix:**
