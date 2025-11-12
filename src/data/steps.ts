@@ -668,13 +668,11 @@ Code snippets showing the changes`
             },
             {
               title: "Make Additional Changes",
-              description: `You can continue requesting changes in the same chat:
+              description: `You can continue requesting changes in the same chat:`,
+              codeBlock: `Actually, make that button green instead of blue
 
-Actually, make that button green instead of blue
-
-Also add my company logo to the header
-
-The AI will keep making changes to your feature branch until you're ready to test.`
+Also add my company logo to the header`,
+              additionalInstructions: `The AI will keep making changes to your feature branch until you're ready to test.`
             },
             {
               title: "What's Actually Happening",
