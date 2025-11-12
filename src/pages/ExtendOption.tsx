@@ -876,8 +876,8 @@ Start by:
         ]
       },
       {
-        title: "",
-        description: `**Note:** This is a lightweight security system to allow a whitelist of users to access your app securely. It's not a full authentication/login flow. This is much more complicated which we won't cover in this workshop.`
+        title: "⚠️ Important",
+        description: `This is a lightweight security system to allow a whitelist of users to access your app securely. It's not a full authentication/login flow. This is much more complicated which we won't cover in this workshop.`
       }
     ]
   }
