@@ -4,6 +4,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Check } from "lucide-react";
 import { PRDAnswers } from "@/utils/storage";
+import { sanitizeInput, checkSanitizationImpact } from "@/utils/textSanitizer";
+import { useToast } from "@/hooks/use-toast";
 
 interface PRDFormProps {
   answers: PRDAnswers;
@@ -12,6 +14,7 @@ interface PRDFormProps {
 
 export const PRDForm = ({ answers, onUpdate }: PRDFormProps) => {
   const [localAnswers, setLocalAnswers] = useState<PRDAnswers>(answers);
+  const { toast } = useToast();
 
   // Update local state when answers prop changes
   useEffect(() => {
@@ -19,11 +22,26 @@ export const PRDForm = ({ answers, onUpdate }: PRDFormProps) => {
   }, [answers]);
 
   const updateAnswer = (section: keyof PRDAnswers, field: string, value: string) => {
+    // Sanitize input to remove markdown formatting from pasted content
+    const sanitizedValue = sanitizeInput(value);
+
+    // Check if significant content was removed during sanitization
+    const { shouldWarn, percentRemoved } = checkSanitizationImpact(value, sanitizedValue);
+
+    // Show warning if mostly formatting was pasted with little actual content
+    if (shouldWarn && value.length > 20) {
+      toast({
+        title: "Formatting Removed",
+        description: `Cleaned ${percentRemoved}% formatting from pasted text. Please ensure your answer contains meaningful content.`,
+        variant: "default",
+      });
+    }
+
     const newAnswers = {
       ...localAnswers,
       [section]: {
         ...localAnswers[section],
-        [field]: value,
+        [field]: sanitizedValue,
       },
     };
     setLocalAnswers(newAnswers);
