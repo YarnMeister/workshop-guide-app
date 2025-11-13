@@ -383,7 +383,8 @@ const OnboardingStep = () => {
       const prdFormatted = formatPRDForAI(progress.prdAnswers);
 
       // Check if there's any content to process
-      if (!prdFormatted.trim() || prdFormatted === "# Mini PRD\n\n") {
+      // formatPRDForAI returns "# Mini PRD" (trimmed) when empty
+      if (!prdFormatted.trim() || prdFormatted.trim() === "# Mini PRD") {
         toast({
           title: "No Content",
           description: "Please fill out at least one section before proceeding.",
