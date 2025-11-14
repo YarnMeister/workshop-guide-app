@@ -30,6 +30,18 @@ const OnboardingStep = () => {
   const { progress, updateProgress, updateTodoStatus } = useWorkshopProgress();
   const { name, apiKeyMasked, apiKey, setApiKey, isAuthenticated, isLoading: participantLoading, participantId, role } = useParticipant();
 
+  // Unicode-safe hash function for cache keys
+  // Replaces btoa() which fails on emoji and special characters
+  const createHash = (str: string): string => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash).toString(36).slice(0, 50);
+  };
+
   const currentStep = ONBOARDING_STEPS.find(step => step.id === currentStepNumber);
 
   // Scroll to top when step changes
@@ -310,7 +322,7 @@ const OnboardingStep = () => {
         // Check cache for this PRD content
         const prdFormatted = formatPRDForAI(progress.prdAnswers);
         if (prdFormatted.trim() && prdFormatted !== "# Mini PRD\n\n") {
-          const prdHash = btoa(prdFormatted).slice(0, 50);
+          const prdHash = createHash(prdFormatted);
           // Use the same cache key format as in handleCTA to ensure correct prompt is loaded
           const cacheKey = `lovablePrompt_${prdHash}_${progress.willUsePropertyData ? 'api' : 'standard'}`;
           const cachedPrompt = localStorage.getItem(cacheKey);
@@ -416,7 +428,7 @@ const OnboardingStep = () => {
 
       // Generate a simple hash of the PRD content to use as cache key
       // Include property data selection in cache key to ensure different prompts are cached separately
-      const prdHash = btoa(prdFormatted).slice(0, 50);
+      const prdHash = createHash(prdFormatted);
       const cacheKey = `lovablePrompt_${prdHash}_${progress.willUsePropertyData ? 'api' : 'standard'}`;
 
       // Check if we already have a cached prompt for this PRD content
