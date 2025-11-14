@@ -111,14 +111,35 @@ const OnboardingStep = () => {
       } else {
         newSet.add(stepIndex);
       }
-      
+
       // Save to localStorage for Setup page
       if (currentStepNumber === 1) {
         updateTodoStatus(stepIndex, newSet.has(stepIndex));
       }
-      
+
       return newSet;
     });
+  };
+
+  // Complete all steps at once - useful for testing and repeat training
+  const completeAllSteps = () => {
+    if (currentStepNumber === 1 && currentStep.detailedContent?.sections) {
+      const totalSteps = currentStep.detailedContent.sections.length;
+      const newCompletedSteps = new Set<number>();
+
+      // Add all step indices to the set
+      for (let i = 0; i < totalSteps; i++) {
+        newCompletedSteps.add(i);
+        updateTodoStatus(i, true);
+      }
+
+      setCompletedSteps(newCompletedSteps);
+
+      toast({
+        title: "All Steps Completed! ✅",
+        description: `Marked all ${totalSteps} steps as done. You can now proceed to the next page.`,
+      });
+    }
   };
 
   // Component for copyable commands
@@ -957,7 +978,19 @@ const OnboardingStep = () => {
             {/* Summary Section - Only show on Setup Tools page (step 1) */}
             {currentStepNumber === 1 && (
               <div className="mb-8 rounded-lg border bg-card p-6">
-                <h2 className="mb-4 font-semibold text-lg">Progress Summary</h2>
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="font-semibold text-lg">Progress Summary</h2>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={completeAllSteps}
+                    disabled={allStepsCompleted}
+                    className="gap-2"
+                  >
+                    <Check className="h-4 w-4" />
+                    Complete All
+                  </Button>
+                </div>
                 <div className="space-y-2">
                   {currentStep.detailedContent?.sections.map((section, index) => (
                     <div key={index} className="flex items-center justify-between py-2">
@@ -986,10 +1019,10 @@ const OnboardingStep = () => {
                       Progress: {completedSteps.size} of {currentStep.detailedContent?.sections.length || 0} steps completed
                     </span>
                     <div className="w-32 bg-muted rounded-full h-2">
-                      <div 
+                      <div
                         className="bg-primary h-2 rounded-full transition-all duration-300"
-                        style={{ 
-                          width: `${currentStep.detailedContent?.sections.length ? (completedSteps.size / currentStep.detailedContent.sections.length) * 100 : 0}%` 
+                        style={{
+                          width: `${currentStep.detailedContent?.sections.length ? (completedSteps.size / currentStep.detailedContent.sections.length) * 100 : 0}%`
                         }}
                       />
                     </div>
