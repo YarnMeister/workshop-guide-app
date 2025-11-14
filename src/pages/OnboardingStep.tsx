@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Header } from "@/components/Header";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { useWorkshopProgress } from "@/hooks/useWorkshopProgress";
 import { useParticipant } from "@/hooks/useParticipant";
 import { enhancePromptWithAI } from "@/services/openrouter";
 import { revealApiKey } from "@/services/participant";
-import { PRDForm } from "@/components/PRDForm";
+import { PRDForm, PRDFormRef } from "@/components/PRDForm";
 import { PRDAnswers } from "@/utils/storage";
 import { formatPRDForAI } from "@/utils/prdFormatter";
 import { canAccessStep, getAccessDeniedMessage, getCompletionMessage, isPreWorkshopOnly } from "@/utils/featureFlags";
@@ -29,6 +29,7 @@ const OnboardingStep = () => {
   const [isRevealingKey, setIsRevealingKey] = useState<boolean>(false);
   const { progress, updateProgress, updateTodoStatus } = useWorkshopProgress();
   const { name, apiKeyMasked, apiKey, setApiKey, isAuthenticated, isLoading: participantLoading, participantId, role } = useParticipant();
+  const prdFormRef = useRef<PRDFormRef>(null);
 
   // Unicode-safe hash function for cache keys
   // Replaces btoa() which fails on emoji and special characters
@@ -402,6 +403,18 @@ const OnboardingStep = () => {
 
     // Process AI enhancement when moving from Write Specs to Prototype
     if (currentStepNumber === 2) {
+      // Check mandatory field: "What are you building?"
+      if (!progress.prdAnswers.projectOverview.whatBuilding.trim()) {
+        toast({
+          title: "Mandatory Field Required",
+          description: "Please fill in 'What are you building?' before proceeding. This is the only mandatory field.",
+          variant: "destructive",
+        });
+        // Scroll to and highlight the mandatory field
+        prdFormRef.current?.scrollToMandatoryField();
+        return;
+      }
+
       // Check if user has selected whether they'll use property data
       if (progress.willUsePropertyData === null || progress.willUsePropertyData === undefined) {
         toast({
@@ -414,17 +427,6 @@ const OnboardingStep = () => {
 
       // Format PRD answers for AI processing
       const prdFormatted = formatPRDForAI(progress.prdAnswers);
-
-      // Check if there's any content to process
-      // formatPRDForAI returns "# Mini PRD" (trimmed) when empty
-      if (!prdFormatted.trim() || prdFormatted.trim() === "# Mini PRD") {
-        toast({
-          title: "No Content",
-          description: "Please fill out at least one section before proceeding.",
-          variant: "destructive",
-        });
-        return;
-      }
 
       // Generate a simple hash of the PRD content to use as cache key
       // Include property data selection in cache key to ensure different prompts are cached separately
@@ -588,6 +590,7 @@ const OnboardingStep = () => {
                 {/* PRD Form for step 2 */}
                 {currentStep.detailedContent.prdTemplate && currentStepNumber === 2 && (
                   <PRDForm
+                    ref={prdFormRef}
                     answers={progress.prdAnswers}
                     onUpdate={(answers: PRDAnswers) => {
                       updateProgress({ prdAnswers: answers });

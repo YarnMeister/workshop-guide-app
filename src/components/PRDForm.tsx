@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -6,20 +6,44 @@ import { Check } from "lucide-react";
 import { PRDAnswers } from "@/utils/storage";
 import { sanitizeInput, checkSanitizationImpact } from "@/utils/textSanitizer";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
 
 interface PRDFormProps {
   answers: PRDAnswers;
   onUpdate: (answers: PRDAnswers) => void;
 }
 
-export const PRDForm = ({ answers, onUpdate }: PRDFormProps) => {
+export interface PRDFormRef {
+  scrollToMandatoryField: () => void;
+  validateMandatoryFields: () => boolean;
+}
+
+export const PRDForm = forwardRef<PRDFormRef, PRDFormProps>(({ answers, onUpdate }, ref) => {
   const [localAnswers, setLocalAnswers] = useState<PRDAnswers>(answers);
+  const [highlightMandatory, setHighlightMandatory] = useState(false);
   const { toast } = useToast();
+  const mandatoryFieldRef = useRef<HTMLDivElement>(null);
 
   // Update local state when answers prop changes
   useEffect(() => {
     setLocalAnswers(answers);
   }, [answers]);
+
+  // Expose methods to parent component
+  useImperativeHandle(ref, () => ({
+    scrollToMandatoryField: () => {
+      setHighlightMandatory(true);
+      mandatoryFieldRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      // Remove highlight after 3 seconds
+      setTimeout(() => {
+        setHighlightMandatory(false);
+      }, 3000);
+    },
+    validateMandatoryFields: () => {
+      return !!localAnswers.projectOverview.whatBuilding.trim();
+    }
+  }));
 
   const updateAnswer = (section: keyof PRDAnswers, field: string, value: string) => {
     // Sanitize input to remove markdown formatting from pasted content
@@ -71,10 +95,18 @@ export const PRDForm = ({ answers, onUpdate }: PRDFormProps) => {
               </div>
             </AccordionTrigger>
             <AccordionContent className="space-y-4 pt-4 pb-2">
-              <div className="space-y-2 p-1">
-                <Label htmlFor="what-building" className="font-medium text-sm">
-                  What are you building?
-                </Label>
+              <div
+                ref={mandatoryFieldRef}
+                className={`space-y-2 p-3 rounded-md transition-all duration-300 ${
+                  highlightMandatory ? 'bg-red-50 border-2 border-red-300 shadow-lg' : 'p-1'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="what-building" className="font-medium text-sm">
+                    What are you building?
+                  </Label>
+                  <Badge variant="destructive" className="text-xs">Mandatory</Badge>
+                </div>
                 <p className="text-xs text-muted-foreground mb-2">
                   Brief description of your prototype idea
                 </p>
@@ -85,13 +117,18 @@ export const PRDForm = ({ answers, onUpdate }: PRDFormProps) => {
                     updateAnswer("projectOverview", "whatBuilding", e.target.value)
                   }
                   placeholder="E.g., A task management app for remote teams..."
-                  className="min-h-[80px] resize-none"
+                  className={`min-h-[80px] resize-none ${
+                    highlightMandatory ? 'border-red-400 focus:border-red-500' : ''
+                  }`}
                 />
               </div>
               <div className="space-y-2 p-1">
-                <Label htmlFor="who-for" className="font-medium text-sm">
-                  Who is this for?
-                </Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="who-for" className="font-medium text-sm">
+                    Who is this for?
+                  </Label>
+                  <Badge variant="secondary" className="text-xs">Optional</Badge>
+                </div>
                 <p className="text-xs text-muted-foreground mb-2">
                   Your target user or audience
                 </p>
@@ -106,9 +143,12 @@ export const PRDForm = ({ answers, onUpdate }: PRDFormProps) => {
                 />
               </div>
               <div className="space-y-2 p-1">
-                <Label htmlFor="problem-solves" className="font-medium text-sm">
-                  What problem does it solve?
-                </Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="problem-solves" className="font-medium text-sm">
+                    What problem does it solve?
+                  </Label>
+                  <Badge variant="secondary" className="text-xs">Optional</Badge>
+                </div>
                 <p className="text-xs text-muted-foreground mb-2">
                   The core need or pain point this addresses
                 </p>
@@ -137,9 +177,12 @@ export const PRDForm = ({ answers, onUpdate }: PRDFormProps) => {
             </AccordionTrigger>
             <AccordionContent className="space-y-4 pt-4 pb-2">
               <div className="space-y-2 p-1">
-                <Label htmlFor="primary-goal" className="font-medium text-sm">
-                  What does success look like?
-                </Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="primary-goal" className="font-medium text-sm">
+                    What does success look like?
+                  </Label>
+                  <Badge variant="secondary" className="text-xs">Optional</Badge>
+                </div>
                 <p className="text-xs text-muted-foreground mb-2">
                   Primary goal or outcome you're aiming for
                 </p>
@@ -154,9 +197,12 @@ export const PRDForm = ({ answers, onUpdate }: PRDFormProps) => {
                 />
               </div>
               <div className="space-y-2 p-1">
-                <Label htmlFor="how-will-know" className="font-medium text-sm">
-                  How will you know this prototype is working well?
-                </Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="how-will-know" className="font-medium text-sm">
+                    How will you know this prototype is working well?
+                  </Label>
+                  <Badge variant="secondary" className="text-xs">Optional</Badge>
+                </div>
                 <Textarea
                   id="how-will-know"
                   value={localAnswers.successCriteria.howWillKnow}
@@ -168,9 +214,12 @@ export const PRDForm = ({ answers, onUpdate }: PRDFormProps) => {
                 />
               </div>
               <div className="space-y-2 p-1">
-                <Label htmlFor="key-user-actions" className="font-medium text-sm">
-                  Key user actions or behaviours you want to enable
-                </Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="key-user-actions" className="font-medium text-sm">
+                    Key user actions or behaviours you want to enable
+                  </Label>
+                  <Badge variant="secondary" className="text-xs">Optional</Badge>
+                </div>
                 <Textarea
                   id="key-user-actions"
                   value={localAnswers.successCriteria.keyUserActions}
@@ -196,9 +245,12 @@ export const PRDForm = ({ answers, onUpdate }: PRDFormProps) => {
             </AccordionTrigger>
             <AccordionContent className="space-y-4 pt-4 pb-2">
               <div className="space-y-2 p-1">
-                <Label htmlFor="essential-features" className="font-medium text-sm">
-                  Essential features needed for this prototype to work
-                </Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="essential-features" className="font-medium text-sm">
+                    Essential features needed for this prototype to work
+                  </Label>
+                  <Badge variant="secondary" className="text-xs">Optional</Badge>
+                </div>
                 <Textarea
                   id="essential-features"
                   value={localAnswers.coreFeatures.essential}
@@ -210,9 +262,12 @@ export const PRDForm = ({ answers, onUpdate }: PRDFormProps) => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="nice-to-have" className="font-medium text-sm">
-                  Nice-to-have features
-                </Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="nice-to-have" className="font-medium text-sm">
+                    Nice-to-have features
+                  </Label>
+                  <Badge variant="secondary" className="text-xs">Optional</Badge>
+                </div>
                 <p className="text-xs text-muted-foreground mb-2">
                   Features that could enhance the experience but aren't critical for v1
                 </p>
@@ -241,9 +296,12 @@ export const PRDForm = ({ answers, onUpdate }: PRDFormProps) => {
             </AccordionTrigger>
             <AccordionContent className="space-y-4 pt-4 pb-2">
               <div className="space-y-2 p-1">
-                <Label htmlFor="ai-role" className="font-medium text-sm">
-                  What role does AI play in the user experience?
-                </Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="ai-role" className="font-medium text-sm">
+                    What role does AI play in the user experience?
+                  </Label>
+                  <Badge variant="secondary" className="text-xs">Optional</Badge>
+                </div>
                 <Textarea
                   id="ai-role"
                   value={localAnswers.aiComponents.role}
@@ -255,9 +313,12 @@ export const PRDForm = ({ answers, onUpdate }: PRDFormProps) => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="ai-should-do" className="font-medium text-sm">
-                  What should the AI do or help users accomplish?
-                </Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="ai-should-do" className="font-medium text-sm">
+                    What should the AI do or help users accomplish?
+                  </Label>
+                  <Badge variant="secondary" className="text-xs">Optional</Badge>
+                </div>
                 <Textarea
                   id="ai-should-do"
                   value={localAnswers.aiComponents.whatShouldDo}
@@ -269,9 +330,12 @@ export const PRDForm = ({ answers, onUpdate }: PRDFormProps) => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="ai-behaviours" className="font-medium text-sm">
-                  Any specific AI behaviours or capabilities needed?
-                </Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="ai-behaviours" className="font-medium text-sm">
+                    Any specific AI behaviours or capabilities needed?
+                  </Label>
+                  <Badge variant="secondary" className="text-xs">Optional</Badge>
+                </div>
                 <Textarea
                   id="ai-behaviours"
                   value={localAnswers.aiComponents.specificBehaviours}
@@ -297,9 +361,12 @@ export const PRDForm = ({ answers, onUpdate }: PRDFormProps) => {
             </AccordionTrigger>
             <AccordionContent className="space-y-4 pt-4 pb-2">
               <div className="space-y-2 p-1">
-                <Label htmlFor="key-journeys" className="font-medium text-sm">
-                  Key user journeys
-                </Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="key-journeys" className="font-medium text-sm">
+                    Key user journeys
+                  </Label>
+                  <Badge variant="secondary" className="text-xs">Optional</Badge>
+                </div>
                 <p className="text-xs text-muted-foreground mb-2">
                   Describe the main path users will take through your prototype
                 </p>
@@ -314,9 +381,12 @@ export const PRDForm = ({ answers, onUpdate }: PRDFormProps) => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="user-interactions" className="font-medium text-sm">
-                  User interactions
-                </Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="user-interactions" className="font-medium text-sm">
+                    User interactions
+                  </Label>
+                  <Badge variant="secondary" className="text-xs">Optional</Badge>
+                </div>
                 <p className="text-xs text-muted-foreground mb-2">
                   How do users interact with the prototype?
                 </p>
@@ -345,9 +415,12 @@ export const PRDForm = ({ answers, onUpdate }: PRDFormProps) => {
             </AccordionTrigger>
             <AccordionContent className="space-y-4 pt-4 pb-2">
               <div className="space-y-2 p-1">
-                <Label htmlFor="visual-mood" className="font-medium text-sm">
-                  Visual mood & style
-                </Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="visual-mood" className="font-medium text-sm">
+                    Visual mood & style
+                  </Label>
+                  <Badge variant="secondary" className="text-xs">Optional</Badge>
+                </div>
                 <p className="text-xs text-muted-foreground mb-2">
                   e.g., minimal, playful, professional, bold, clean, futuristic
                 </p>
@@ -362,9 +435,12 @@ export const PRDForm = ({ answers, onUpdate }: PRDFormProps) => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="design-references" className="font-medium text-sm">
-                  Design references or inspiration
-                </Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="design-references" className="font-medium text-sm">
+                    Design references or inspiration
+                  </Label>
+                  <Badge variant="secondary" className="text-xs">Optional</Badge>
+                </div>
                 <p className="text-xs text-muted-foreground mb-2">
                   Any apps, websites, or styles that capture the vibe you're going for
                 </p>
@@ -379,9 +455,12 @@ export const PRDForm = ({ answers, onUpdate }: PRDFormProps) => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="key-ui-elements" className="font-medium text-sm">
-                  Key UI elements
-                </Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="key-ui-elements" className="font-medium text-sm">
+                    Key UI elements
+                  </Label>
+                  <Badge variant="secondary" className="text-xs">Optional</Badge>
+                </div>
                 <p className="text-xs text-muted-foreground mb-2">
                   Specific components or interface patterns you envision - cards, sidebars, modals, etc.
                 </p>
@@ -410,9 +489,12 @@ export const PRDForm = ({ answers, onUpdate }: PRDFormProps) => {
             </AccordionTrigger>
             <AccordionContent className="space-y-4 pt-4 pb-2">
               <div className="space-y-2 p-1">
-                <Label htmlFor="platform" className="font-medium text-sm">
-                  Platform/Format
-                </Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="platform" className="font-medium text-sm">
+                    Platform/Format
+                  </Label>
+                  <Badge variant="secondary" className="text-xs">Optional</Badge>
+                </div>
                 <p className="text-xs text-muted-foreground mb-2">
                   e.g., web app, mobile, desktop, responsive
                 </p>
@@ -427,9 +509,12 @@ export const PRDForm = ({ answers, onUpdate }: PRDFormProps) => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="integration-needs" className="font-medium text-sm">
-                  Integration needs
-                </Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="integration-needs" className="font-medium text-sm">
+                    Integration needs
+                  </Label>
+                  <Badge variant="secondary" className="text-xs">Optional</Badge>
+                </div>
                 <p className="text-xs text-muted-foreground mb-2">
                   Any specific APIs, services, or tools that you'd like to be connected
                 </p>
@@ -444,9 +529,12 @@ export const PRDForm = ({ answers, onUpdate }: PRDFormProps) => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="data-content" className="font-medium text-sm">
-                  Data/Content
-                </Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="data-content" className="font-medium text-sm">
+                    Data/Content
+                  </Label>
+                  <Badge variant="secondary" className="text-xs">Optional</Badge>
+                </div>
                 <p className="text-xs text-muted-foreground mb-2">
                   What information does the app need to store, display, or process?
                 </p>
@@ -475,9 +563,12 @@ export const PRDForm = ({ answers, onUpdate }: PRDFormProps) => {
             </AccordionTrigger>
             <AccordionContent className="space-y-4 pt-4 pb-2">
               <div className="space-y-2 p-1">
-                <Label htmlFor="boundaries" className="font-medium text-sm">
-                  Are there any boundaries that you think would be useful to note?
-                </Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="boundaries" className="font-medium text-sm">
+                    Are there any boundaries that you think would be useful to note?
+                  </Label>
+                  <Badge variant="secondary" className="text-xs">Optional</Badge>
+                </div>
                 <Textarea
                   id="boundaries"
                   value={localAnswers.constraints.boundaries}
@@ -503,9 +594,12 @@ export const PRDForm = ({ answers, onUpdate }: PRDFormProps) => {
             </AccordionTrigger>
             <AccordionContent className="space-y-4 pt-4 pb-2">
               <div className="space-y-2 p-1">
-                <Label htmlFor="other-details" className="font-medium text-sm">
-                  Any other details, background, or considerations that would help someone understand what you're building
-                </Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="other-details" className="font-medium text-sm">
+                    Any other details, background, or considerations that would help someone understand what you're building
+                  </Label>
+                  <Badge variant="secondary" className="text-xs">Optional</Badge>
+                </div>
                 <Textarea
                   id="other-details"
                   value={localAnswers.additionalContext.otherDetails}
@@ -522,5 +616,7 @@ export const PRDForm = ({ answers, onUpdate }: PRDFormProps) => {
       </div>
     </div>
   );
-};
+});
+
+PRDForm.displayName = "PRDForm";
 
