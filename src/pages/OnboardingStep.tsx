@@ -969,6 +969,47 @@ const OnboardingStep = () => {
                     </div>
                   </div>
                 )}
+
+                {/* Education Panel - Show system prompts used for AI enhancement (Step 3 only) */}
+                {currentStep.detailedContent.educationPanel && currentStepNumber === 3 && (
+                  <div className="rounded-lg border bg-card p-6">
+                    <div className="mb-4">
+                      <h3 className="mb-2 font-semibold text-base">{currentStep.detailedContent.educationPanel.title}</h3>
+                      <p className="text-sm text-muted-foreground">{currentStep.detailedContent.educationPanel.description}</p>
+                    </div>
+
+                    {/* Tab Headers */}
+                    <div className="flex border-b border-muted mb-4">
+                      {currentStep.detailedContent.educationPanel.tabs.map((tab: any, tabIndex: number) => (
+                        <button
+                          key={tabIndex}
+                          onClick={() => setActiveTab(tabIndex)}
+                          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                            activeTab === tabIndex
+                              ? 'border-primary text-primary'
+                              : 'border-transparent text-muted-foreground hover:text-foreground'
+                          }`}
+                        >
+                          {tab.title}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Tab Content */}
+                    {currentStep.detailedContent.educationPanel.tabs[activeTab] && (
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          {currentStep.detailedContent.educationPanel.tabs[activeTab].description}
+                        </p>
+                        <div className="rounded-md bg-muted p-4">
+                          <pre className="whitespace-pre-wrap text-xs font-mono overflow-x-auto">
+                            {currentStep.detailedContent.educationPanel.tabs[activeTab].content}
+                          </pre>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ) : currentStepNumber !== 2 && (
               <div className="mb-8 rounded-lg border bg-card p-6">
